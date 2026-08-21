@@ -673,20 +673,93 @@
           <div class="ca-row"><div class="ca-ic"><svg class="ic"><use href="#i-pin"/></svg></div><div><b>Begutachtung &amp; Werkstatt</b>Karstraße 25 · 41068 Mönchengladbach<br><span style="font-size:13px">Büro &amp; Geschäftsadresse: Dahlener Straße 286, 41239 Mönchengladbach<br>Mo–Fr 8–18 Uhr · Sa 9–14 Uhr · Notfall: jederzeit</span></div></div>
         </div>
       </div>
-      <form class="form" onsubmit="event.preventDefault(); this.querySelector('button').textContent='✓ Anfrage gesendet, wir melden uns!';">
+      <form class="form" id="rueckruf-form" novalidate>
         <div class="f-t">Rückruf anfordern</div>
         <div class="f-s">Wir melden uns innerhalb von 15 Minuten, rund um die Uhr, auch am Wochenende.</div>
         <label for="f-name">Ihr Name</label>
-        <input id="f-name" type="text" autocomplete="name" required>
+        <input id="f-name" name="name" type="text" autocomplete="name" required>
         <label for="f-tel">Telefonnummer</label>
-        <input id="f-tel" type="tel" autocomplete="tel" required>
+        <input id="f-tel" name="telefon" type="tel" autocomplete="tel" required>
         <label for="f-plz">PLZ des Unfallorts</label>
-        <input id="f-plz" type="text" inputmode="numeric" autocomplete="postal-code">
+        <input id="f-plz" name="plz" type="text" inputmode="numeric" autocomplete="postal-code">
         <label for="f-msg">Was ist passiert? (optional)</label>
-        <textarea id="f-msg" rows="3"></textarea>
+        <textarea id="f-msg" name="nachricht" rows="3"></textarea>
+        <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" style="display:none !important" aria-hidden="true">
         <button type="submit">Kostenlosen Rückruf anfordern</button>
-        <div class="f-note">Mit dem Absenden stimmen Sie der Verarbeitung Ihrer Daten zur Kontaktaufnahme zu. Details in der Datenschutzerklärung.</div>
+        <div class="f-note" id="f-status" role="status" aria-live="polite">Mit dem Absenden stimmen Sie der Verarbeitung Ihrer Daten zur Kontaktaufnahme zu. Details in der Datenschutzerklärung.</div>
       </form>
+      <script>
+      /* Rückruf-Formular → eigener Lead-Endpunkt von S&S Connect.
+
+         Kein Drittanbieter und keine Übermittlung in ein Drittland: die Anfrage
+         geht auf einen Server in Deutschland. Dort wird sie ZUERST gespeichert
+         und erst DANACH als Mail verschickt. Scheitert der Mailversand, ist die
+         Anfrage trotzdem sicher und wird automatisch nachgesendet — sie kann
+         nicht mehr still verloren gehen. */
+      (function () {
+        var ENDPUNKT = 'https://leads.sundsconnect.de/lead';
+        var KUNDE    = 'kge';
+        var TELEFON  = '02161 622 57 68';
+
+        var form = document.getElementById('rueckruf-form');
+        if (!form) return;
+        var status = document.getElementById('f-status');
+        var knopf = form.querySelector('button[type=submit]');
+        var knopfText = knopf.textContent;
+
+        function melde(text, farbe) {
+          status.textContent = text;
+          status.style.color = farbe || '';
+        }
+
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var name = form.querySelector('#f-name').value.trim();
+          var tel  = form.querySelector('#f-tel').value.trim();
+          if (!name || !tel) {
+            melde('Bitte Name und Telefonnummer angeben.', '#b00');
+            return;
+          }
+          knopf.disabled = true;
+          knopf.textContent = 'Wird gesendet …';
+          melde('Einen Moment …');
+
+          fetch(ENDPUNKT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({
+              kunde: KUNDE,
+              name: name,
+              telefon: tel,
+              plz: form.querySelector('#f-plz').value.trim(),
+              nachricht: form.querySelector('#f-msg').value.trim(),
+              seite: location.pathname,
+              botcheck: form.querySelector('input[name=botcheck]').checked ? 'bot' : ''
+            })
+          }).then(function (r) {
+            return r.json().catch(function () { return {}; }).then(function (d) {
+              return { ok: r.ok, daten: d };
+            });
+          }).then(function (a) {
+            if (a.ok && a.daten.ok) {
+              form.querySelectorAll('input, textarea').forEach(function (f) { f.value = ''; });
+              knopf.textContent = '✓ Anfrage eingegangen';
+              melde('Danke. Wir melden uns telefonisch, in der Regel innerhalb von 15 Minuten.');
+              if (typeof gtag === 'function') {
+                gtag('event', 'form_submit', { event_category: 'lead', event_label: 'rueckruf' });
+              }
+            } else {
+              throw new Error((a.daten && a.daten.fehler) || 'unbekannter Fehler');
+            }
+          }).catch(function (err) {
+            knopf.disabled = false;
+            knopf.textContent = knopfText;
+            melde('Das hat leider nicht geklappt. Bitte rufen Sie uns direkt an: ' + TELEFON, '#b00');
+            console.error('[Rueckruf] Versand fehlgeschlagen:', err);
+          });
+        });
+      })();
+      </script>
     </div>
   </div>
 </section>
@@ -709,8 +782,9 @@
     </div>
     <div>
       <b>Rechtliches</b>
-      <a href="#">Impressum</a><br>
-      <a href="#">Datenschutz</a>
+      <a href="impressum.html">Impressum</a><br>
+      <a href="datenschutz.html">Datenschutz</a><br>
+      <a href="#" data-einwilligung-oeffnen>Cookie-Einstellungen</a>
     </div>
     <div class="foot-note">
       * Kostenlos für Unfallgeschädigte bei unverschuldetem Unfall ab ca. 1.000 € Schadenhöhe: Die Gutachterkosten trägt in diesem Fall die gegnerische Haftpflichtversicherung als Teil des Schadensersatzes gemäß § 249 Abs. 2 BGB. Bei Mitverschulden erfolgt eine anteilige (quotale) Kostenübernahme; bei Bagatellschäden unterhalb von ca. 750–1.000 € beraten wir kostenlos zu Alternativen. Design-Prototyp, erstellt von S&amp;S Connect GbR (sundsconnect.de). Beispiel-Rezensionen zur Veranschaulichung; vor Veröffentlichung durch echte Google-Rezensionen ersetzen. Fotos: Unsplash (lizenzfrei).
@@ -778,6 +852,6 @@ document.addEventListener('click', function (e) {
 });
 </script>
 
-<script defer src="assistent.js"></script>
+<script defer src="einwilligung.js"></script>
 </body>
 </html>
