@@ -9,7 +9,10 @@
  *    lädt nichts und die Konsole sagt "Messung nicht konfiguriert".
  *  - Conversion-Aktionen: phone_click, whatsapp_click (Klicks auf data-messung), form_submit (ruft
  *    formular.js nach ok:true über window.kgeMessung auf). Jede mit send_to "AW-…/Label".
- *  - Banner höchstens 110 px hoch, sitzt über der Sticky-Callbar und verdeckt die Hero-Knöpfe nicht.
+ *  - Banner höchstens 110 px hoch, sitzt über der Sticky-Callbar. Er steht ab dem Laden im DOM, bleibt aber
+ *    verborgen, bis der Besucher scrollt oder vier Sekunden vergangen sind (Künstler K4), und erscheint nie,
+ *    solange er einen Hero-Knopf verdecken würde. Beobachtet wird mit IntersectionObserver, kein Scroll-Lauscher.
+ *    Über den Fußlink erscheint er sofort.
  *  - Entscheidung in localStorage ('kge-einwilligung-v2'), Widerruf über den Fußlink
  *    data-einwilligung-oeffnen (Art. 7 Abs. 3 DSGVO).
  */
@@ -102,36 +105,86 @@
   var stil = document.createElement("style");
   stil.textContent =
     "#kge-einwilligung{position:fixed;left:0;right:0;bottom:calc(var(--callbar-h,64px) + env(safe-area-inset-bottom));z-index:60;" +
-    "background:#F3F6F8;color:#16222D;border-top:2px solid #0D1B27;font-family:Archivo,system-ui,sans-serif;max-height:110px;overflow:hidden;" +
-    "padding:10px 16px}" +
+    "background:#F3F6F8;color:#16222D;border-top:2px solid #0D1B27;font-family:Archivo,system-ui,sans-serif;" +
+    "padding:9px 16px}" +
     "@media (min-width:900px){#kge-einwilligung{bottom:0}}" +
     "#kge-einwilligung .innen{max-width:1100px;margin:0 auto;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}" +
-    "#kge-einwilligung p{margin:0;font-size:13px;line-height:1.35;flex:1 1 220px;max-width:none}" +
-    "#kge-einwilligung a{color:#16222D;font-weight:600}" +
+    "#kge-einwilligung[hidden]{display:none}" +
+    "#kge-einwilligung p{margin:0;font-size:14px;line-height:1.35;flex:1 1 220px;max-width:none;min-width:0}" +
+    "#kge-einwilligung a{color:#16222D;font-weight:700;display:inline-block;padding:13px 4px;margin:-13px 0}" +
     "#kge-einwilligung .knoepfe{display:flex;gap:8px;flex:0 0 auto}" +
-    "#kge-einwilligung button{font:inherit;font-size:14px;font-weight:700;cursor:pointer;border-radius:6px;padding:9px 14px;min-width:104px;border:2px solid #0D1B27;color:#0D1B27;background:#fff}" +
+    "#kge-einwilligung button{font:inherit;font-size:14px;font-weight:700;cursor:pointer;border-radius:6px;padding:9px 14px;min-width:104px;min-height:44px;border:2px solid #0D1B27;color:#0D1B27;background:#fff}" +
     "#kge-einwilligung button.ja{background:#F5A00A}" +
     "#kge-einwilligung button:hover{background:#FFB42E}" +
     "#kge-einwilligung button.nein:hover{background:#E4E9EE}" +
     "#kge-einwilligung button:focus-visible{outline:3px solid #F5A00A;outline-offset:2px}" +
     "@media (max-width:420px){#kge-einwilligung .knoepfe{flex:1 1 100%}#kge-einwilligung button{flex:1 1 0;min-width:0}}";
 
-  function zeige() {
-    if (document.getElementById("kge-einwilligung")) return;
+  var aufraeumen = [];
+  function fertig() { aufraeumen.forEach(function (f) { f(); }); aufraeumen = []; }
+
+  /* Baut den Banner verborgen ein; die Knöpfe sind ab dem Laden bedienbar (Funktionstest klickt sie direkt). */
+  function baue() {
+    var da = document.getElementById("kge-einwilligung");
+    if (da) return da;
     if (!stil.parentNode) document.head.appendChild(stil);
     var kasten = document.createElement("div");
     kasten.id = "kge-einwilligung";
+    kasten.hidden = true;
     kasten.setAttribute("role", "dialog");
     kasten.setAttribute("aria-label", "Einwilligung zur Werbe-Messung");
     kasten.innerHTML =
       '<div class="innen">' +
-      "<p><b>Werbe-Messung erlauben?</b> Wir messen nur mit Ihrer Einwilligung, ob nach einem Anzeigenklick angerufen oder angefragt wird (Google Ads). " +
+      "<p>Dürfen wir mit Google Ads messen, ob unsere Anzeige zu Ihrem Anruf geführt hat? " +
       '<a href="datenschutz.html#messung">Details</a></p>' +
       '<div class="knoepfe"><button type="button" class="nein" id="kge-e-nein">Ablehnen</button>' +
       '<button type="button" class="ja" id="kge-e-ja">Erlauben</button></div></div>';
     document.body.appendChild(kasten);
-    document.getElementById("kge-e-nein").addEventListener("click", function () { schreibe(false); kasten.remove(); });
-    document.getElementById("kge-e-ja").addEventListener("click", function () { schreibe(true); kasten.remove(); ladeTag(); });
+    document.getElementById("kge-e-nein").addEventListener("click", function () { schreibe(false); fertig(); kasten.remove(); });
+    document.getElementById("kge-e-ja").addEventListener("click", function () { schreibe(true); fertig(); kasten.remove(); ladeTag(); });
+    return kasten;
+  }
+
+  function zeigeSofort() { fertig(); baue().hidden = false; }
+
+  /* Würde der Banner einen Hero-Knopf verdecken? Banner und Callbar zusammen höchstens 110 + 64 px. */
+  function verdecktHero() {
+    var unten = window.innerWidth < 900 ? 64 + 110 : 110;
+    var grenze = window.innerHeight - unten;
+    var knoepfe = document.querySelectorAll(".hero .knoepfe .knopf");
+    for (var i = 0; i < knoepfe.length; i++) {
+      var r = knoepfe[i].getBoundingClientRect();
+      if (r.bottom > grenze && r.top < window.innerHeight) return true;
+    }
+    return false;
+  }
+
+  function zeigeSpaeter() {
+    var kasten = baue();
+    var gescrollt = false;
+    var zeitUm = false;
+    function versuch() {
+      if (!kasten.isConnected || !kasten.hidden) return;
+      if (!(gescrollt || zeitUm) || verdecktHero()) return;
+      kasten.hidden = false;
+      fertig();
+    }
+    var uhr = setTimeout(function () { zeitUm = true; versuch(); }, 4000);
+    aufraeumen.push(function () { clearTimeout(uhr); });
+    if (!("IntersectionObserver" in window)) { gescrollt = true; return; }
+    /* Merker oben auf der Seite: verlässt er den Sichtbereich, hat der Besucher gescrollt. */
+    var merker = document.createElement("div");
+    merker.setAttribute("aria-hidden", "true");
+    merker.style.cssText = "position:absolute;top:0;left:0;width:1px;height:1px;pointer-events:none";
+    document.body.appendChild(merker);
+    var oben = new IntersectionObserver(function (eintraege) {
+      if (!eintraege[0].isIntersecting) { gescrollt = true; versuch(); }
+    });
+    oben.observe(merker);
+    /* Hero-Knöpfe: bei jeder Bewegung über die Bannerkante neu prüfen. */
+    var hero = new IntersectionObserver(versuch, { rootMargin: "0px 0px -174px 0px", threshold: [0, 0.5, 1] });
+    document.querySelectorAll(".hero .knoepfe .knopf").forEach(function (k) { hero.observe(k); });
+    aufraeumen.push(function () { oben.disconnect(); hero.disconnect(); merker.remove(); });
   }
 
   document.addEventListener("click", function (e) {
@@ -139,12 +192,12 @@
     if (!el) return;
     e.preventDefault();
     try { localStorage.removeItem(SCHLUESSEL); } catch (fehler) { /* egal */ }
-    zeige();
+    zeigeSofort();
   });
 
   function start() {
     var wahl = lies();
-    if (wahl === null) { zeige(); return; }
+    if (wahl === null) { zeigeSpaeter(); return; }
     if (wahl.werbung) ladeTag();
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);

@@ -4,6 +4,7 @@
     <p class="ortszeile"><svg><use href="#i-pin"/></svg>Kfz-Gutachter Mönchengladbach · Karstraße 25</p>
     <h1>Unfall nachts oder <mark>am Wochenende?</mark></h1>
     <p>Was Sie jetzt tun können, wie Sie uns erreichen und wann wir zurückrufen. Ehrlich, ohne Versprechen, die wir nicht halten.</p>
+    <p class="notruf"><b>Bei Verletzten wählen Sie sofort 112.</b> Bei unklarer Schuldfrage oder Unfallflucht rufen Sie die Polizei unter 110.</p>
   </div>
 </section>
 
@@ -13,9 +14,9 @@
       <div>
         <h2>So erreichen Sie uns</h2>
         <ul class="kontaktliste">
+          <li><svg><use href="#i-wa"/></svg><div><b>Jederzeit per WhatsApp</b><span>Schreiben Sie uns, was passiert ist, und schicken Sie Fotos von Ihrem Fahrzeug. Wir antworten zu unseren Zeiten, nachts spätestens {{rueckruf_sonst}}.</span><a href="{{wa_link}}" rel="noopener" data-messung="whatsapp_click">{{wa_anzeige}}</a></div></li>
           <li><svg><use href="#i-uhr"/></svg><div><b>Telefonisch</b><span>Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr</span><a href="tel:+4921616225768" data-messung="phone_click">02161 622 57 68</a></div></li>
-          <li><svg><use href="#i-wa"/></svg><div><b>Jederzeit per WhatsApp</b><span>Schreiben Sie uns, was passiert ist, und schicken Sie Fotos von Ihrem Fahrzeug. Wir antworten zu unseren Zeiten, nachts spätestens am nächsten Werktag bis 9 Uhr.</span><a href="https://wa.me/4917719472710?text=Hallo%2C%20ich%20hatte%20einen%20Unfall%20und%20schicke%20Fotos%20von%20meinem%20Fahrzeug%20zur%20Ersteinsch%C3%A4tzung." rel="noopener" data-messung="whatsapp_click">0177 19 47 271</a></div></li>
-          <li><svg><use href="#i-tel"/></svg><div><b>Rückruf anfordern</b><span>Nummer hinterlassen, wir rufen werktags innerhalb einer Stunde zurück, sonst am nächsten Werktag bis 9 Uhr.</span><a href="index.html#rueckruf">Zum Formular</a></div></li>
+          <li><svg><use href="#i-tel"/></svg><div><b>Rückruf anfordern</b><span>Nummer hinterlassen, wir rufen werktags {{rueckruf_werktags}} zurück, abends und am Wochenende {{rueckruf_sonst}}.</span><a href="index.html#rueckruf">Zum Formular</a></div></li>
         </ul>
       </div>
       <div>
@@ -31,16 +32,16 @@
     </div>
 
     <h2>Was am nächsten Werktag passiert</h2>
-    <p>Wir melden uns bis 9 Uhr, hören uns an, was passiert ist, und vereinbaren die Besichtigung, meist noch am selben Werktag. Das Gutachten liegt in der Regel innerhalb von 24 Stunden nach der Besichtigung vor, werktags. Zwischen einem Unfall am Freitagabend und dem fertigen Gutachten liegen damit meist nicht mehr als zwei Werktage.</p>
-    <p class="fussnote">Alle Zeitangaben sind Regelwerte, keine Zusagen für den Einzelfall. Bei Verletzten wählen Sie 112, bei unklarer Schuldfrage oder Unfallflucht 110.</p>
+    <p>Wir melden uns {{rueckruf_sonst}}, hören uns an, was passiert ist, und vereinbaren die Besichtigung, meist noch am selben Werktag. Das Gutachten liegt in der Regel innerhalb von 24 Stunden nach der Besichtigung vor, werktags. Zwischen einem Unfall am Freitagabend und dem fertigen Gutachten liegen damit meist nicht mehr als zwei Werktage.</p>
+    <p class="fussnote">Alle Zeitangaben sind Regelwerte, keine Zusagen für den Einzelfall.</p>
   </div>
 </section>
 
 <section class="band dunkel">
   <div class="wrap">
-    <div><h2>Jetzt Fotos schicken</h2><p>Wir sehen sie, sobald wir wieder am Telefon sind, und melden uns bis 9 Uhr am nächsten Werktag.</p></div>
+    <div><h2>Jetzt Fotos schicken</h2><p>Wir sehen sie, sobald wir wieder am Telefon sind, und melden uns {{rueckruf_sonst}}.</p></div>
     <div class="knoepfe">
-      <a class="knopf" href="https://wa.me/4917719472710?text=Hallo%2C%20ich%20hatte%20einen%20Unfall%20und%20schicke%20Fotos%20von%20meinem%20Fahrzeug%20zur%20Ersteinsch%C3%A4tzung." rel="noopener" data-messung="whatsapp_click"><svg><use href="#i-wa"/></svg>Fotos per WhatsApp</a>
+      <a class="knopf" href="{{wa_link}}" rel="noopener" data-messung="whatsapp_click"><svg><use href="#i-wa"/></svg>Fotos per WhatsApp</a>
       <a class="knopf zweit" href="tel:+4921616225768" data-messung="phone_click"><svg><use href="#i-tel"/></svg>02161 622 57 68</a>
     </div>
   </div>
