@@ -28,11 +28,13 @@ WHATSAPP_ANZEIGE = "0177 19 47 271"
 WHATSAPP_TEXT = "Hallo%2C%20ich%20hatte%20einen%20Unfall%20und%20schicke%20Fotos%20von%20meinem%20Fahrzeug%20zur%20Ersteinsch%C3%A4tzung."
 
 # Rückrufzusage: steht nur hier. Die Erreichbarkeit ist vom Kunden noch nicht bestätigt (Frage 4 an Herrn Es),
-# deshalb ohne Stundenzahl. RUECKRUF_SONST ist an die angezeigten Telefonzeiten gekoppelt statt an den Werktag
-# (Samstag ist rechtlich Werktag, im Alltag nicht; Branchenkenner 09.11.2026). Die Sätze lauten „in diesen Zeiten
-# {werktags}, sonst {sonst}“; nach Bestätigung zum Beispiel RUECKRUF_WERKTAGS = "innerhalb einer Stunde".
+# deshalb ohne Stundenzahl und ohne Uhrzeitversprechen. RUECKRUF_SONST hängt an den angezeigten Zeiten, nicht am
+# Werktag (Samstag ist rechtlich Werktag, im Alltag nicht; Branchenkenner 09.11.2026). Der Satz „Rückruf in diesen
+# Zeiten {werktags}, sonst {sonst}.“ steht nur noch im Hero (Start, Umland), im Fuß und auf der Nachtseite; sonst nennt
+# die Seite die Uhrzeiten selbst, damit dieselbe Wendung je Seite höchstens zweimal steht (Künstler Runde 3, Ä1).
+# Nach Bestätigung zum Beispiel RUECKRUF_WERKTAGS = "innerhalb einer Stunde".
 RUECKRUF_WERKTAGS = "zeitnah"
-RUECKRUF_SONST = "in der nächsten Telefonzeit"
+RUECKRUF_SONST = "sobald wir wieder am Telefon sind"
 
 # Betriebsfotos: False blendet die Bildplätze (<!--FOTOS--> bis <!--/FOTOS--> in inhalte/) aus, bis echte
 # Fotos vom Kunden da sind. True zeigt sie wieder; dann die <img> in den Platzhaltern eintragen.

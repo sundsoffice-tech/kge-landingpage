@@ -142,10 +142,14 @@ mark, .marker {
 .hero .knoepfe { display: flex; flex-direction: column; gap: 14px; max-width: 420px; }
 @media (min-width: 540px) { .hero .knoepfe { flex-direction: row; flex-wrap: wrap; max-width: none; } }
 .hero .knopf { min-height: 58px; }
+/* 320 x 568: Hero 30 px dichter, damit der WhatsApp-Knopf mit Beschriftung über der Leiste steht statt als 5-px-Kante (Künstler Runde 3, Fund 14). */
+@media (max-width: 379px) { .hero { padding-top: 16px; } .hero .ortszeile { margin-bottom: 8px; } .hero h1 { margin-bottom: 10px; } .hero .unterzeile { margin-bottom: 14px; } }
 .zeiten { margin: 22px 0 0; color: var(--hell-2); font-size: 15px; line-height: 1.5; max-width: 34rem; }
 .zeiten b { color: var(--hell); font-weight: 700; }
 .zeiten a { color: var(--hell); }
 .zeiten a:hover { color: var(--amber-hell); }
+/* Satzlinks mit eigener Handlung (Hero, FAQ): Trefferfläche ab 44 px, Zeilenbild bleibt gleich (Künstler Runde 3, Fund 9). */
+.zeiten a, .faq .antwort a { display: inline-block; padding-block: 12px; margin-block: -12px; }
 
 /* Fotofläche im Hero: ruhige Farbfläche bis die Betriebsfotos kommen */
 .hero-bild {
