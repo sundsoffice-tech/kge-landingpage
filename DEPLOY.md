@@ -1,24 +1,49 @@
-# Deployment: Landingpage Kfz Gutachter Es
+# Landingpage Kfz Gutachter Es: Aufbau, Bauen, Ausrollen
 
-Zwei Seiten, deploy-fertig für die Kampagnen aus `../kampagnen-vorbereitung/`:
+Stand 09.11.2026 (Neuaufbau auf Zweig `neu-2026-11-09`). Zielseite der Google-Ads-Kampagne ab 16.11.2026.
 
-| Datei | Zweck | Kampagnen-Ziel-URL (nach DNS-Umstellung) |
-|---|---|---|
-| `index.html` | Haupt-Landingpage (identisch mit Portal-Prototyp) | `https://kfz-gutachter-moenchengladbach.de/` |
-| `umland.html` | Stadt-Variante für die Umland-Kampagne (Viersen, Korschenbroich, Neuss, Kaarst, Grevenbroich) | `https://kfz-gutachter-moenchengladbach.de/umland.html` |
+## Dateien
 
-**Staging (sofort erreichbar):** https://sundsoffice-tech.github.io/kge-landingpage/ — beide Seiten stehen auf `noindex`, Google indexiert nichts.
+| Datei | Zweck |
+|---|---|
+| `vorlagen/schale.html` | Kopf, Fuß, Sticky-Callbar, Icon-Sprite, Skripte: steht genau einmal |
+| `inhalte/<seite>.html` | Inhalt je Seite (`<main>` plus JSON-LD) |
+| `bauen.py` | schreibt aus Schale und Inhalt die fertigen Seiten; `--pruefen` meldet Abweichungen (Exit 1) |
+| `index.html` | Hauptseite Mönchengladbach (Hero, Kosten, Ablauf, Betrieb, FAQ, Orte, Rückruf-Formular) |
+| `umland.html` | Variante für Viersen, Willich, Korschenbroich, Neuss, Kaarst, Grevenbroich |
+| `ablauf.html`, `kosten.html`, `nachts-wochenende.html` | Sitelink-Zielseiten (Google lehnt Sitelinks auf Anker derselben Seite ab) |
+| `impressum.html`, `datenschutz.html` | Pflichtseiten |
+| `stil.css` | gemeinsames Stylesheet, Signaletik-Look (Skill `dossier`) |
+| `konfig.js` | AW-ID, Conversion-Labels, Telefonanzeige, Lead-Endpunkt; Platzhalter bis zur Kontoanlage |
+| `einwilligung.js` | Consent-Banner, Consent Mode v2 (default denied, update beim Klick), Google-Tag, Conversion-Aktionen |
+| `formular.js` | Rückruf-Formular an `https://leads.sundsconnect.de/lead`, Erfolg erst nach `ok:true` |
+| `schriften/` | Archivo (variable, woff2, latin und latin-ext), selbst gehostet |
+| `bilder/` | Favicon; Betriebsfotos kommen hierher (Platzhalter `<!-- FOTO: ... -->` in den Inhalten) |
 
-## Nach der Domain-Registrierung (10 Minuten)
+Die fertigen HTML-Dateien liegen im Repo, weil GitHub Pages sie direkt ausliefert. Geändert wird in `inhalte/`,
+`vorlagen/` oder `stil.css`, danach `python bauen.py`. Ein direkter Edit an `index.html` geht beim nächsten Bau verloren.
 
-1. **CNAME-Datei anlegen:** eine Datei `CNAME` (ohne Endung) mit genau einer Zeile `kfz-gutachter-moenchengladbach.de` ins Repo legen und pushen.
-2. **DNS beim Registrar setzen:**
-   - 4× A-Record auf `@`: `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`
-   - 1× CNAME-Record `www` → `sundsoffice-tech.github.io`
-3. **GitHub Pages:** Repo → Settings → Pages → Custom domain `kfz-gutachter-moenchengladbach.de` eintragen, nach dem DNS-Check „Enforce HTTPS" aktivieren (Zertifikat kommt automatisch, dauert bis ~1 h).
-4. **Zweitdomain** unfallgutachten-mg.de beim Registrar per Weiterleitung (301) auf die Hauptdomain zeigen lassen.
-5. **Vor Kampagnenstart:** `noindex` aus beiden Seiten entfernen (Zeile `<meta name="robots" content="noindex">`), Google Tag einbauen (siehe Kampagnen-Mappe, Blatt „Einstellungen & Tracking"), echte Betriebsfotos einsetzen.
+## Vor jedem Push prüfen
 
-## Änderungen deployen
+1. `python bauen.py --pruefen` (Exit 0).
+2. Wörtersperre: `python <lm>/kunden/kfz-gutachter-es/kampagnen-vorbereitung/pruefen/woertersperre.py --ausnahme "Ismet Es Kfz Meisterbetrieb e.K." *.html` muss 0 Funde liefern. Die Ausnahme ist der Firmenname im Transparenzsatz des Impressums (Wettbewerbsrechtler 09.11.2026).
+3. `impeccable detect index.html umland.html ablauf.html kosten.html nachts-wochenende.html impressum.html datenschutz.html` (Ziel 0 Funde).
+4. Screenshots 390 und 1280 ansehen (Skill `hinsehen`, `schirmfoto.mjs` mit Geräteemulation; ein reines `--window-size=390` schneidet rechts ab).
 
-Dateien hier bearbeiten, dann `git add -A && git commit && git push` — GitHub Pages baut automatisch (1–2 Min).
+## Staging und Live
+
+- Staging: https://sundsoffice-tech.github.io/kge-landingpage/ (Zweig `main`). **Push nach `main` ist Deploy.** Nur über PR und nach Freigabe.
+- Live-Domain: `unfall-mg.de` (Inhaber S&S Connect GbR). Canonical und alle Links sind relativ, die Seite läuft unter beiden Adressen ohne Änderung.
+
+## Go-Live-Liste (Tag der Kontoanlage)
+
+1. `konfig.js`: `googleTag` (AW-ID) und die drei Labels aus Google Ads > Tools > Conversions eintragen; `telefonAnzeige` muss der sichtbaren Nummer entsprechen.
+2. Lead-Endpunkt: Origin `https://unfall-mg.de` in der CORS-Liste eintragen (gemessen 09.11.2026 00:47: OPTIONS mit diesem Origin antwortet 204 ohne `Access-Control-Allow-Origin`). Testlead mit Marker TEST, danach die Testdatei auf dem Server löschen (60-LEKTIONEN E4).
+3. `bauen.py`: `NOINDEX = False`, neu bauen.
+4. Betriebsfotos in `bilder/` legen, `<!-- FOTO: ... -->`-Platzhalter in `inhalte/index.html`, `inhalte/umland.html` ersetzen (`<img>` mit `width`, `height`, `alt`; Hero-Bild mit `fetchpriority="high"`).
+5. DNS: 4 A-Records auf `@` (185.199.108.153, 185.199.109.153, 185.199.110.153, 185.199.111.153), CNAME `www` auf `sundsoffice-tech.github.io`, Datei `CNAME` mit `unfall-mg.de` ins Repo, GitHub Pages Custom Domain, HTTPS erzwingen.
+6. Prüfung vor dem ersten Klick: Tag Assistant zeigt `consent default denied`, nach „Erlauben“ `update granted`; Ablehnen-Pfad lädt nichts von googletagmanager.com; Testanruf über 60 Sekunden erscheint im Anrufbericht; Testlead kommt beim Kunden an.
+
+## Messung ohne Konfiguration
+
+Solange `konfig.js` Platzhalter trägt, lädt `einwilligung.js` kein Google-Skript und feuert keine Conversion, auch nach „Erlauben“ nicht; die Konsole meldet „Messung nicht konfiguriert“. Das Banner und die Speicherung der Entscheidung funktionieren trotzdem.
