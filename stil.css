@@ -122,6 +122,8 @@ mark, .marker {
 .knopf.zweit { background: var(--papier); color: var(--navy); }
 .knopf.zweit:hover { background: var(--sanft); }
 .knopf .unter { display: block; font-weight: 500; font-size: 13px; }
+@media (max-width: 379px) { .hero .knopf .unter { display: none; } }
+.fn-anker { color: inherit; text-decoration: none; }
 .knopf-text { display: inline-flex; flex-direction: column; align-items: flex-start; line-height: 1.3; }
 .dunkel .knopf { --schatten-farbe: #000; border-color: #000; }
 .dunkel .knopf.zweit { background: var(--hell); }
