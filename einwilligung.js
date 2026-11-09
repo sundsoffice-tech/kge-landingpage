@@ -14,13 +14,16 @@
  *    solange er einen Hero-Knopf verdecken würde. Beobachtet wird mit IntersectionObserver, kein Scroll-Lauscher.
  *    Über den Fußlink erscheint er sofort.
  *  - Entscheidung in localStorage ('kge-einwilligung-v2'), Widerruf über den Fußlink
- *    data-einwilligung-oeffnen (Art. 7 Abs. 3 DSGVO).
+ *    data-einwilligung-oeffnen (Art. 7 Abs. 3 DSGVO). Wer erst erlaubt und dann ablehnt, bekommt sofort
+ *    gtag('consent','update', alle vier Werte denied) als arguments-Aufruf, danach geht keine Conversion mehr
+ *    raus, und gespeichert ist werbung:false, sodass nach dem Neuladen kein Google-Tag mehr lädt.
  */
 (function () {
   "use strict";
   var SCHLUESSEL = "kge-einwilligung-v2";
   var konfig = window.KGE_KONFIG || {};
-  var tagGeladen = false;
+  var tagGeladen = false;     /* Einwilligung in diesem Aufruf erteilt und gemeldet */
+  var skriptAngehaengt = false; /* gtag.js, default und config stehen schon in der Seite */
 
   function konfiguriert() {
     if (!konfig.googleTag || /X{4,}/.test(konfig.googleTag)) return false;
@@ -65,13 +68,16 @@
       return;
     }
     tagGeladen = true;
-    consentDefault();
+    /* Erneutes Erlauben nach einem Widerruf im selben Aufruf: nur das Update, kein zweites gtag.js. */
+    if (!skriptAngehaengt) consentDefault();
     window.gtag("consent", "update", {
       ad_storage: "granted",
       ad_user_data: "granted",
       ad_personalization: "denied",
       analytics_storage: "denied"
     });
+    if (skriptAngehaengt) return;
+    skriptAngehaengt = true;
     window.gtag("js", new Date());
     window.gtag("config", konfig.googleTag, {
       phone_conversion_number: konfig.telefonAnzeige || "",
@@ -81,6 +87,19 @@
     s.async = true;
     s.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(konfig.googleTag);
     document.head.appendChild(s);
+  }
+
+  /* Widerruf: Lief der Tag schon, erfährt er sofort, dass nichts mehr erlaubt ist (gleicher arguments-Weg
+   * wie das Erlauben). Danach meldet kgeMessung nichts mehr; gespeichert wird beim Aufrufer (schreibe(false)). */
+  function widerrufe() {
+    if (!tagGeladen) return;
+    tagGeladen = false;
+    window.gtag("consent", "update", {
+      ad_storage: "denied",
+      ad_user_data: "denied",
+      ad_personalization: "denied",
+      analytics_storage: "denied"
+    });
   }
 
   /* Conversion melden. Ohne Einwilligung oder ohne Konfiguration passiert nichts. */
@@ -140,7 +159,7 @@
       '<div class="knoepfe"><button type="button" class="nein" id="kge-e-nein">Ablehnen</button>' +
       '<button type="button" class="ja" id="kge-e-ja">Erlauben</button></div></div>';
     document.body.appendChild(kasten);
-    document.getElementById("kge-e-nein").addEventListener("click", function () { schreibe(false); fertig(); kasten.remove(); });
+    document.getElementById("kge-e-nein").addEventListener("click", function () { schreibe(false); fertig(); kasten.remove(); widerrufe(); });
     document.getElementById("kge-e-ja").addEventListener("click", function () { schreibe(true); fertig(); kasten.remove(); ladeTag(); });
     return kasten;
   }
