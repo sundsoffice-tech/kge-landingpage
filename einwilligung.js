@@ -26,7 +26,7 @@
   var konfig = window.KGE_KONFIG || {};
   var tagGeladen = false;     /* Einwilligung in diesem Aufruf erteilt und gemeldet */
   var skriptAngehaengt = false; /* gtag.js, default und config stehen schon in der Seite */
-  var erweitert = konfig.einwilligungsModus !== "einfach";  /* fehlt der Schalter, gilt erweitert */
+  var erweitert = konfig.einwilligungsModus === "erweitert";  /* fehlt der Schalter, gilt einfach (Rechtsrolle 10.11.2026, § 25 TDDDG) */
 
   function konfiguriert() {
     if (!konfig.googleTag || /X{4,}/.test(konfig.googleTag)) return false;

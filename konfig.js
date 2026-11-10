@@ -27,7 +27,7 @@ window.KGE_KONFIG = {
     whatsapp_click: "XXXXXXXXXXXXXXXXXXX",
     form_submit: "XXXXXXXXXXXXXXXXXXX"
   },
-  einwilligungsModus: "erweitert",
+  einwilligungsModus: "einfach",
   telefonAnzeige: "02161 622 57 68",
   leadEndpunkt: "https://leads.sundsconnect.de/lead",
   kunde: "kge"
