@@ -6,10 +6,10 @@
  *    phone_click   Klick auf eine Telefonnummer (primär)
  *    whatsapp_click Klick auf WhatsApp (sekundär)
  *    form_submit   Rückruf-Formular erfolgreich abgeschickt, erst nach ok:true des Endpunkts (primär)
- *  - einwilligungsModus: "erweitert" (Consent Mode v2 advanced: gtag.js lädt mit default denied, ohne
- *    Einwilligung gehen cookielose Pings an Google, Conversions werden modelliert) oder "einfach" (basic:
- *    vor dem Erlauben lädt nichts). Bei "einfach" muss Abschnitt 8 der Datenschutzerklärung zurück auf den
- *    Wortlaut vor dem 10.11.2026 (git log inhalte/datenschutz.html).
+ *  - einwilligungsModus: "einfach" (Basic: vor dem Erlauben lädt nichts von Google). Das ist der einzige
+ *    zulässige Wert. "erweitert" (cookielose Pings ohne Einwilligung) hat die Rechtsrolle am 10.11.2026
+ *    verneint (§ 25 Abs. 1 TDDDG, docs/rollen-recht-consent-mode-2026-11-10.md im Repo leadmaschine);
+ *    ein Wechsel braucht eine neue Rechtsprüfung und eine geänderte Datenschutzerklärung (Abschnitt 8).
  *  - telefonAnzeige: die Nummer genau so, wie sie sichtbar auf der Seite steht. Google tauscht sie nach
  *    Einwilligung gegen eine Weiterleitungsnummer (Website-Anruf-Conversion); Schreibweise muss stimmen.
  *

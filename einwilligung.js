@@ -1,10 +1,11 @@
 /* Einwilligung und Messung (§ 25 TDDDG, Google Consent Mode v2) · Kfz Gutachter Es · S&S Connect
  *
  * Regeln, die dieses Skript technisch einhält:
- *  - Modus aus konfig.js (einwilligungsModus). "erweitert" (Standard seit 10.11.2026): gtag.js lädt sofort mit
- *    default denied, ohne Einwilligung gehen nur cookielose Pings an Google (keine Cookies, kein localStorage
- *    von Google), Conversions werden auch dann gesendet und von Google modelliert. Grund: PKV-Befund 09.11.2026,
- *    ohne Ja im Banner gab es dort keine Messung. "einfach": vor dem Erlauben lädt nichts (Basic-Modus).
+ *  - Modus aus konfig.js (einwilligungsModus). "einfach" (Basic, gilt auch bei fehlendem oder falsch
+ *    geschriebenem Schalter): vor dem Erlauben lädt nichts von Google und es geht keine Anfrage an Google.
+ *    "erweitert" (cookielose Pings ohne Ja) ist von der Rechtsrolle am 10.11.2026 VERNEINT (§ 25 Abs. 1 TDDDG,
+ *    der Ping liest Bildschirmmaße; docs/rollen-recht-consent-mode-2026-11-10.md im Repo leadmaschine).
+ *    Der Code dafür bleibt nur für den Fall einer neuen Rechtsprüfung; nicht ohne sie einschalten.
  *  - gtag('consent','default', alles denied, wait_for_update 500) steht vor dem Google-Tag und vor jedem
  *    config oder event; 'update' beim Klick als arguments-Aufruf, nie als Array (Google-Entwicklerdoku).
  *  - Konfiguration (AW-ID, Labels, Telefonanzeige) kommt aus konfig.js. Enthält sie noch Platzhalter,
