@@ -1,8 +1,10 @@
 /* Einwilligung und Messung (§ 25 TDDDG, Google Consent Mode v2) · Kfz Gutachter Es · S&S Connect
  *
  * Regeln, die dieses Skript technisch einhält:
- *  - Vor einer Entscheidung lädt nichts: kein gtag.js, kein Cookie, keine Anfrage an Google (Basic-Modus,
- *    keine cookielosen Pings; Recherche 02 Abschnitt 5, § 25 TDDDG).
+ *  - Modus aus konfig.js (einwilligungsModus). "erweitert" (Standard seit 10.11.2026): gtag.js lädt sofort mit
+ *    default denied, ohne Einwilligung gehen nur cookielose Pings an Google (keine Cookies, kein localStorage
+ *    von Google), Conversions werden auch dann gesendet und von Google modelliert. Grund: PKV-Befund 09.11.2026,
+ *    ohne Ja im Banner gab es dort keine Messung. "einfach": vor dem Erlauben lädt nichts (Basic-Modus).
  *  - gtag('consent','default', alles denied, wait_for_update 500) steht vor dem Google-Tag und vor jedem
  *    config oder event; 'update' beim Klick als arguments-Aufruf, nie als Array (Google-Entwicklerdoku).
  *  - Konfiguration (AW-ID, Labels, Telefonanzeige) kommt aus konfig.js. Enthält sie noch Platzhalter,
@@ -24,6 +26,7 @@
   var konfig = window.KGE_KONFIG || {};
   var tagGeladen = false;     /* Einwilligung in diesem Aufruf erteilt und gemeldet */
   var skriptAngehaengt = false; /* gtag.js, default und config stehen schon in der Seite */
+  var erweitert = konfig.einwilligungsModus !== "einfach";  /* fehlt der Schalter, gilt erweitert */
 
   function konfiguriert() {
     if (!konfig.googleTag || /X{4,}/.test(konfig.googleTag)) return false;
@@ -50,7 +53,10 @@
     }
   }
 
+  var defaultGesetzt = false;
   function consentDefault() {
+    if (defaultGesetzt) return;
+    defaultGesetzt = true;
     stelleGtag();
     window.gtag("consent", "default", {
       ad_storage: "denied",
@@ -69,14 +75,19 @@
     }
     tagGeladen = true;
     /* Erneutes Erlauben nach einem Widerruf im selben Aufruf: nur das Update, kein zweites gtag.js. */
-    if (!skriptAngehaengt) consentDefault();
+    consentDefault();  /* idempotent */
     window.gtag("consent", "update", {
       ad_storage: "granted",
       ad_user_data: "granted",
       ad_personalization: "denied",
       analytics_storage: "denied"
     });
-    if (skriptAngehaengt) return;
+    haengeTagAn();
+  }
+
+  /* default steht schon (consentDefault); haengt config und gtag.js genau einmal an. */
+  function haengeTagAn() {
+    if (skriptAngehaengt || !konfiguriert()) return;
     skriptAngehaengt = true;
     window.gtag("js", new Date());
     window.gtag("config", konfig.googleTag, {
@@ -90,9 +101,10 @@
   }
 
   /* Widerruf: Lief der Tag schon, erfährt er sofort, dass nichts mehr erlaubt ist (gleicher arguments-Weg
-   * wie das Erlauben). Danach meldet kgeMessung nichts mehr; gespeichert wird beim Aufrufer (schreibe(false)). */
+   * wie das Erlauben). Danach meldet kgeMessung im Modus "einfach" nichts mehr, im Modus "erweitert" nur noch
+   * cookielose Pings; gespeichert wird beim Aufrufer (schreibe(false)). */
   function widerrufe() {
-    if (!tagGeladen) return;
+    if (!tagGeladen) return;  /* nie erlaubt: default denied gilt weiter, nichts zu melden */
     tagGeladen = false;
     window.gtag("consent", "update", {
       ad_storage: "denied",
@@ -102,9 +114,10 @@
     });
   }
 
-  /* Conversion melden. Ohne Einwilligung oder ohne Konfiguration passiert nichts. */
+  /* Conversion melden. Ohne Konfiguration passiert nichts; ohne Einwilligung nur im Modus "erweitert" (cookielos). */
   window.kgeMessung = function (aktion) {
-    if (!tagGeladen) {
+    /* erweitert: gesendet wird immer, sobald der Tag haengt; ohne Einwilligung als cookieloser Ping. */
+    if (!tagGeladen && !(erweitert && skriptAngehaengt)) {
       if (!konfiguriert()) console.info("[Messung] Messung nicht konfiguriert: " + aktion + " nicht gesendet.");
       return false;
     }
@@ -216,8 +229,15 @@
 
   function start() {
     var wahl = lies();
+    if (erweitert && konfiguriert()) {
+      consentDefault();
+      if (wahl && wahl.werbung) { ladeTag(); return; }
+      haengeTagAn();
+    } else if (!konfiguriert()) {
+      console.info("[Messung] Messung nicht konfiguriert: konfig.js enthält Platzhalter, es wird nichts geladen.");
+    }
     if (wahl === null) { zeigeSpaeter(); return; }
-    if (wahl.werbung) ladeTag();
+    if (wahl.werbung && !erweitert) ladeTag();
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
   else start();
