@@ -23,6 +23,10 @@
  *    Google-Tag mehr im Speicher läuft. Jedes Ablehnen löscht die Cookies _gcl_* und _gac_* (Host und
  *    Elterndomains, Pfad /), auch ohne vorheriges Erlauben in diesem Aufruf und in beiden Modi; neu geladen
  *    wird nur, wenn in diesem Aufruf gtag.js angehängt war. Der Fußlink selbst ändert nichts, erst die Wahl.
+ *  - Zurück-Taste (bfcache, pageshow mit persisted) und andere Tabs (storage-Ereignis zum Schlüssel): Ein Dokument,
+ *    das noch die alte Erlaubnis trägt, liest die gespeicherte Wahl neu und verfährt bei werbung:false wie beim
+ *    Ablehnen (Update denied, Cookies löschen, neu laden nur mit angehängtem gtag.js). Es schreibt dabei nichts,
+ *    deshalb stößt es in keinem Tab ein weiteres storage-Ereignis an (Programmierer-Fund 4, Auflage A6, 10.11.2026).
  */
 (function () {
   "use strict";
@@ -252,6 +256,15 @@
     /* Nur den Banner zeigen; gespeichert und widerrufen wird erst mit der Entscheidung (Fund 7). */
     zeigeSofort();
   });
+
+  /* Widerruf aus einem anderen Dokument: nur wenn hier noch erlaubt ist und gespeichert ausdrücklich werbung:false
+   * steht (ein leerer oder unlesbarer Speicher ist kein Widerruf). Kein schreibe(): der Speicher stimmt schon. */
+  function pruefeGespeichert() {
+    var wahl = lies();
+    if (tagGeladen && wahl && wahl.werbung === false) widerrufe();
+  }
+  window.addEventListener("pageshow", function (e) { if (e.persisted) pruefeGespeichert(); });
+  window.addEventListener("storage", function (e) { if (e.key === SCHLUESSEL) pruefeGespeichert(); });
 
   function start() {
     var wahl = lies();
