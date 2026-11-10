@@ -13,8 +13,9 @@
  *  - telefonAnzeige: die Nummer genau so, wie sie sichtbar auf der Seite steht. Google tauscht sie nach
  *    Einwilligung gegen eine Weiterleitungsnummer (Website-Anruf-Conversion); Schreibweise muss stimmen.
  *
- * AW-ID und Labels stehen NUR hier (eine Stelle). Eintragen mit einem Befehl, der zugleich wache.json und
- * go-live.json im Repo leadmaschine setzt: python <lm>/kunden/kfz-gutachter-es/server/aw-eintragen.py.
+ * AW-ID und Labels stehen fuer die Seite NUR hier (eine Stelle). Dieselben Werte gehoeren am selben Tag in
+ * leadmaschine kunden/kfz-gutachter-es/ads/wache.json (ads.conversion_id, conversions.*.label) und go-live.json
+ * (tracking.conversion_id, tracking.conversion_label), sonst meldet die Messkette-Wache rot.
  *
  * Solange ein Wert noch "XXXX" enthält, lädt einwilligung.js kein Google-Tag und feuert keine Conversion;
  * die Konsole sagt dann "Messung nicht konfiguriert". So bleibt Staging ehrlich und nichts läuft ins Leere.
