@@ -19,7 +19,10 @@
  *  - Entscheidung in localStorage ('kge-einwilligung-v2'), Widerruf über den Fußlink
  *    data-einwilligung-oeffnen (Art. 7 Abs. 3 DSGVO). Wer erst erlaubt und dann ablehnt, bekommt sofort
  *    gtag('consent','update', alle vier Werte denied) als arguments-Aufruf, danach geht keine Conversion mehr
- *    raus, und gespeichert ist werbung:false, sodass nach dem Neuladen kein Google-Tag mehr lädt.
+ *    raus, gespeichert ist werbung:false, und im Modus "einfach" lädt die Seite sofort neu, sodass kein
+ *    Google-Tag mehr im Speicher läuft. Jedes Ablehnen löscht die Cookies _gcl_* und _gac_* (Host und
+ *    Elterndomains, Pfad /), auch ohne vorheriges Erlauben in diesem Aufruf und in beiden Modi; neu geladen
+ *    wird nur, wenn in diesem Aufruf gtag.js angehängt war. Der Fußlink selbst ändert nichts, erst die Wahl.
  */
 (function () {
   "use strict";
@@ -105,13 +108,35 @@
    * wie das Erlauben). Danach meldet kgeMessung im Modus "einfach" nichts mehr, im Modus "erweitert" nur noch
    * cookielose Pings; gespeichert wird beim Aufrufer (schreibe(false)). */
   function widerrufe() {
-    if (!tagGeladen) return;  /* nie erlaubt: default denied gilt weiter, nichts zu melden */
-    tagGeladen = false;
-    window.gtag("consent", "update", {
-      ad_storage: "denied",
-      ad_user_data: "denied",
-      ad_personalization: "denied",
-      analytics_storage: "denied"
+    var warErlaubt = tagGeladen;  /* nicht erlaubt in diesem Aufruf: default denied gilt weiter, nichts zu melden */
+    if (warErlaubt) {
+      tagGeladen = false;
+      window.gtag("consent", "update", {
+        ad_storage: "denied",
+        ad_user_data: "denied",
+        ad_personalization: "denied",
+        analytics_storage: "denied"
+      });
+    }
+    /* Bei jedem Ablehnen, in beiden Modi: Cookies aus einer früheren Erlaubnis dürfen nicht bleiben, auch wenn in
+     * diesem Aufruf nie erlaubt wurde (Programmierer-Fund 3, Runde PR 2, 10.11.2026). */
+    loescheGoogleCookies();  /* Widerruf: Cookies weg */
+    /* Nur im Modus "einfach" und nur nach einem Erlauben in diesem Aufruf: die Seite lädt neu, damit gtag.js nicht
+     * im Speicher weiterläuft (Programmierer-Fund 7, 10.11.2026). Die Ablehnung ist vorher gespeichert
+     * (schreibe(false) beim Aufrufer). Ein halb ausgefülltes Formular geht dabei verloren; das ist in Kauf
+     * genommen, weil sonst gtag.js weiterliefe. */
+    if (warErlaubt && skriptAngehaengt && !erweitert) window.location.reload();
+  }
+
+  /* Löscht _gcl_* und _gac_* für den Host und jede übergeordnete Domain (gtag setzt sie auf die oberste mögliche). */
+  function loescheGoogleCookies() {
+    var namen = document.cookie.split(";").map(function (c) { return c.split("=")[0].trim(); })
+      .filter(function (n) { return /^_gcl_|^_gac_/.test(n); });
+    var teile = window.location.hostname.split(".");
+    var domains = [""];
+    for (var i = 0; i < teile.length - 1; i++) domains.push("; domain=." + teile.slice(i).join("."));
+    namen.forEach(function (n) {
+      domains.forEach(function (d) { document.cookie = n + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/" + d; });
     });
   }
 
@@ -224,7 +249,7 @@
     var el = e.target.closest && e.target.closest("[data-einwilligung-oeffnen]");
     if (!el) return;
     e.preventDefault();
-    try { localStorage.removeItem(SCHLUESSEL); } catch (fehler) { /* egal */ }
+    /* Nur den Banner zeigen; gespeichert und widerrufen wird erst mit der Entscheidung (Fund 7). */
     zeigeSofort();
   });
 
