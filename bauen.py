@@ -24,8 +24,13 @@ HIER = pathlib.Path(__file__).resolve().parent
 NOINDEX = True
 
 # WhatsApp: Anzeige und Link aus einer Quelle. Beleg 09.11.2026 an gutachten-es.de: wa.me/491771947271.
+# Der Link fuehrt seit 10.11.2026 ueber den eigenen Zaehlpfad (Rechtsrolle 10.11.2026, Auflagen 7 bis 10): Der
+# Lead-Endpunkt leitet mit 302 auf wa.me weiter und zaehlt nur eine Tagessumme, ohne IP, ohne Kennung, nichts an Google.
+# Nummer und Vorgabetext stehen dort (leadmaschine zentrale/lead-endpunkt/kunden.json, kge.whatsapp und
+# kge.whatsapp_text, heute 491771947271). Die Conversion-Messung haengt am Attribut data-messung="whatsapp_click",
+# nicht an der Adresse (einwilligung.js), und feuert weiter nur mit Einwilligung.
 WHATSAPP_ANZEIGE = "0177 19 47 271"
-WHATSAPP_TEXT = "Hallo%2C%20ich%20hatte%20einen%20Unfall%20und%20schicke%20Fotos%20von%20meinem%20Fahrzeug%20zur%20Ersteinsch%C3%A4tzung."
+WHATSAPP_WEG = "https://leads.sundsconnect.de/whatsapp/kge"
 
 # Rückrufzusage: steht nur hier. Die Erreichbarkeit ist vom Kunden noch nicht bestätigt (Frage 4 an Herrn Es),
 # deshalb ohne Stundenzahl und ohne Uhrzeitversprechen. RUECKRUF_SONST hängt an den angezeigten Zeiten, nicht am
@@ -41,15 +46,8 @@ RUECKRUF_SONST = "sobald wir wieder am Telefon sind"
 FOTOS_ZEIGEN = False
 
 
-def whatsapp_nummer():
-    ziffern = re.sub(r"\D", "", WHATSAPP_ANZEIGE)
-    if not ziffern.startswith("0"):
-        sys.exit(f"WHATSAPP_ANZEIGE muss mit 0 beginnen: {WHATSAPP_ANZEIGE}")
-    return "49" + ziffern[1:]
-
-
 GLOBAL = {
-    "wa_link": f"https://wa.me/{whatsapp_nummer()}?text={WHATSAPP_TEXT}",
+    "wa_link": WHATSAPP_WEG,
     "wa_anzeige": WHATSAPP_ANZEIGE,
     "rueckruf_werktags": RUECKRUF_WERKTAGS,
     "rueckruf_sonst": RUECKRUF_SONST,
