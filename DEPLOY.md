@@ -20,7 +20,7 @@ Stand 09.11.2026 (Neuaufbau auf Zweig `neu-2026-11-09`). Zielseite der Google-Ad
 | `schriften/` | Archivo (variable, woff2, latin und latin-ext), selbst gehostet |
 | `bilder/` | Favicon; Betriebsfotos kommen hierher (Platzhalter `<!-- FOTO: ... -->` in den Inhalten) |
 
-Die fertigen HTML-Dateien liegen im Repo, weil GitHub Pages sie direkt ausliefert. Geändert wird in `inhalte/`,
+Die fertigen HTML-Dateien liegen im Repo, weil sie ohne Bauschritt ausgeliefert werden (sunds-hub, `ausrollen.sh`). Geändert wird in `inhalte/`,
 `vorlagen/` oder `stil.css`, danach `python bauen.py`. Ein direkter Edit an `index.html` geht beim nächsten Bau verloren.
 
 ## Vor jedem Push prüfen
@@ -32,8 +32,9 @@ Die fertigen HTML-Dateien liegen im Repo, weil GitHub Pages sie direkt ausliefer
 
 ## Staging und Live
 
-- Staging: https://sundsoffice-tech.github.io/kge-landingpage/ (Zweig `main`). **Push nach `main` ist Deploy.** Nur über PR und nach Freigabe.
-- Live-Domain: `unfall-mg.de` (Inhaber S&S Connect GbR). Canonical und alle Links sind relativ, die Seite läuft unter beiden Adressen ohne Änderung.
+- Auslieferung seit 10.11.2026: sunds-hub (Caddy, Snippet `kge_landingpage`), Zwischenadresse https://leads.sundsconnect.de/kge-vorschau/ mit `X-Robots-Tag: noindex`. Ausrollen nur mit `leadmaschine/kunden/kfz-gutachter-es/server/ausrollen.sh <archiv.tar> <commit>` (Archiv aus `git -c core.autocrlf=false archive --format=tar <commit>`); jeder Commit bekommt einen Ordner unter `/opt/kge-landingpage/`, `www` ist ein Symlink, Rückweg `ausrollen.sh zurueck <alter-commit>`.
+- GitHub Pages (https://sundsoffice-tech.github.io/kge-landingpage/, Zweig `main`) ist nur noch der alte Staging-Stand. **Push nach `main` ist dort weiter ein Deploy**, deshalb nur über PR und nach Freigabe. Die Datenschutzerklärung nennt sunds-hub als Hosting; über GitHub Pages darf die Kampagne nicht laufen.
+- Live-Domain: `unfall-mg.de` (Inhaber laut Vertrag Ziffer 6 Cihan Es, Kfz Gutachter Es). Canonical und alle Links sind relativ, die Seite läuft unter beiden Adressen ohne Änderung.
 
 ## Go-Live-Liste (Tag der Kontoanlage)
 
@@ -41,7 +42,7 @@ Die fertigen HTML-Dateien liegen im Repo, weil GitHub Pages sie direkt ausliefer
 2. Lead-Endpunkt: Origin `https://unfall-mg.de` in der CORS-Liste eintragen (gemessen 09.11.2026 00:47: OPTIONS mit diesem Origin antwortet 204 ohne `Access-Control-Allow-Origin`). Testlead mit Marker TEST, danach die Testdatei auf dem Server löschen (60-LEKTIONEN E4).
 3. `bauen.py`: `NOINDEX = False`, neu bauen.
 4. Betriebsfotos in `bilder/` legen, `<!-- FOTO: ... -->`-Platzhalter in `inhalte/index.html`, `inhalte/umland.html` ersetzen (`<img>` mit `width`, `height`, `alt`; Hero-Bild mit `fetchpriority="high"`).
-5. DNS: 4 A-Records auf `@` (185.199.108.153, 185.199.109.153, 185.199.110.153, 185.199.111.153), CNAME `www` auf `sundsoffice-tech.github.io`, Datei `CNAME` mit `unfall-mg.de` ins Repo, GitHub Pages Custom Domain, HTTPS erzwingen.
+5. DNS: A-Record `@` und `www` auf sunds-hub (169.58.211.51, gemessen 10.11.2026 über leads.sundsconnect.de), kein AAAA auf fremde Ziele; danach auf sunds-hub `domain_scharf.sh` (Trockenlauf), dann `--echt` (Caddy-Block, Zertifikat). GitHub Pages bekommt keine Custom Domain. Die früheren GitHub-Pages-A-Records gelten nicht mehr; HTTPS und Zertifikat stellt Caddy.
 6. Prüfung vor dem ersten Klick: Tag Assistant zeigt `consent default denied`, nach „Erlauben“ `update granted`; Ablehnen-Pfad lädt nichts von googletagmanager.com; Testanruf über 60 Sekunden erscheint im Anrufbericht; Testlead kommt beim Kunden an.
 
 ## Messung ohne Konfiguration

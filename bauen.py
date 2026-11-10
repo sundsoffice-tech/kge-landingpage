@@ -3,7 +3,7 @@
 
 Warum: Kopf, Fuß, Callbar und Skripte stehen genau einmal in vorlagen/schale.html. Drei Kopien derselben Seite
 sind schon einmal auseinandergedriftet (docs/60-LEKTIONEN.md, A2). Die fertigen HTML-Dateien liegen trotzdem
-im Repo, weil GitHub Pages sie direkt ausliefert.
+im Repo, weil sie ohne Bauschritt ausgeliefert werden (sunds-hub, ausrollen.sh; siehe DEPLOY.md).
 
 Aufruf: python bauen.py            schreibt alle Seiten
         python bauen.py --pruefen  Exit 1, wenn eine Seite im Repo nicht dem Bauergebnis entspricht
