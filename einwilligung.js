@@ -137,19 +137,24 @@
 
   var stil = document.createElement("style");
   stil.textContent =
-    "#kge-einwilligung{position:fixed;left:0;right:0;bottom:calc(var(--callbar-h,64px) + env(safe-area-inset-bottom));z-index:60;" +
+    /* --leiste-unten ist 0, solange die Anrufleiste ausgeblendet ist (leiste.js), sonst ihre Höhe (Mobil-Ausbau 17.11.2026) */
+    /* Verschoben per transform statt bottom: ein Wechsel über bottom zählte als Layout-Verschiebung
+       (0,0133 bis 0,0526 je Wechsel, Wissenschaftler r2, S1); transform zählt nicht. */
+    "#kge-einwilligung{position:fixed;left:0;right:0;bottom:env(safe-area-inset-bottom);transform:translateY(calc(-1 * var(--leiste-unten,var(--callbar-h,64px))));z-index:60;" +
     "background:#F3F6F8;color:#16222D;border-top:2px solid #0D1B27;font-family:Archivo,system-ui,sans-serif;" +
     "padding:9px 16px}" +
-    "@media (min-width:900px){#kge-einwilligung{bottom:0}}" +
+    "@media (min-width:900px){#kge-einwilligung{bottom:0;transform:none}}" +
     "#kge-einwilligung .innen{max-width:1100px;margin:0 auto;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}" +
-    "#kge-einwilligung[hidden]{display:none}" +
+    /* Verborgen per visibility statt display:none: so bleibt der Banner vermessbar (Höhe, Safe-Area), und
+       verdecktHero rechnet mit seiner echten Kante statt mit geschätzten 110 px (Programmierer r4, SOLL 1). */
+    "#kge-einwilligung[hidden]{display:block;visibility:hidden}" +
     "#kge-einwilligung p{margin:0;font-size:14px;line-height:1.35;flex:1 1 220px;max-width:none;min-width:0}" +
     "#kge-einwilligung a{color:#16222D;font-weight:700;display:inline-block;padding:13px 4px;margin:-13px 0}" +
     "#kge-einwilligung .knoepfe{display:flex;gap:8px;flex:0 0 auto}" +
     "#kge-einwilligung button{font:inherit;font-size:14px;font-weight:700;cursor:pointer;border-radius:6px;padding:9px 14px;min-width:104px;min-height:44px;border:2px solid #0D1B27;color:#0D1B27;background:#fff}" +
-    "#kge-einwilligung button.ja{background:#F5A00A}" +
-    "#kge-einwilligung button:hover{background:#FFB42E}" +
-    "#kge-einwilligung button.nein:hover{background:#E4E9EE}" +
+    /* Erlauben und Ablehnen gleich gestaltet: Amber heißt auf der Seite nur „anrufen“, und keine Wahl wird
+       optisch vorgezogen (Künstler 17.11.2026, MUSS 2: Tippen auf „das Orange“ landete in der Datenschutzfrage). */
+    "#kge-einwilligung button:hover{background:#E4E9EE}" +
     "#kge-einwilligung button:focus-visible{outline:3px solid #F5A00A;outline-offset:2px}" +
     "@media (max-width:420px){#kge-einwilligung .knoepfe{flex:1 1 100%}#kge-einwilligung button{flex:1 1 0;min-width:0}}";
 
@@ -173,18 +178,37 @@
       '<div class="knoepfe"><button type="button" class="nein" id="kge-e-nein">Ablehnen</button>' +
       '<button type="button" class="ja" id="kge-e-ja">Erlauben</button></div></div>';
     document.body.appendChild(kasten);
-    document.getElementById("kge-e-nein").addEventListener("click", function () { schreibe(false); fertig(); kasten.remove(); widerrufe(); });
-    document.getElementById("kge-e-ja").addEventListener("click", function () { schreibe(true); fertig(); kasten.remove(); ladeTag(); });
+    document.getElementById("kge-e-nein").addEventListener("click", function () { schreibe(false); fertig(); kasten.remove(); melde(); widerrufe(); });
+    document.getElementById("kge-e-ja").addEventListener("click", function () { schreibe(true); fertig(); kasten.remove(); melde(); ladeTag(); });
     return kasten;
   }
 
-  function zeigeSofort() { fertig(); baue().hidden = false; }
+  /* Sagt leiste.js, dass der Banner auf- oder zugegangen ist: solange er offen ist, misst die Leiste den
+     Anrufknopf über der Bannerkante (Wissenschaftler r3, S1). */
+  function melde() { document.dispatchEvent(new Event("kge-banner")); }
 
-  /* Würde der Banner einen Hero-Knopf verdecken? Banner und Callbar zusammen höchstens 110 + 64 px. */
-  function verdecktHero() {
-    var unten = window.innerWidth < 900 ? 64 + 110 : 110;
-    var grenze = window.innerHeight - unten;
-    var knoepfe = document.querySelectorAll(".hero .knoepfe .knopf");
+  function zeigeSofort() { fertig(); baue().hidden = false; melde(); }
+
+  /* Würde der Banner einen Hero-Knopf oder die Sternchenerklärung verdecken? Gerechnet mit der gemessenen
+     Kante von Banner und Anrufleiste (kante()). Die Sternchenerklärung gehört dazu, weil sie bei 390 x 664 sonst nach 4 s unter dem
+     Banner lag (Spieltheoretiker 17.11.2026, M2). */
+  var FREI_HALTEN = ".hero .knoepfe .knopf, .hero .stern";
+  /* Gemessene Kante: Abstand der Banner-Oberkante vom unteren Rand bei ausgeblendeter Anrufleiste (Höhe plus
+     Safe-Area) und die Höhe der Leiste, falls sie sichtbar ist. Die Leiste zählt nur mit, wenn sie sichtbar ist
+     (leiste.js setzt leiste-aus; Programmierer und Spieltheoretiker r2, K1). */
+  function kante() {
+    var leiste = window.innerWidth < 900 && !document.documentElement.classList.contains("leiste-aus");
+    var bar = document.querySelector(".callbar");
+    var lh = leiste && bar ? bar.offsetHeight : 0;
+    var k = document.getElementById("kge-einwilligung");
+    var r = k ? k.getBoundingClientRect() : null;
+    var basis = r && r.height > 0 ? Math.round(window.innerHeight - r.top - lh) : 110;
+    return { basis: basis, leiste: lh };
+  }
+  function verdecktHero(zusatz) {
+    var m = kante();
+    var grenze = window.innerHeight - m.basis - m.leiste - (zusatz || 0);
+    var knoepfe = document.querySelectorAll(FREI_HALTEN);
     for (var i = 0; i < knoepfe.length; i++) {
       var r = knoepfe[i].getBoundingClientRect();
       if (r.bottom > grenze && r.top < window.innerHeight) return true;
@@ -196,11 +220,20 @@
     var kasten = baue();
     var gescrollt = false;
     var zeitUm = false;
+    /* Der Banner weicht dem Hero, solange er offen ist: Scrollt der Besucher zurück nach oben, deckte er sonst
+       Sternchen und im Querformat den Anrufknopf (Spieltheoretiker r3, S1). Die Beobachter bleiben deshalb bis
+       zur Entscheidung (Ablehnen oder Erlauben) verbunden; fertig() trennt sie dort.
+       Hysterese: Er weicht, sobald er den Hero berührt, kommt aber erst wieder, wenn 32 px Luft sind. Ohne sie
+       wechselte er beim Pendeln um 1 px an der Kante 20-mal in 20 Schritten (Wissenschaftler und Spieltheoretiker
+       r4, S1). Die 32 px halten bei 390 x 664 auch die Öffnungszeiten frei (Spieltheoretiker r3, K1). */
+    var LUFT = 32;
     function versuch() {
-      if (!kasten.isConnected || !kasten.hidden) return;
-      if (!(gescrollt || zeitUm) || verdecktHero()) return;
-      kasten.hidden = false;
-      fertig();
+      if (!kasten.isConnected) return;
+      beobachte();
+      var verborgen = !(gescrollt || zeitUm) || verdecktHero(kasten.hidden ? LUFT : 0);
+      if (verborgen === kasten.hidden) return;
+      kasten.hidden = verborgen;
+      melde();
     }
     var uhr = setTimeout(function () { zeitUm = true; versuch(); }, 4000);
     aufraeumen.push(function () { clearTimeout(uhr); });
@@ -214,10 +247,31 @@
       if (!eintraege[0].isIntersecting) { gescrollt = true; versuch(); }
     });
     oben.observe(merker);
-    /* Hero-Knöpfe: bei jeder Bewegung über die Bannerkante neu prüfen. */
-    var hero = new IntersectionObserver(versuch, { rootMargin: "0px 0px -174px 0px", threshold: [0, 0.5, 1] });
-    document.querySelectorAll(".hero .knoepfe .knopf").forEach(function (k) { hero.observe(k); });
-    aufraeumen.push(function () { oben.disconnect(); hero.disconnect(); merker.remove(); });
+    /* Hero-Knöpfe und Sternchenerklärung: bei jeder Bewegung über die Bannerkante neu prüfen. */
+    /* Vier Kanten aus der gemessenen Bannerkante: ohne und mit sichtbarer Anrufleiste, je mit und ohne LUFT.
+       Ändert sich die Messung (Drehen, Schriftgröße, Safe-Area), werden die Beobachter neu gesetzt;
+       verdecktHero entscheidet. */
+    var kanten = [], gemessen = "";
+    function beobachte() {
+      if (!("IntersectionObserver" in window)) return;
+      var m = kante(), b = m.basis, l = m.leiste || (window.innerWidth < 900 ? 64 : 0);
+      var schluessel = b + "/" + l;
+      if (schluessel === gemessen) return;
+      gemessen = schluessel;
+      kanten.forEach(function (x) { x.disconnect(); });
+      kanten = [b, b + LUFT, b + l, b + l + LUFT].map(function (px) {
+        return new IntersectionObserver(versuch, { rootMargin: "0px 0px -" + px + "px 0px", threshold: [0, 0.5, 1] });
+      });
+      document.querySelectorAll(FREI_HALTEN).forEach(function (k) { kanten.forEach(function (x) { x.observe(k); }); });
+    }
+    beobachte();
+    document.addEventListener("kge-leiste", versuch);
+    window.addEventListener("resize", versuch);
+    aufraeumen.push(function () {
+      oben.disconnect(); kanten.forEach(function (x) { x.disconnect(); }); merker.remove();
+      document.removeEventListener("kge-leiste", versuch);
+      window.removeEventListener("resize", versuch);
+    });
   }
 
   document.addEventListener("click", function (e) {
