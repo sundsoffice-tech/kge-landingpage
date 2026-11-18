@@ -23,9 +23,10 @@
  *    data-einwilligung-oeffnen (Art. 7 Abs. 3 DSGVO). Wer erst erlaubt und dann ablehnt, bekommt sofort
  *    gtag('consent','update', alle vier Werte denied) als arguments-Aufruf, danach geht keine Conversion mehr
  *    raus, gespeichert ist werbung:false, und im Modus "einfach" lädt die Seite sofort neu, sodass kein
- *    Google-Tag mehr im Speicher läuft. Jedes Ablehnen löscht die Cookies _gcl_* und _gac_* (Host und
+ *    Google-Tag mehr im Speicher läuft. Jedes Ablehnen löscht die Cookies _gcl_*, _gac_* und gwcc (Host und
  *    Elterndomains, Pfad /), auch ohne vorheriges Erlauben in diesem Aufruf und in beiden Modi; neu geladen
- *    wird nur, wenn in diesem Aufruf gtag.js angehängt war. Der Fußlink selbst ändert nichts, erst die Wahl.
+ *    wird nur, wenn in diesem Aufruf gtag.js angehängt war. Dazu fällt der localStorage-Schlüssel _gcl_ls.
+ *    Der Fußlink selbst ändert nichts, erst die Wahl.
  *  - Zurück-Taste (bfcache, pageshow mit persisted) und andere Tabs (storage-Ereignis zum Schlüssel): Ein Dokument,
  *    das noch die alte Erlaubnis trägt, liest die gespeicherte Wahl neu und verfährt bei werbung:false wie beim
  *    Ablehnen (Update denied, Cookies löschen, neu laden nur mit angehängtem gtag.js). Es schreibt dabei nichts,
@@ -132,23 +133,34 @@
    *  - Klartext der echten Nummer direkt neben einem getauschten Link (data-echte-nummer, etwa „(+49 2161 …)“)
    *    ist ausgeblendet, solange getauscht ist: sonst stünden zwei verschiedene Nummern als dieselbe
    *    nebeneinander (Fund 5). Impressum, JSON-LD, Meta und Datenschutztext tragen das Attribut nicht.
-   *  - Brauchbar ist ein Aufruf nur, wenn beide Werte mindestens MIN_ZIFFERN Ziffern tragen. Sonst wird gar
-   *    nichts getauscht, weder Text noch Ziel, und die echte Nummer bleibt (Fund 10).
+   *  - Brauchbar ist ein Aufruf nur, wenn beide Werte mindestens MIN_ZIFFERN und höchstens MAX_ZIFFERN Ziffern
+   *    tragen und dieselbe Nummer sind (gleicheNummer). Sonst wird gar nichts getauscht, weder Text noch Ziel,
+   *    und die echte Nummer bleibt (Fund 10; Paarprüfung nach dem Wissenschaftler-Bericht vom 18.11.2026, C4).
    *  - Gewirkt wird nur einmal (ein zweiter Aufruf ändert die Anzeige nicht) und nur bei erteilter Einwilligung.
    *    Die zuletzt gelieferte brauchbare Nummer bleibt in `geliefert`; ladeTag wendet sie wieder an, wenn nach
    *    einem Widerruf ohne Neuladen erneut erlaubt wird (Fund 6). Im Modus "einfach" lädt der Widerruf die
    *    Seite neu, dort kommt dieser Weg nicht vor; er trägt den Modus "erweitert", in dem Google nach dem
    *    Erlauben nicht noch einmal aufruft (Fund 12).
    *  - Die alte Fassung steht in `getauscht` und `verborgen`; nummerZurueck stellt alles wieder her. */
-  var MIN_ZIFFERN = 6;
+  var MIN_ZIFFERN = 6, MAX_ZIFFERN = 15;  /* 15: längste Rufnummer nach E.164 */
   var getauscht = [], verborgen = [], geliefert = null;
   function tauscheNummer(formatiert, mobil) {
     var anzeige = String(formatiert == null ? "" : formatiert).trim();
     var roh = String(mobil == null ? "" : mobil).replace(/^\s*tel:/i, "");
     var ziffern = roh.replace(/\D/g, "");
-    if (anzeige.replace(/\D/g, "").length < MIN_ZIFFERN || ziffern.length < MIN_ZIFFERN) return;
+    var anzeigeZiffern = anzeige.replace(/\D/g, "");
+    if (anzeigeZiffern.length < MIN_ZIFFERN || ziffern.length < MIN_ZIFFERN) return;
+    if (anzeigeZiffern.length > MAX_ZIFFERN || ziffern.length > MAX_ZIFFERN) return;
+    if (!gleicheNummer(anzeigeZiffern, ziffern)) return;
     geliefert = { anzeige: anzeige, ziel: "tel:" + (/^\s*\+/.test(roh) ? "+" : "") + ziffern };
     wendeNummerAn();
+  }
+  /* Paarprüfung: Anzeige und Ziel müssen dieselbe Nummer sein, sonst stünde eine Nummer da und eine andere würde
+   * gewählt. Die Ziffern der Anzeige ohne führende Nullen (nationale Schreibweise) müssen am Ende der Ziffern des
+   * Ziels stehen (das Ziel darf die Ländervorwahl tragen). Passt das Paar nicht, wird nichts getauscht. */
+  function gleicheNummer(anzeigeZiffern, zielZiffern) {
+    var kern = anzeigeZiffern.replace(/^0+/, "");
+    return kern.length > 0 && zielZiffern.slice(-kern.length) === kern;
   }
   function wendeNummerAn() {
     var alt = konfig.telefonAnzeige;
@@ -213,10 +225,14 @@
     if (warErlaubt && skriptAngehaengt && !erweitert) window.location.reload();
   }
 
-  /* Löscht _gcl_* und _gac_* für den Host und jede übergeordnete Domain (gtag setzt sie auf die oberste mögliche). */
+  /* Löscht _gcl_* und _gac_* (Conversion-Linker) und gwcc (Speicher der Weiterleitungsnummer, Google-Hilfe 6095883)
+   * für den Host und jede übergeordnete Domain (gtag setzt sie auf die oberste mögliche), dazu den localStorage-
+   * Schlüssel _gcl_ls (Tag-Manager-Hilfe 7549390). Ob das echte gtag.js danach nichts zurückschreibt, zeigt erst
+   * die Messung mit echtem Tag am Tag der Kontoanlage (DEPLOY.md). */
   function loescheGoogleCookies() {
+    try { localStorage.removeItem("_gcl_ls"); } catch (e) { /* Speicher gesperrt: nichts zu löschen */ }
     var namen = document.cookie.split(";").map(function (c) { return c.split("=")[0].trim(); })
-      .filter(function (n) { return /^_gcl_|^_gac_/.test(n); });
+      .filter(function (n) { return /^_gcl_|^_gac_|^gwcc$/.test(n); });
     var teile = window.location.hostname.split(".");
     var domains = [""];
     for (var i = 0; i < teile.length - 1; i++) domains.push("; domain=." + teile.slice(i).join("."));
@@ -227,6 +243,10 @@
 
   /* Conversion melden. Ohne Konfiguration passiert nichts; ohne Einwilligung nur im Modus "erweitert" (cookielos). */
   window.kgeMessung = function (aktion) {
+    /* Vor jedem Senden den gespeicherten Stand lesen: Hat ein anderer Tab widerrufen und das storage-Ereignis kam
+       hier nicht an (eingefrorener oder ausgesetzter Tab), läuft der Widerruf jetzt hier nach (echte Nummer,
+       denied, Cookies, Neuladen), und gesendet wird nichts (Wissenschaftler 18.11.2026, C3). */
+    pruefeGespeichert();
     /* erweitert: gesendet wird immer, sobald der Tag haengt; ohne Einwilligung als cookieloser Ping. */
     if (!tagGeladen && !(erweitert && skriptAngehaengt)) {
       if (!konfiguriert()) console.info("[Messung] Messung nicht konfiguriert: " + aktion + " nicht gesendet.");
@@ -400,6 +420,8 @@
   }
   window.addEventListener("pageshow", function (e) { if (e.persisted) pruefeGespeichert(); });
   window.addEventListener("storage", function (e) { if (e.key === SCHLUESSEL) pruefeGespeichert(); });
+  /* Tab kommt wieder nach vorn: storage-Ereignisse aus der Zeit im Hintergrund können fehlen (C3). */
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) pruefeGespeichert(); });
 
   function start() {
     var wahl = lies();

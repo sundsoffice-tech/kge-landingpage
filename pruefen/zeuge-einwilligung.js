@@ -67,8 +67,14 @@ function welt(opt) {
   const speicher = opt.speicher || {};
   if (opt.gespeichert !== undefined) speicher[SCHL] = JSON.stringify({ werbung: opt.gespeichert });
   /* Kekse mit der Domain, auf der sie gesetzt wurden; gelöscht wird nur mit derselben Domain-Angabe. */
-  const kekse = opt.kekse || { _gcl_au: ".unfall-mg.de", _gac_UA1: "", _gcl_aw: ".www.unfall-mg.de", anderes: "" };
-  const klick = [], nachId = {}, kopf = [], gemeldet = [], konsole = [], fenster = {}, neuladen = [];
+  const kekse = opt.kekse || { _gcl_au: ".unfall-mg.de", _gac_UA1: "", _gcl_aw: ".www.unfall-mg.de", _gcl_gs: ".unfall-mg.de", _gcl_gb: "", gwcc: ".unfall-mg.de", anderes: "" };
+  const klick = [], nachId = {}, kopf = [], gemeldet = [], konsole = [], fenster = {}, neuladen = [], dok = {};
+  /* folge: was die Seite der Reihe nach tut (dataLayer-Einträge, gelöschte Cookies und Speicherschlüssel, Neuladen). */
+  const folge = [], schicht = [];
+  schicht.push = function (a) {
+    folge.push(a[0] === "consent" ? "consent " + a[1] + " " + a[2].ad_storage : a[0] === "config" ? "config " + a[1] : a[0] === "event" ? "event " + a[2].send_to : String(a[0]));
+    return Array.prototype.push.call(this, a);
+  };
   function neu(tag) {
     const e = el(tag, {}, []);
     e.remove = () => { if (e.id && nachId[e.id] === e) delete nachId[e.id]; e.isConnected = false; };
@@ -76,7 +82,8 @@ function welt(opt) {
   }
   const document = {
     readyState: "complete", documentElement: { classList: { contains: () => false } },
-    addEventListener(t, f) { if (t === "click") klick.push(f); }, removeEventListener() {},
+    addEventListener(t, f) { if (t === "click") klick.push(f); else (dok[t] = dok[t] || []).push(f); }, removeEventListener() {},
+    hidden: false,
     dispatchEvent(ev) { gemeldet.push(ev.type); },
     createElement: neu,
     head: { appendChild(s) { kopf.push(s); s.parentNode = this; } },
@@ -92,25 +99,28 @@ function welt(opt) {
       const teile = v.split(";").map(s => s.trim());
       const name = teile[0].split("=")[0];
       const dom = (teile.find(s => /^domain=/i.test(s)) || "domain=").slice(7);
-      if (/expires=Thu, 01 Jan 1970/.test(v)) { if (name in kekse && kekse[name] === dom) delete kekse[name]; }
+      if (/expires=Thu, 01 Jan 1970/.test(v)) { if (name in kekse && kekse[name] === dom) { delete kekse[name]; folge.push("cookie-weg:" + name); } }
       else kekse[name] = dom;
     }
   });
   const window = {
-    KGE_KONFIG: opt.konfig, innerWidth: 390, innerHeight: 664,
+    KGE_KONFIG: opt.konfig, innerWidth: 390, innerHeight: 664, dataLayer: schicht,
     addEventListener(t, f) { (fenster[t] = fenster[t] || []).push(f); }, removeEventListener() {},
-    location: { hostname: "www.unfall-mg.de", reload() { neuladen.push({ ziele: w.ziele(), gespeichert: speicher[SCHL] ? JSON.parse(speicher[SCHL]).werbung : null }); } }
+    location: { hostname: "www.unfall-mg.de", reload() { folge.push("neuladen"); neuladen.push({ ziele: w.ziele(), gespeichert: speicher[SCHL] ? JSON.parse(speicher[SCHL]).werbung : null }); } }
   };
   const sb = {
     window: window, document: document, NodeFilter: { SHOW_TEXT: 4 },
     console: { info: s => konsole.push(String(s)), error() {} },
     Event: function (t) { this.type = t; },
-    localStorage: { getItem: k => (k in speicher ? speicher[k] : null), setItem: (k, v) => { speicher[k] = String(v); }, removeItem: k => { delete speicher[k]; } },
+    localStorage: { getItem: k => (k in speicher ? speicher[k] : null), setItem: (k, v) => { speicher[k] = String(v); }, removeItem: k => { folge.push("speicher-weg:" + k); delete speicher[k]; } },
     setTimeout: () => 0, clearTimeout() {}
   };
   const dl = () => (window.dataLayer || []).map(a => Array.prototype.slice.call(a));
   const w = {
-    window: window, speicher: speicher, kekse: kekse, konsole: konsole, gemeldet: gemeldet, neuladen: neuladen,
+    window: window, speicher: speicher, kekse: kekse, konsole: konsole, gemeldet: gemeldet, neuladen: neuladen, dokument: document,
+    folge: () => folge.slice(),
+    feuereDok: typ => (dok[typ] || []).forEach(f => f({})),
+    wartetAufUpdate: () => { const d = dl().filter(a => a[0] === "consent" && a[1] === "default")[0]; return d ? d[2].wait_for_update : null; },
     ziele: () => anrufLinks.map(l => l.getAttribute("href")),
     texte: () => anrufLinks.map(l => texte(l).map(t => t.nodeValue).join("/")),
     impressum: () => impressum.getAttribute("href") + "|" + texte(impressum).map(t => t.nodeValue).join("/"),
@@ -161,6 +171,9 @@ const getauscht = konfig => { const w = welt({ konfig: konfig || K("LabAnruf"), 
 
 fall("A/B/C Laden, Tausch, Widerruf im selben Tab", () => {
   const w = welt({ konfig: K("LabAnruf"), gespeichert: true });
+  w.speicher._gcl_ls = "aus frueherer Erlaubnis";
+  pruefe("A1 ganze Folge im dataLayer: consent default vor consent update vor js und beiden configs", w.folge(), ["consent default denied", "consent update granted", "js", "config AW-1234567890", "config AW-1234567890/LabAnruf"]);
+  pruefe("A1 default wartet 500 ms auf das Update", w.wartetAufUpdate(), 500);
   pruefe("A1 Laden mit gespeicherter Einwilligung: consent-Folge", w.consent(), ["default:denied", "update:granted"]);
   pruefe("A1 zwei configs, das zweite mit Label, Nummer und Callback", w.configs(), [CONFIG_GRUND, CONFIG_ANRUF]);
   pruefe("A1 consent vollständig: default alles denied, Erlauben gibt nur ad_storage und ad_user_data frei", w.consentVoll(), ["default:denied/denied/denied/denied", "update:granted/granted/denied/denied"]);
@@ -184,6 +197,9 @@ fall("A/B/C Laden, Tausch, Widerruf im selben Tab", () => {
   pruefe("B2 Ablehnen: Ziele, Texte und Klartext wieder echt", [w.ziele(), w.texte(), w.klartextVerborgen()], [ZIELE_ECHT, TEXTE_ECHT, [false, false]]);
   pruefe("B2 Ablehnen: letzter consent setzt alle vier Werte auf denied, gespeichert werbung false", [w.consentVoll().slice(-1)[0], w.gespeichert()], ["update:denied/denied/denied/denied", false]);
   pruefe("B2 Ablehnen: _gcl_ und _gac_ auf Host und Elterndomains gelöscht, Fremdes bleibt", Object.keys(w.kekse), ["anderes"]);
+  pruefe("B2 Ablehnen: localStorage-Schlüssel _gcl_ls entfernt, die eigene Wahl bleibt", Object.keys(w.speicher).sort(), [SCHL]);
+  const f = w.folge(), iD = f.lastIndexOf("consent update denied"), iC = f.findIndex(x => x.indexOf("cookie-weg:") === 0), iL = f.indexOf("speicher-weg:_gcl_ls"), iN = f.indexOf("neuladen");
+  pruefe("B2 Reihenfolge: erst consent denied, dann Cookies und _gcl_ls löschen, zuletzt neu laden", [iD > -1, iD < iC, iD < iL, iC < iN, iL < iN], [true, true, true, true, true]);
   pruefe("B2 Ablehnen: genau ein Neuladen, davor echte Nummer und gespeicherte Ablehnung", w.neuladen, [{ ziele: ZIELE_ECHT, gespeichert: false }]);
   pruefe("B2 Ablehnen meldet kge-banner an leiste.js", w.gemeldet.filter(t => t === "kge-banner").length >= 2, true);
   w.callback()(G[0], G[1]);
@@ -203,8 +219,10 @@ fall("E Erstbesuch", () => {
   let w = welt({ konfig: K("LabAnruf") });
   pruefe("E1 Erstbesuch vor der Entscheidung: nichts von Google", [w.dlLen(), w.skripte()], [0, []]);
   w.ja();
+  pruefe("E2 Erlauben beim Erstbesuch: ganze Folge, alle vier consent-Werte", [w.folge(), w.consentVoll()], [["consent default denied", "consent update granted", "js", "config AW-1234567890", "config AW-1234567890/LabAnruf"], ["default:denied/denied/denied/denied", "update:granted/granted/denied/denied"]]);
   pruefe("E2 Erlauben: zwei configs, ein Skript, gespeichert true", [w.configs(), w.skripte(), w.gespeichert()], [[CONFIG_GRUND, CONFIG_ANRUF], [GTAG], true]);
-  w = welt({ konfig: K("LabAnruf") }); w.nein();
+  w = welt({ konfig: K("LabAnruf") }); w.speicher._gcl_ls = "aus frueherer Erlaubnis"; w.nein();
+  pruefe("E3 Ablehnen entfernt _gcl_ls auch ohne Ja in diesem Aufruf", "_gcl_ls" in w.speicher, false);
   pruefe("E3 Ablehnen als Erstwahl: nichts von Google, kein Neuladen", [w.dlLen(), w.skripte(), w.neuladen.length, w.gespeichert()], [0, [], 0, false]);
   pruefe("E3 Ablehnen räumt alte Google-Cookies auch ohne Ja in diesem Aufruf", Object.keys(w.kekse), ["anderes"]);
   w = welt({ konfig: K("LabAnruf"), gespeichert: false });
@@ -259,11 +277,21 @@ fall("I Unbrauchbare Aufrufe", () => {
   w.callback()(G[0], "abc"); pruefe("I4 Fund 10: mobile Nummer ohne Ziffern: weder Text noch Ziel", echt(w), SOLL);
   w.callback()("abc", G[1]); pruefe("I5 Fund 10: Anzeige ohne Ziffern: weder Text noch Ziel", echt(w), SOLL);
   w.callback()(G[0], "+49 21"); pruefe("I6 Fund 10: zu wenige Ziffern im Ziel: kein Tausch", echt(w), SOLL);
+  w.callback()("0 12 34", "01234"); pruefe("I8 passendes Paar mit nur 5 Ziffern: kein Tausch (Mindestlänge)", echt(w), SOLL);
+  w.callback()("0800 111 2222", "+4921619999999"); pruefe("I9 Paarprüfung: Anzeige und Ziel sind verschiedene Nummern: kein Tausch", echt(w), SOLL);
+  w.callback()(G[0], "+123456789012345678921610001122"); pruefe("I10 Ziel mit 30 Ziffern: kein Tausch", echt(w), SOLL);
+  w.callback()(G[0], "+1234521610001122"); pruefe("I10 Ziel mit 16 Ziffern: kein Tausch", echt(w), SOLL);
   w.callback()(G[0], "tel:+49 (2161) 000-11 22");
   pruefe("I3 mobile Nummer mit tel: und Sonderzeichen: Ziel sauber", [w.ziele()[0], w.texte()[0]], [G_ZIEL, G[0]]);
   w = welt({ konfig: K("LabAnruf"), gespeichert: true });
   w.callback()("0800 123 4567", "08001234567");
   pruefe("I7 Nummer ohne Pluszeichen: Ziel ohne Plus", w.ziele()[0], "tel:08001234567");
+  w = welt({ konfig: K("LabAnruf"), gespeichert: true });
+  w.callback()("0800 123 4567", "+498001234567");
+  pruefe("I11 Paarprüfung: nationale Anzeige und Ziel mit Ländervorwahl sind dieselbe Nummer: Tausch", [w.ziele()[0], w.texte()[0]], ["tel:+498001234567", "0800 123 4567"]);
+  w = welt({ konfig: K("LabAnruf"), gespeichert: true });
+  w.callback()(G[0], "+123421610001122");
+  pruefe("I12 Ziel mit 15 Ziffern gilt noch", w.ziele()[0], "tel:+123421610001122");
 });
 
 fall("T Zweiter Tab", () => {
@@ -292,6 +320,24 @@ fall("T Zweiter Tab", () => {
   t3.speicher[SCHL] = undefined; delete t3.speicher[SCHL];
   t3.feuere("storage", { key: SCHL });
   pruefe("T4 leerer Speicher ist kein Widerruf", [t3.ziele(), t3.neuladen.length], [ZIELE_G, 0]);
+});
+
+fall("V Gespeicherter Stand beim Senden und beim Wiederkommen (storage-Ereignis kam nicht an)", () => {
+  let w = getauscht();
+  w.speicher[SCHL] = JSON.stringify({ werbung: false });  /* anderer Tab hat widerrufen, hier kam kein Ereignis an */
+  w.telKlick();
+  pruefe("V1 Klick nach fremdem Widerruf ohne Ereignis: nichts gesendet", w.events(), []);
+  pruefe("V1 der Widerruf läuft in diesem Tab nach: echte Nummer, consent denied, ein Neuladen", [w.ziele(), w.klartextVerborgen(), w.consent().slice(-1)[0], w.neuladen.length], [ZIELE_ECHT, [false, false], "update:denied", 1]);
+  w = getauscht(); w.telKlick();
+  pruefe("V2 Gegenprobe: bei gespeicherter Erlaubnis wird gesendet, kein Neuladen", [w.events(), w.neuladen.length, w.ziele()], [["AW-1234567890/LabKlick"], 0, ZIELE_G]);
+  w = getauscht();
+  w.speicher[SCHL] = JSON.stringify({ werbung: false });
+  w.dokument.hidden = true; w.feuereDok("visibilitychange");
+  pruefe("V3 visibilitychange, Tab im Hintergrund: nichts", [w.ziele(), w.neuladen.length], [ZIELE_G, 0]);
+  w.dokument.hidden = false; w.feuereDok("visibilitychange");
+  pruefe("V3 Tab kommt nach vorn: der Widerruf läuft nach", [w.ziele(), w.neuladen.length], [ZIELE_ECHT, 1]);
+  w = getauscht(); w.feuereDok("visibilitychange");
+  pruefe("V4 Tab kommt nach vorn, weiter erlaubt: bleibt getauscht", [w.ziele(), w.neuladen.length], [ZIELE_G, 0]);
 });
 
 fall("Z Zurück-Taste", () => {
