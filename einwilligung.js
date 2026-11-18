@@ -20,7 +20,14 @@
  *  - Entscheidung in localStorage ('kge-einwilligung-v2'), Widerruf über den Fußlink
  *    data-einwilligung-oeffnen (Art. 7 Abs. 3 DSGVO). Wer erst erlaubt und dann ablehnt, bekommt sofort
  *    gtag('consent','update', alle vier Werte denied) als arguments-Aufruf, danach geht keine Conversion mehr
- *    raus, und gespeichert ist werbung:false, sodass nach dem Neuladen kein Google-Tag mehr lädt.
+ *    raus, gespeichert ist werbung:false, und im Modus "einfach" lädt die Seite sofort neu, sodass kein
+ *    Google-Tag mehr im Speicher läuft. Jedes Ablehnen löscht die Cookies _gcl_* und _gac_* (Host und
+ *    Elterndomains, Pfad /), auch ohne vorheriges Erlauben in diesem Aufruf und in beiden Modi; neu geladen
+ *    wird nur, wenn in diesem Aufruf gtag.js angehängt war. Der Fußlink selbst ändert nichts, erst die Wahl.
+ *  - Zurück-Taste (bfcache, pageshow mit persisted) und andere Tabs (storage-Ereignis zum Schlüssel): Ein Dokument,
+ *    das noch die alte Erlaubnis trägt, liest die gespeicherte Wahl neu und verfährt bei werbung:false wie beim
+ *    Ablehnen (Update denied, Cookies löschen, neu laden nur mit angehängtem gtag.js). Es schreibt dabei nichts,
+ *    deshalb stößt es in keinem Tab ein weiteres storage-Ereignis an (Programmierer-Fund 4, Auflage A6, 10.11.2026).
  */
 (function () {
   "use strict";
@@ -144,14 +151,38 @@
    * cookielose Pings; gespeichert wird beim Aufrufer (schreibe(false)). Die echte Telefonnummer kommt zurück,
    * damit nach dem Widerruf kein Anruf mehr über Googles Weiterleitung läuft. */
   function widerrufe() {
+    /* Zuerst und synchron die echte Telefonnummer, noch vor dem Neuladen: gilt für jeden Weg hierher
+     * (Ablehnen im Banner, anderer Tab, Zurück-Taste). */
     nummerZurueck();
-    if (!tagGeladen) return;  /* nie erlaubt: default denied gilt weiter, nichts zu melden */
-    tagGeladen = false;
-    window.gtag("consent", "update", {
-      ad_storage: "denied",
-      ad_user_data: "denied",
-      ad_personalization: "denied",
-      analytics_storage: "denied"
+    var warErlaubt = tagGeladen;  /* nicht erlaubt in diesem Aufruf: default denied gilt weiter, nichts zu melden */
+    if (warErlaubt) {
+      tagGeladen = false;
+      window.gtag("consent", "update", {
+        ad_storage: "denied",
+        ad_user_data: "denied",
+        ad_personalization: "denied",
+        analytics_storage: "denied"
+      });
+    }
+    /* Bei jedem Ablehnen, in beiden Modi: Cookies aus einer früheren Erlaubnis dürfen nicht bleiben, auch wenn in
+     * diesem Aufruf nie erlaubt wurde (Programmierer-Fund 3, Runde PR 2, 10.11.2026). */
+    loescheGoogleCookies();  /* Widerruf: Cookies weg */
+    /* Nur im Modus "einfach" und nur nach einem Erlauben in diesem Aufruf: die Seite lädt neu, damit gtag.js nicht
+     * im Speicher weiterläuft (Programmierer-Fund 7, 10.11.2026). Die Ablehnung ist vorher gespeichert
+     * (schreibe(false) beim Aufrufer). Ein halb ausgefülltes Formular geht dabei verloren; das ist in Kauf
+     * genommen, weil sonst gtag.js weiterliefe. */
+    if (warErlaubt && skriptAngehaengt && !erweitert) window.location.reload();
+  }
+
+  /* Löscht _gcl_* und _gac_* für den Host und jede übergeordnete Domain (gtag setzt sie auf die oberste mögliche). */
+  function loescheGoogleCookies() {
+    var namen = document.cookie.split(";").map(function (c) { return c.split("=")[0].trim(); })
+      .filter(function (n) { return /^_gcl_|^_gac_/.test(n); });
+    var teile = window.location.hostname.split(".");
+    var domains = [""];
+    for (var i = 0; i < teile.length - 1; i++) domains.push("; domain=." + teile.slice(i).join("."));
+    namen.forEach(function (n) {
+      domains.forEach(function (d) { document.cookie = n + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/" + d; });
     });
   }
 
@@ -318,9 +349,18 @@
     var el = e.target.closest && e.target.closest("[data-einwilligung-oeffnen]");
     if (!el) return;
     e.preventDefault();
-    try { localStorage.removeItem(SCHLUESSEL); } catch (fehler) { /* egal */ }
+    /* Nur den Banner zeigen; gespeichert und widerrufen wird erst mit der Entscheidung (Fund 7). */
     zeigeSofort();
   });
+
+  /* Widerruf aus einem anderen Dokument: nur wenn hier noch erlaubt ist und gespeichert ausdrücklich werbung:false
+   * steht (ein leerer oder unlesbarer Speicher ist kein Widerruf). Kein schreibe(): der Speicher stimmt schon. */
+  function pruefeGespeichert() {
+    var wahl = lies();
+    if (tagGeladen && wahl && wahl.werbung === false) widerrufe();
+  }
+  window.addEventListener("pageshow", function (e) { if (e.persisted) pruefeGespeichert(); });
+  window.addEventListener("storage", function (e) { if (e.key === SCHLUESSEL) pruefeGespeichert(); });
 
   function start() {
     var wahl = lies();
