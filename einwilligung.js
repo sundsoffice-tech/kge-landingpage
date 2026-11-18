@@ -11,7 +11,8 @@
  *  - Konfiguration (AW-ID, Labels, Telefonanzeige) kommt aus konfig.js. Enthält sie noch Platzhalter,
  *    lädt nichts und die Konsole sagt "Messung nicht konfiguriert".
  *  - Conversion-Aktionen: phone_click, whatsapp_click (Klicks auf data-messung), form_submit (ruft
- *    formular.js nach ok:true über window.kgeMessung auf). Jede mit send_to "AW-…/Label".
+ *    formular.js nach ok:true über window.kgeMessung auf). Jede mit send_to "AW-…/Label". Dazu wahlweise
+ *    website_call: Nummerntausch gegen Googles Weiterleitungsnummer (Anruf ab Mindestdauer), siehe konfig.js.
  *  - Banner höchstens 110 px hoch, sitzt über der Sticky-Callbar. Er steht ab dem Laden im DOM, bleibt aber
  *    verborgen, bis der Besucher scrollt oder vier Sekunden vergangen sind (Künstler K4), und erscheint nie,
  *    solange er einen Hero-Knopf verdecken würde. Beobachtet wird mit IntersectionObserver, kein Scroll-Lauscher.
@@ -91,20 +92,59 @@
     if (skriptAngehaengt || !konfiguriert()) return;
     skriptAngehaengt = true;
     window.gtag("js", new Date());
-    window.gtag("config", konfig.googleTag, {
-      phone_conversion_number: konfig.telefonAnzeige || "",
-      allow_ad_personalization_signals: false
-    });
+    window.gtag("config", konfig.googleTag, { allow_ad_personalization_signals: false });
+    /* Website-Anruf-Conversion: Google verlangt dafür ein eigenes config mit Label ("AW-…/Label") und
+       tauscht nur dann die Nummer (Hilfe 6095883; ohne Label griff der Tausch nie, Fund 18.11.2026).
+       Ist labels.website_call leer, bleibt die echte Nummer stehen und nur phone_click zählt. */
+    var anruf = (konfig.labels || {}).website_call;
+    if (anruf && !/X{4,}/.test(anruf) && konfig.telefonAnzeige) {
+      window.gtag("config", konfig.googleTag + "/" + anruf, {
+        phone_conversion_number: konfig.telefonAnzeige,
+        phone_conversion_callback: tauscheNummer
+      });
+    }
     var s = document.createElement("script");
     s.async = true;
     s.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(konfig.googleTag);
     document.head.appendChild(s);
   }
 
+  /* Google ruft das nach einem Anzeigenklick mit der Weiterleitungsnummer auf (formatiert für die Anzeige,
+   * mobil für tel:). Getauscht wird in allen Telefon-Links der Seite, Text und Ziel zusammen, damit nie
+   * eine Nummer sichtbar ist und eine andere gewählt wird. Die alte Fassung steht in `getauscht` für den
+   * Widerruf. Kommt nichts Brauchbares, bleibt die echte Nummer. */
+  var getauscht = [];
+  function tauscheNummer(formatiert, mobil) {
+    var alt = konfig.telefonAnzeige;
+    if (!tagGeladen || !alt || !formatiert || !mobil || getauscht.length) return;
+    var links = document.querySelectorAll('a[href^="tel:"]');
+    for (var i = 0; i < links.length; i++) {
+      var eintrag = { el: links[i], href: links[i].getAttribute("href"), texte: [] };
+      var lauf = document.createTreeWalker(links[i], NodeFilter.SHOW_TEXT, null);
+      var knoten;
+      while ((knoten = lauf.nextNode())) {
+        if (knoten.nodeValue.indexOf(alt) === -1) continue;
+        eintrag.texte.push([knoten, knoten.nodeValue]);
+        knoten.nodeValue = knoten.nodeValue.split(alt).join(formatiert);
+      }
+      links[i].setAttribute("href", "tel:" + String(mobil).replace(/[^+\d]/g, ""));
+      getauscht.push(eintrag);
+    }
+  }
+  function nummerZurueck() {
+    getauscht.forEach(function (e) {
+      e.el.setAttribute("href", e.href);
+      e.texte.forEach(function (t) { t[0].nodeValue = t[1]; });
+    });
+    getauscht = [];
+  }
+
   /* Widerruf: Lief der Tag schon, erfährt er sofort, dass nichts mehr erlaubt ist (gleicher arguments-Weg
    * wie das Erlauben). Danach meldet kgeMessung im Modus "einfach" nichts mehr, im Modus "erweitert" nur noch
-   * cookielose Pings; gespeichert wird beim Aufrufer (schreibe(false)). */
+   * cookielose Pings; gespeichert wird beim Aufrufer (schreibe(false)). Die echte Telefonnummer kommt zurück,
+   * damit nach dem Widerruf kein Anruf mehr über Googles Weiterleitung läuft. */
   function widerrufe() {
+    nummerZurueck();
     if (!tagGeladen) return;  /* nie erlaubt: default denied gilt weiter, nichts zu melden */
     tagGeladen = false;
     window.gtag("consent", "update", {
