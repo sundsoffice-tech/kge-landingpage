@@ -13,6 +13,8 @@
  *  - Conversion-Aktionen: phone_click, whatsapp_click (Klicks auf data-messung), form_submit (ruft
  *    formular.js nach ok:true über window.kgeMessung auf). Jede mit send_to "AW-…/Label". Dazu wahlweise
  *    website_call: Nummerntausch gegen Googles Weiterleitungsnummer (Anruf ab Mindestdauer), siehe konfig.js.
+ *    Getauscht wird nur in Links mit data-messung="phone_click"; der Widerruf stellt die echte Nummer in
+ *    jedem Tab und nach der Zurück-Taste wieder her, bevor die Seite neu lädt. Zeuge: pruefen/zeuge-einwilligung.js.
  *  - Banner höchstens 110 px hoch, sitzt über der Sticky-Callbar. Er steht ab dem Laden im DOM, bleibt aber
  *    verborgen, bis der Besucher scrollt oder vier Sekunden vergangen sind (Künstler K4), und erscheint nie,
  *    solange er einen Hero-Knopf verdecken würde. Beobachtet wird mit IntersectionObserver, kein Scroll-Lauscher.
@@ -92,6 +94,7 @@
       analytics_storage: "denied"
     });
     haengeTagAn();
+    wendeNummerAn();  /* schon gelieferte Weiterleitungsnummer wieder zeigen (Fund 6); ohne Lieferung wirkungslos */
   }
 
   /* default steht schon (consentDefault); haengt config und gtag.js genau einmal an. */
@@ -104,11 +107,15 @@
        tauscht nur dann die Nummer (Hilfe 6095883; ohne Label griff der Tausch nie, Fund 18.11.2026).
        Ist labels.website_call leer, bleibt die echte Nummer stehen und nur phone_click zählt. */
     var anruf = (konfig.labels || {}).website_call;
-    if (anruf && !/X{4,}/.test(anruf) && konfig.telefonAnzeige) {
+    if (anruf && konfig.telefonAnzeige && /^[A-Za-z0-9_-]+$/.test(anruf) && !/X{4,}/.test(anruf)) {
       window.gtag("config", konfig.googleTag + "/" + anruf, {
         phone_conversion_number: konfig.telefonAnzeige,
         phone_conversion_callback: tauscheNummer
       });
+    } else if (anruf) {
+      /* Gesetzt, aber unbrauchbar: nicht stumm bleiben (Programmierer r1, Fund 7). bauen.py bricht in diesem
+         Fall ab, sobald NOINDEX aus ist. */
+      console.info("[Messung] labels.website_call verworfen (Platzhalter, unzulässige Zeichen oder telefonAnzeige fehlt): kein Nummerntausch, Anrufe über die Seite zählen nur als phone_click.");
     }
     var s = document.createElement("script");
     s.async = true;
@@ -116,15 +123,36 @@
     document.head.appendChild(s);
   }
 
-  /* Google ruft das nach einem Anzeigenklick mit der Weiterleitungsnummer auf (formatiert für die Anzeige,
-   * mobil für tel:). Getauscht wird in allen Telefon-Links der Seite, Text und Ziel zusammen, damit nie
-   * eine Nummer sichtbar ist und eine andere gewählt wird. Die alte Fassung steht in `getauscht` für den
-   * Widerruf. Kommt nichts Brauchbares, bleibt die echte Nummer. */
-  var getauscht = [];
+  /* Google ruft tauscheNummer nach einem Anzeigenklick mit der Weiterleitungsnummer auf (formatiert für die
+   * Anzeige, mobil für tel:).
+   *  - Getauscht wird nur in Links mit data-messung="phone_click" (Kopf, Hero, Inhalt, Fuß, Anrufleiste), Text und
+   *    Ziel zusammen, damit nie eine Nummer sichtbar ist und eine andere gewählt wird. Der Telefon-Link im
+   *    Impressum trägt das Attribut nicht und bleibt die echte Nummer (Programmierer r1, Fund 4).
+   *  - Klartext der echten Nummer direkt neben einem getauschten Link (data-echte-nummer, etwa „(+49 2161 …)“)
+   *    ist ausgeblendet, solange getauscht ist: sonst stünden zwei verschiedene Nummern als dieselbe
+   *    nebeneinander (Fund 5). Impressum, JSON-LD, Meta und Datenschutztext tragen das Attribut nicht.
+   *  - Brauchbar ist ein Aufruf nur, wenn beide Werte mindestens MIN_ZIFFERN Ziffern tragen. Sonst wird gar
+   *    nichts getauscht, weder Text noch Ziel, und die echte Nummer bleibt (Fund 10).
+   *  - Gewirkt wird nur einmal (ein zweiter Aufruf ändert die Anzeige nicht) und nur bei erteilter Einwilligung.
+   *    Die zuletzt gelieferte brauchbare Nummer bleibt in `geliefert`; ladeTag wendet sie wieder an, wenn nach
+   *    einem Widerruf ohne Neuladen erneut erlaubt wird (Fund 6). Im Modus "einfach" lädt der Widerruf die
+   *    Seite neu, dort kommt dieser Weg nicht vor; er trägt den Modus "erweitert", in dem Google nach dem
+   *    Erlauben nicht noch einmal aufruft (Fund 12).
+   *  - Die alte Fassung steht in `getauscht` und `verborgen`; nummerZurueck stellt alles wieder her. */
+  var MIN_ZIFFERN = 6;
+  var getauscht = [], verborgen = [], geliefert = null;
   function tauscheNummer(formatiert, mobil) {
+    var anzeige = String(formatiert == null ? "" : formatiert).trim();
+    var roh = String(mobil == null ? "" : mobil).replace(/^\s*tel:/i, "");
+    var ziffern = roh.replace(/\D/g, "");
+    if (anzeige.replace(/\D/g, "").length < MIN_ZIFFERN || ziffern.length < MIN_ZIFFERN) return;
+    geliefert = { anzeige: anzeige, ziel: "tel:" + (/^\s*\+/.test(roh) ? "+" : "") + ziffern };
+    wendeNummerAn();
+  }
+  function wendeNummerAn() {
     var alt = konfig.telefonAnzeige;
-    if (!tagGeladen || !alt || !formatiert || !mobil || getauscht.length) return;
-    var links = document.querySelectorAll('a[href^="tel:"]');
+    if (!tagGeladen || !alt || !geliefert || getauscht.length) return;
+    var links = document.querySelectorAll('a[href^="tel:"][data-messung="phone_click"]');
     for (var i = 0; i < links.length; i++) {
       var eintrag = { el: links[i], href: links[i].getAttribute("href"), texte: [] };
       var lauf = document.createTreeWalker(links[i], NodeFilter.SHOW_TEXT, null);
@@ -132,10 +160,16 @@
       while ((knoten = lauf.nextNode())) {
         if (knoten.nodeValue.indexOf(alt) === -1) continue;
         eintrag.texte.push([knoten, knoten.nodeValue]);
-        knoten.nodeValue = knoten.nodeValue.split(alt).join(formatiert);
+        knoten.nodeValue = knoten.nodeValue.split(alt).join(geliefert.anzeige);
       }
-      links[i].setAttribute("href", "tel:" + String(mobil).replace(/[^+\d]/g, ""));
+      links[i].setAttribute("href", geliefert.ziel);
       getauscht.push(eintrag);
+    }
+    if (!getauscht.length) return;
+    var klartext = document.querySelectorAll("[data-echte-nummer]");
+    for (var k = 0; k < klartext.length; k++) {
+      verborgen.push([klartext[k], klartext[k].hidden]);
+      klartext[k].hidden = true;
     }
   }
   function nummerZurueck() {
@@ -143,13 +177,17 @@
       e.el.setAttribute("href", e.href);
       e.texte.forEach(function (t) { t[0].nodeValue = t[1]; });
     });
+    verborgen.forEach(function (v) { v[0].hidden = v[1]; });
     getauscht = [];
+    verborgen = [];
   }
 
   /* Widerruf: Lief der Tag schon, erfährt er sofort, dass nichts mehr erlaubt ist (gleicher arguments-Weg
    * wie das Erlauben). Danach meldet kgeMessung im Modus "einfach" nichts mehr, im Modus "erweitert" nur noch
    * cookielose Pings; gespeichert wird beim Aufrufer (schreibe(false)). Die echte Telefonnummer kommt zurück,
-   * damit nach dem Widerruf kein Anruf mehr über Googles Weiterleitung läuft. */
+   * damit nach dem Widerruf kein Anruf mehr über Googles Weiterleitung läuft. Das gilt in jedem Dokument, das den
+   * Widerruf erfährt: im Tab des Widerrufs, in anderen Tabs (storage) und nach der Zurück-Taste (pageshow),
+   * siehe pruefeGespeichert. Ein Tab, den der Browser eingefroren hat, erfährt es erst beim Aufwachen. */
   function widerrufe() {
     /* Zuerst und synchron die echte Telefonnummer, noch vor dem Neuladen: gilt für jeden Weg hierher
      * (Ablehnen im Banner, anderer Tab, Zurück-Taste). */

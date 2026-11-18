@@ -56,15 +56,30 @@ GLOBAL = {
 }
 
 
+def konfig_fehler(konfig):
+    """Prüft den Text von konfig.js; gibt die Fehlermeldung zurück oder None. Zeuge: pruefen/zeuge_bauen.py."""
+    # Nur die Werte prüfen, nicht die Kommentare (die nennen das Muster "AW-XXXXXXXXXX" als Beispiel).
+    werte = re.findall(r'^\s*(?:googleTag|phone_click|whatsapp_click|form_submit):\s*"([^"]*)"', konfig, re.M)
+    if len(werte) != 4 or any(not w or re.search(r"AW-X|X{4,}", w) for w in werte):
+        return "NOINDEX ist aus, aber konfig.js trägt noch Platzhalter (AW-X…). Erst Messung eintragen, dann bauen."
+    # website_call: leer ist erlaubt und heißt „kein Nummerntausch“. Gesetzt muss es ein echtes Label sein, sonst
+    # schaltete ein stehengebliebener Platzhalter oder Tippfehler die Anrufmessung stumm ab (Programmierer r1, Fund 7).
+    anruf = re.findall(r'^\s*website_call:\s*"([^"]*)"', konfig, re.M)
+    if len(anruf) != 1:
+        return "konfig.js: labels.website_call fehlt oder steht mehrfach (leer lassen heißt: kein Nummerntausch)."
+    if anruf[0] and (re.search(r"X{4,}", anruf[0]) or not re.fullmatch(r"[A-Za-z0-9_-]+", anruf[0])):
+        return ("NOINDEX ist aus, aber labels.website_call in konfig.js ist kein Label (Platzhalter oder unzulässige "
+                "Zeichen). Echtes Label eintragen oder leer lassen (leer heißt: kein Nummerntausch).")
+    return None
+
+
 def sperre_noindex():
     """P2: Ohne noindex darf nur gebaut werden, wenn konfig.js echte Werte trägt."""
     if NOINDEX:
         return
-    konfig = (HIER / "konfig.js").read_text(encoding="utf-8")
-    # Nur die Werte prüfen, nicht die Kommentare (die nennen das Muster "AW-XXXXXXXXXX" als Beispiel).
-    werte = re.findall(r'^\s*(?:googleTag|phone_click|whatsapp_click|form_submit):\s*"([^"]*)"', konfig, re.M)
-    if len(werte) != 4 or any(not w or re.search(r"AW-X|X{4,}", w) for w in werte):
-        sys.exit("NOINDEX ist aus, aber konfig.js trägt noch Platzhalter (AW-X…). Erst Messung eintragen, dann bauen.")
+    fehler = konfig_fehler((HIER / "konfig.js").read_text(encoding="utf-8"))
+    if fehler:
+        sys.exit(fehler)
 
 
 def nur_text(roh):
