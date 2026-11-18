@@ -17,11 +17,21 @@ Stand 09.11.2026 (Neuaufbau auf Zweig `neu-2026-11-09`). Zielseite der Google-Ad
 | `konfig.js` | AW-ID, Conversion-Labels, Telefonanzeige, Lead-Endpunkt; Platzhalter bis zur Kontoanlage |
 | `einwilligung.js` | Consent-Banner, Consent Mode v2 (default denied, update beim Klick), Google-Tag, Conversion-Aktionen |
 | `formular.js` | Rückruf-Formular an `https://leads.sundsconnect.de/lead`, Erfolg erst nach `ok:true` |
+| `leiste.js` | blendet die Anrufleiste aus, solange der Anrufknopf im Hero zu sehen ist |
+| `pruefen/` | Zeugen ohne Browser: `zeuge-einwilligung.js`, `rotprobe-einwilligung.js`, `zeuge_bauen.py`; werden nicht ausgeliefert |
+| `.gitattributes` | nimmt Bauquellen und Zeugen aus `git archive` aus (`export-ignore`) |
 | `schriften/` | Archivo (variable, woff2, latin und latin-ext), selbst gehostet |
 | `bilder/` | Favicon; Betriebsfotos kommen hierher (Platzhalter `<!-- FOTO: ... -->` in den Inhalten) |
 
-Die fertigen HTML-Dateien liegen im Repo, weil GitHub Pages sie direkt ausliefert. Geändert wird in `inhalte/`,
+Die fertigen HTML-Dateien liegen im Repo, weil sie ohne Bauschritt ausgeliefert werden (sunds-hub, `ausrollen.sh`). Geändert wird in `inhalte/`,
 `vorlagen/` oder `stil.css`, danach `python bauen.py`. Ein direkter Edit an `index.html` geht beim nächsten Bau verloren.
+
+Ausgeliefert wird der Inhalt von `git archive`. `.gitattributes` nimmt `pruefen/`, `inhalte/`, `vorlagen/`, `bauen.py`,
+`DEPLOY.md`, `.gitignore`, `.github` und sich selbst davon aus; ein Archiv ist deshalb die Auslieferung, kein
+Arbeitsbaum. Zum Bauen und Prüfen einen Klon oder `git worktree add` nehmen. Probe nach jeder Änderung an
+`.gitattributes` (git liest die Attribute aus dem archivierten Commit, also nach dem Commit messen):
+`git archive HEAD | tar -t` zeigt die sieben Seiten, `konfig.js`, `einwilligung.js`, `leiste.js`, `formular.js`,
+`stil.css`, `bilder/`, `schriften/` und nichts aus der Liste oben.
 
 ## Vor jedem Push prüfen
 
@@ -29,20 +39,42 @@ Die fertigen HTML-Dateien liegen im Repo, weil GitHub Pages sie direkt ausliefer
 2. Wörtersperre: `python <lm>/kunden/kfz-gutachter-es/kampagnen-vorbereitung/pruefen/woertersperre.py --ausnahme "Ismet Es Kfz Meisterbetrieb e.K." *.html` muss 0 Funde liefern. Die Ausnahme ist der Firmenname im Transparenzsatz des Impressums (Wettbewerbsrechtler 09.11.2026).
 3. `impeccable detect index.html umland.html ablauf.html kosten.html nachts-wochenende.html impressum.html datenschutz.html` (Ziel 0 Funde).
 4. Screenshots 390 und 1280 ansehen (Skill `hinsehen`, `schirmfoto.mjs` mit Geräteemulation; ein reines `--window-size=390` schneidet rechts ab).
+5. Zeugen, jeder mit Exit 0: `node pruefen/zeuge-einwilligung.js` (Einwilligung, Nummerntausch, Widerruf), `node pruefen/rotprobe-einwilligung.js` (jede Mutation an `einwilligung.js` muss den Zeugen rot machen), `python pruefen/zeuge_bauen.py` (Konfigurationssperre in `bauen.py`). Die Zeugen rechnen ohne Browser; Bild, Umbruch und Anrufleiste sehen sie nicht.
 
 ## Staging und Live
 
-- Staging: https://sundsoffice-tech.github.io/kge-landingpage/ (Zweig `main`). **Push nach `main` ist Deploy.** Nur über PR und nach Freigabe.
-- Live-Domain: `unfall-mg.de` (Inhaber S&S Connect GbR). Canonical und alle Links sind relativ, die Seite läuft unter beiden Adressen ohne Änderung.
+- Auslieferung seit 10.11.2026: sunds-hub (Caddy, Snippet `kge_landingpage`), Zwischenadresse https://leads.sundsconnect.de/kge-vorschau/ mit `X-Robots-Tag: noindex`. Ausrollen nur mit `leadmaschine/kunden/kfz-gutachter-es/server/ausrollen.sh <archiv.tar> <commit>` (Archiv aus `git -c core.autocrlf=false archive --format=tar <commit>`); jeder Commit bekommt einen Ordner unter `/opt/kge-landingpage/`, `www` ist ein Symlink, Rückweg `ausrollen.sh zurueck <alter-commit>`.
+- GitHub Pages (https://sundsoffice-tech.github.io/kge-landingpage/, Zweig `main`) ist nur noch der alte Staging-Stand. **Push nach `main` ist dort weiter ein Deploy**, deshalb nur über PR und nach Freigabe. Die Datenschutzerklärung nennt sunds-hub als Hosting; über GitHub Pages darf die Kampagne nicht laufen.
+- Live-Domain: `unfall-mg.de` (Inhaber laut Vertrag Ziffer 6 Cihan Es, Kfz Gutachter Es). Canonical und alle Links sind relativ, die Seite läuft unter beiden Adressen ohne Änderung.
 
 ## Go-Live-Liste (Tag der Kontoanlage)
 
-1. `konfig.js`: `googleTag` (AW-ID) und die drei Labels aus Google Ads > Tools > Conversions eintragen; `telefonAnzeige` muss der sichtbaren Nummer entsprechen.
+1. `konfig.js`: `googleTag` (AW-ID) und drei Labels aus Google Ads > Tools > Conversions eintragen: `phone_click`, `whatsapp_click`, `form_submit`; `telefonAnzeige` muss der sichtbaren Nummer entsprechen.
+   - **`website_call` bleibt leer (`""`).** Die Seite geht mit leerem Schalter live. In Woche 1 und 2 des Kampagnenstarts wird er nicht gesetzt, und die Aktion „Anrufe über eine Telefonnummer auf Ihrer Website“ wird im Konto nicht angelegt. Gesetzt wird er später nur über das Verfahren „Schalter setzen“ weiter unten.
+   - Leer heißt: kein Nummerntausch, auf der Seite steht für jeden Besucher 02161 622 57 68. Anrufe über die Seite zählen als `phone_click`; Anrufe aus der Anzeige zählt Google ohne diese Seite.
+   - Im Konto sind `phone_click` und `whatsapp_click` sekundär, primär sind der Anruf aus der Anzeige ab 60 s und `form_submit`.
+   - Dieselben Werte am selben Tag in die Leadmaschine (`kunden/kfz-gutachter-es/go-live.json` und `ads/wache.json`; Feldnamen im Kommentar von `konfig.js`). Zum leeren `website_call` gehört dort ebenfalls ein leerer Wert.
 2. Lead-Endpunkt: Origin `https://unfall-mg.de` in der CORS-Liste eintragen (gemessen 09.11.2026 00:47: OPTIONS mit diesem Origin antwortet 204 ohne `Access-Control-Allow-Origin`). Testlead mit Marker TEST, danach die Testdatei auf dem Server löschen (60-LEKTIONEN E4).
 3. `bauen.py`: `NOINDEX = False`, neu bauen.
 4. Betriebsfotos in `bilder/` legen, `<!-- FOTO: ... -->`-Platzhalter in `inhalte/index.html`, `inhalte/umland.html` ersetzen (`<img>` mit `width`, `height`, `alt`; Hero-Bild mit `fetchpriority="high"`).
-5. DNS: 4 A-Records auf `@` (185.199.108.153, 185.199.109.153, 185.199.110.153, 185.199.111.153), CNAME `www` auf `sundsoffice-tech.github.io`, Datei `CNAME` mit `unfall-mg.de` ins Repo, GitHub Pages Custom Domain, HTTPS erzwingen.
-6. Prüfung vor dem ersten Klick: Tag Assistant zeigt `consent default denied`, nach „Erlauben“ `update granted`; Ablehnen-Pfad lädt nichts von googletagmanager.com; Testanruf über 60 Sekunden erscheint im Anrufbericht; Testlead kommt beim Kunden an.
+5. DNS: A-Record `@` und `www` auf sunds-hub (169.58.211.51, gemessen 10.11.2026 über leads.sundsconnect.de), kein AAAA auf fremde Ziele; danach auf sunds-hub `domain_scharf.sh` (Trockenlauf), dann `--echt` (Caddy-Block, Zertifikat). GitHub Pages bekommt keine Custom Domain. Die früheren GitHub-Pages-A-Records gelten nicht mehr; HTTPS und Zertifikat stellt Caddy.
+6. Prüfung vor dem ersten Klick: Tag Assistant zeigt `consent default denied`, nach „Erlauben“ `update granted`; Ablehnen-Pfad lädt nichts von googletagmanager.com; nach „Erlauben“ steht genau ein `config` im dataLayer, und alle Telefon-Links zeigen und wählen 02161 622 57 68; über den Fußlink „Einwilligung zur Messung ändern“ ablehnen lädt die Seite neu, danach lädt nichts mehr von Google; Testlead kommt beim Kunden an. Ein Testanruf über eine getauschte Nummer gehört nicht hierher: Er braucht einen echten Anzeigenklick und einen gesetzten Schalter und steht im Verfahren „Schalter setzen“.
+7. Messung mit echtem Tag, sobald echte IDs in `konfig.js` stehen und bevor der erste Klick kommt. Sie ist bis dahin offen: Die Zeugen sehen nur, was die Seite in den dataLayer legt, und die Browserläufe liefen mit einem leeren Stub statt gtag.js. Ablauf: Netzwerk-Protokoll des Browsers öffnen, „Erlauben“ wählen, dann über den Fußlink „Ablehnen“. Danach geht keine Anfrage mehr an Google (googletagmanager.com, googleadservices.com, google.com, doubleclick.net), und es bleibt weder ein Cookie `_gcl_*`, `_gac_*` oder `gwcc` noch der localStorage-Schlüssel `_gcl_ls`. Bleibt etwas stehen, die Löschung in `einwilligung.js` (`loescheGoogleCookies`) nachziehen, bevor Klicks kommen.
+
+## Verfahren „Schalter setzen“ (`website_call`)
+
+`labels.website_call` in `konfig.js` schaltet den Nummerntausch ein: Wer über eine Anzeige kommt und „Erlauben“ wählt, sieht und wählt dann statt 02161 622 57 68 eine Weiterleitungsnummer von Google, und Anrufe ab 60 s zählen unter der Aktion „Anrufe über eine Telefonnummer auf Ihrer Website“. Alle anderen Besucher und das Impressum behalten die echte Nummer. Der Schalter bleibt leer, bis alle sechs Bedingungen stehen:
+
+1. Der Kunde hat zugestimmt, dass Besucher aus Anzeigen auf der Seite eine Nummer von Google sehen; der Beleg ist abgelegt.
+2. Die Form der Google-Nummer und das Bild bei 390 px sind gesehen: Kopf, Hero-Knopf und Fuß mit der Ersatznummer (sie kann länger sein als die echte), Anrufleiste und Einwilligungsbalken dazu; zuerst auf der Zwischenadresse. Die Anrufleiste zeigt „Anrufen“ und keine Nummer, dort zählt das Ziel des Links. Foto abgelegt.
+3. Ein Testanruf über die getauschte Nummer ist gemacht: die Seite über einen echten Anzeigenklick öffnen (nicht die Adresse eintippen), „Erlauben“ wählen, prüfen, dass Kopf, Hero-Knopf und Fuß eine andere Nummer zeigen und die Anrufleiste sie wählt, darüber anrufen und länger als 60 Sekunden sprechen. Der Anruf kommt beim Kunden an und steht im Anrufbericht unter der Aktion. Danach über den Fußlink ablehnen: die Seite lädt neu und zeigt wieder die echte Nummer. Dieser Punkt braucht den gesetzten Schalter; er ist deshalb der erste Schritt nach dem Setzen, und fällt er durch, wird der Schalter sofort wieder geleert.
+4. Mindestens 50 % der Anrufe aus Anzeigen dauern ab 60 s (Tagesmeldungen seit dem Start).
+5. Wache, Go-Live-Datei und Conversion-Probe der Leadmaschine tragen das Label; sonst meldet die Messkette rot, sobald es auf der Seite steht.
+6. In derselben Woche gibt es keinen zweiten Eingriff an Kampagne oder Seite, sonst lässt sich keine Wirkung zuordnen.
+
+Setzen: Aktion im Konto anlegen (Mindestdauer 60 s, Zählung „Eine“, primär), ihr Label nach `labels.website_call` eintragen, Zeugen und `python bauen.py --pruefen` fahren, ausrollen, dann Bedingung 3. Erlaubt sind im Label Buchstaben, Ziffern, `-` und `_`; ein Platzhalter mit X oder andere Zeichen brechen den Bau ab, sobald `NOINDEX` aus ist, und im Browser steht dann die Konsolenzeile „website_call verworfen“.
+
+Zurück: Label wieder auf `""`, neu ausrollen. Anlass ist ein Ereignis, keine Statistik: ein verwirrter Anrufer, eine Beschwerde des Kunden oder ein gebrochenes Bild.
 
 ## Messung ohne Konfiguration
 
