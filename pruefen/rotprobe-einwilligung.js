@@ -59,7 +59,19 @@ const MUTATIONEN = [
     ""],
   ["M16 unbrauchbares Label wird stumm verworfen (keine Konsolenzeile)",
     'console.info("[Messung] labels.website_call verworfen',
-    'void ("[Messung] labels.website_call verworfen']
+    'void ("[Messung] labels.website_call verworfen'],
+  ["M17 erstes config erlaubt Personalisierungssignale",
+    'window.gtag("config", konfig.googleTag, { allow_ad_personalization_signals: false });',
+    'window.gtag("config", konfig.googleTag, { allow_ad_personalization_signals: true });'],
+  ["M18 zweites config (Anruf) ohne allow_ad_personalization_signals false",
+    "        allow_ad_personalization_signals: false,\n        phone_conversion_number",
+    "        phone_conversion_number"],
+  ["M19 Erlauben gibt auch ad_personalization frei",
+    '      ad_user_data: "granted",\n      ad_personalization: "denied",',
+    '      ad_user_data: "granted",\n      ad_personalization: "granted",'],
+  ["M20 Schlüsselfilter im storage-Lauscher weg (jedes storage-Ereignis wird geprüft)",
+    'window.addEventListener("storage", function (e) { if (e.key === SCHLUESSEL) pruefeGespeichert(); });',
+    'window.addEventListener("storage", function (e) { pruefeGespeichert(); });']
 ];
 
 function zeuge(datei) {

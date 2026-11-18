@@ -109,6 +109,7 @@
     var anruf = (konfig.labels || {}).website_call;
     if (anruf && konfig.telefonAnzeige && /^[A-Za-z0-9_-]+$/.test(anruf) && !/X{4,}/.test(anruf)) {
       window.gtag("config", konfig.googleTag + "/" + anruf, {
+        allow_ad_personalization_signals: false,
         phone_conversion_number: konfig.telefonAnzeige,
         phone_conversion_callback: tauscheNummer
       });

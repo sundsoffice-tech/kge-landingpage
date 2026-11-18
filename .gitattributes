@@ -1,0 +1,11 @@
+# Was nicht auf den Webserver gehört: Ausgeliefert wird der Inhalt von `git archive` (DEPLOY.md).
+# Zeugen, Bauquellen und Repo-Dateien bleiben im Repo, fehlen aber im Archiv.
+# Probe nach dem Commit: git archive HEAD | tar -t
+pruefen export-ignore
+inhalte export-ignore
+vorlagen export-ignore
+bauen.py export-ignore
+DEPLOY.md export-ignore
+.github export-ignore
+.gitignore export-ignore
+.gitattributes export-ignore

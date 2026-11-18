@@ -8,7 +8,9 @@
  * Kontaktliste, Fuß mit Klartext daneben, Anrufleiste) und dazu den Impressum-Link ohne data-messung.
  * Keim: Logikprobe des Programmierers zu Runde 1 (Tabelle „Was hält“), erweitert um die Auflagen 4, 5, 6, 7, 10
  * und um den Widerruf über Neuladen, zweiten Tab und Zurück-Taste.
- * Was der Zeuge nicht sieht: Layout, echte Browser-Ereignisse, Googles echten Aufruf des Callbacks.
+ * Was der Zeuge nicht sieht: Layout, echte Browser-Ereignisse, Googles echten Aufruf des Callbacks. Das Mini-DOM kennt
+ * keine Klassen und keine Zeit; der mobile Teil (Banner weicht dem Hero, Anrufleiste, FREI_HALTEN) läuft hier nicht
+ * mit Wirkung, B2 prüft davon nur, dass das Ereignis kge-banner gemeldet wird.
  * Die Rotprobe dazu: node pruefen/rotprobe-einwilligung.js. */
 "use strict";
 const fs = require("fs"), path = require("path"), vm = require("vm");
@@ -118,6 +120,9 @@ function welt(opt) {
     configs: () => dl().filter(a => a[0] === "config").map(a => a[1] + (a[2].phone_conversion_callback ? " +callback" : "") + (a[2].phone_conversion_number ? " nr=" + a[2].phone_conversion_number : "")),
     callback: () => { const c = dl().filter(a => a[0] === "config" && a[2].phone_conversion_callback); return c.length ? c[c.length - 1][2].phone_conversion_callback : null; },
     consent: () => dl().filter(a => a[0] === "consent").map(a => a[1] + ":" + a[2].ad_storage),
+    /* alle vier Werte je consent-Aufruf: ad_storage/ad_user_data/ad_personalization/analytics_storage */
+    consentVoll: () => dl().filter(a => a[0] === "consent").map(a => a[1] + ":" + [a[2].ad_storage, a[2].ad_user_data, a[2].ad_personalization, a[2].analytics_storage].join("/")),
+    personalisierung: () => dl().filter(a => a[0] === "config").map(a => a[2].allow_ad_personalization_signals),
     events: () => dl().filter(a => a[0] === "event").map(a => a[2].send_to),
     skripte: () => kopf.filter(s => s.src).map(s => s.src),
     dlLen: () => dl().length,
@@ -158,6 +163,8 @@ fall("A/B/C Laden, Tausch, Widerruf im selben Tab", () => {
   const w = welt({ konfig: K("LabAnruf"), gespeichert: true });
   pruefe("A1 Laden mit gespeicherter Einwilligung: consent-Folge", w.consent(), ["default:denied", "update:granted"]);
   pruefe("A1 zwei configs, das zweite mit Label, Nummer und Callback", w.configs(), [CONFIG_GRUND, CONFIG_ANRUF]);
+  pruefe("A1 consent vollständig: default alles denied, Erlauben gibt nur ad_storage und ad_user_data frei", w.consentVoll(), ["default:denied/denied/denied/denied", "update:granted/granted/denied/denied"]);
+  pruefe("A1 beide configs tragen allow_ad_personalization_signals false", w.personalisierung(), [false, false]);
   pruefe("A1 genau ein Google-Skript", w.skripte(), [GTAG]);
   pruefe("A1 vor dem Callback alles echt", [w.ziele(), w.texte(), w.klartextVerborgen()], [ZIELE_ECHT, TEXTE_ECHT, [false, false]]);
   w.callback()(G[0], G[1]);
@@ -175,7 +182,7 @@ fall("A/B/C Laden, Tausch, Widerruf im selben Tab", () => {
   pruefe("B1 Fußlink ändert den Speicher nicht (erst die Wahl)", [w.gespeichert(), w.neuladen.length], [true, 0]);
   w.nein();
   pruefe("B2 Ablehnen: Ziele, Texte und Klartext wieder echt", [w.ziele(), w.texte(), w.klartextVerborgen()], [ZIELE_ECHT, TEXTE_ECHT, [false, false]]);
-  pruefe("B2 Ablehnen: letzter consent denied, gespeichert werbung false", [w.consent().slice(-1)[0], w.gespeichert()], ["update:denied", false]);
+  pruefe("B2 Ablehnen: letzter consent setzt alle vier Werte auf denied, gespeichert werbung false", [w.consentVoll().slice(-1)[0], w.gespeichert()], ["update:denied/denied/denied/denied", false]);
   pruefe("B2 Ablehnen: _gcl_ und _gac_ auf Host und Elterndomains gelöscht, Fremdes bleibt", Object.keys(w.kekse), ["anderes"]);
   pruefe("B2 Ablehnen: genau ein Neuladen, davor echte Nummer und gespeicherte Ablehnung", w.neuladen, [{ ziele: ZIELE_ECHT, gespeichert: false }]);
   pruefe("B2 Ablehnen meldet kge-banner an leiste.js", w.gemeldet.filter(t => t === "kge-banner").length >= 2, true);
@@ -207,6 +214,7 @@ fall("E Erstbesuch", () => {
 fall("F Konfiguration", () => {
   let w = welt({ konfig: K(""), gespeichert: true });
   pruefe("F1 website_call leer: ein config ohne Nummer, keine Konsolenzeile", [w.configs(), w.verworfen()], [[CONFIG_GRUND], 0]);
+  pruefe("F1 website_call leer: das eine config trägt allow_ad_personalization_signals false", w.personalisierung(), [false]);
   pruefe("F1 website_call leer: kein Callback, Seite echt", [w.callback(), w.ziele()], [null, ZIELE_ECHT]);
   w = welt({ konfig: K("XXXXXXXXXXXXXXXXXXX"), gespeichert: true });
   pruefe("F2 Fund 7: Platzhalter im Label: ein config, Konsolenzeile „verworfen“", [w.configs(), w.verworfen()], [[CONFIG_GRUND], 1]);
@@ -264,8 +272,14 @@ fall("T Zweiter Tab", () => {
   const t1 = welt({ konfig: K("LabAnruf"), speicher: speicher, kekse: kekse });
   const t2 = welt({ konfig: K("LabAnruf"), speicher: speicher, kekse: kekse });
   t1.callback()(G[0], G[1]); t2.callback()(G[0], G[1]);
-  t2.feuere("storage", { key: "anderer-schluessel" });
-  pruefe("T2 storage-Ereignis zu fremdem Schlüssel: nichts", [t2.ziele(), t2.neuladen.length], [ZIELE_G, 0]);
+  /* T2 feuert bei gespeicherter Ablehnung: Nur so kann der Fall den Schlüsselfilter widerlegen (bei gespeicherter
+     Erlaubnis täte pruefeGespeichert auch ohne Filter nichts). */
+  const t5 = getauscht();
+  t5.speicher[SCHL] = JSON.stringify({ werbung: false });
+  t5.feuere("storage", { key: "anderer-schluessel" });
+  pruefe("T2 storage-Ereignis zu fremdem Schlüssel bei gespeicherter Ablehnung: nichts (Schlüsselfilter)", [t5.ziele(), t5.neuladen.length], [ZIELE_G, 0]);
+  t5.feuere("storage", { key: SCHL });
+  pruefe("T2 dasselbe Dokument, Ereignis zum eigenen Schlüssel: Widerruf", [t5.ziele(), t5.neuladen.length], [ZIELE_ECHT, 1]);
   t2.feuere("storage", { key: SCHL });
   pruefe("T3 storage-Ereignis, gespeichert weiter werbung true: nichts", [t2.ziele(), t2.neuladen.length], [ZIELE_G, 0]);
   t1.fusslink(); t1.nein();
@@ -291,9 +305,11 @@ fall("Z Zurück-Taste", () => {
   pruefe("Z1 Zurück-Taste nach Widerruf: echte Nummer, Klartext da, Neuladen", [w.ziele(), w.texte(), w.klartextVerborgen(), w.neuladen.length], [ZIELE_ECHT, TEXTE_ECHT, [false, false], 1]);
 });
 
-fall("S Mobiler Umbau aus main bleibt", () => {
+/* S1 ist eine Textsuche, keine Funktionsprüfung: Das Mini-DOM kennt keine Klassen und keine Zeit, verdecktHero,
+   kante und zeigeSpaeter laufen hier nie mit Wirkung. Ob Banner und Anrufleiste zusammenspielen, zeigt nur der Browser. */
+fall("S Textmerkmale des mobilen Umbaus", () => {
   const teile = ["FREI_HALTEN", "kge-leiste", "kge-banner", "translateY(calc(-1 * var(--leiste-unten", "#kge-einwilligung[hidden]{display:block;visibility:hidden}"];
-  pruefe("S1 Quelltext trägt Banner per transform und visibility, Ereignisse und FREI_HALTEN", teile.filter(t => QUELLE.indexOf(t) === -1), []);
+  pruefe("S1 Textsuche: fünf Zeichenketten des mobilen Umbaus stehen im Quelltext (keine Funktionsprüfung)", teile.filter(t => QUELLE.indexOf(t) === -1), []);
 });
 
 console.log((rot ? "ROT: " + rot + " von " : "GRÜN: ") + gezaehlt + " Prüfungen" + (rot ? " weichen ab" : " stimmen") + " · " + DATEI);
