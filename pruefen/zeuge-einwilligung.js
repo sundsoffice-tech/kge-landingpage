@@ -356,6 +356,11 @@ fall("Z Zurück-Taste", () => {
 fall("S Textmerkmale des mobilen Umbaus", () => {
   const teile = ["FREI_HALTEN", "kge-leiste", "kge-banner", "translateY(calc(-1 * var(--leiste-unten", "#kge-einwilligung[hidden]{display:block;visibility:hidden}"];
   pruefe("S1 Textsuche: fünf Zeichenketten des mobilen Umbaus stehen im Quelltext (keine Funktionsprüfung)", teile.filter(t => QUELLE.indexOf(t) === -1), []);
+  /* S2: Der Banner hält auch Bewertungskasten und Namenszeile frei (Hinweis § 5b Abs. 3 UWG ohne Klick lesbar).
+     Textsuche im Wert von FREI_HALTEN; ob er wirklich ausweicht, misst der Browserlauf (Bau kge-cta 20.11.2026). */
+  const frei = (QUELLE.match(/var FREI_HALTEN = "([^"]*)"/) || [])[1] || "";
+  const soll = [".hero .knoepfe .knopf", ".hero .stern", ".hero .bewertung", ".hero .name-zeile"];
+  pruefe("S2 FREI_HALTEN nennt Anrufknopf, Sternchen, Bewertungskasten und Namenszeile", soll.filter(s => frei.split(/\s*,\s*/).indexOf(s) === -1), []);
 });
 
 console.log((rot ? "ROT: " + rot + " von " : "GRÜN: ") + gezaehlt + " Prüfungen" + (rot ? " weichen ab" : " stimmen") + " · " + DATEI);

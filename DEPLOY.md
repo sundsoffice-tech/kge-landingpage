@@ -18,7 +18,7 @@ Stand 09.11.2026 (Neuaufbau auf Zweig `neu-2026-11-09`). Zielseite der Google-Ad
 | `einwilligung.js` | Consent-Banner, Consent Mode v2 (default denied, update beim Klick), Google-Tag, Conversion-Aktionen |
 | `formular.js` | Rückruf-Formular an `https://leads.sundsconnect.de/lead`, Erfolg erst nach `ok:true` |
 | `leiste.js` | blendet die Anrufleiste aus, solange der Anrufknopf im Hero zu sehen ist |
-| `pruefen/` | Zeugen ohne Browser: `zeuge-einwilligung.js`, `rotprobe-einwilligung.js`, `zeuge_bauen.py`; werden nicht ausgeliefert |
+| `pruefen/` | Zeugen ohne Browser: `zeuge-einwilligung.js`, `rotprobe-einwilligung.js`, `zeuge_bauen.py`, `rotprobe_bauen.py`; werden nicht ausgeliefert |
 | `.gitattributes` | nimmt Bauquellen und Zeugen aus `git archive` aus (`export-ignore`) |
 | `schriften/` | Archivo (variable, woff2, latin und latin-ext), selbst gehostet |
 | `bilder/` | Favicon; Betriebsfotos kommen hierher (Platzhalter `<!-- FOTO: ... -->` in den Inhalten) |
@@ -27,7 +27,7 @@ Die fertigen HTML-Dateien liegen im Repo, weil sie ohne Bauschritt ausgeliefert 
 `vorlagen/` oder `stil.css`, danach `python bauen.py`. Ein direkter Edit an `index.html` geht beim nächsten Bau verloren.
 
 Ausgeliefert wird der Inhalt von `git archive`. `.gitattributes` nimmt `pruefen/`, `inhalte/`, `vorlagen/`, `bauen.py`,
-`DEPLOY.md`, `.gitignore`, `.github` und sich selbst davon aus; ein Archiv ist deshalb die Auslieferung, kein
+`DEPLOY.md`, `belege/`, `.gitignore`, `.github` und sich selbst davon aus; ein Archiv ist deshalb die Auslieferung, kein
 Arbeitsbaum. Zum Bauen und Prüfen einen Klon oder `git worktree add` nehmen. Probe nach jeder Änderung an
 `.gitattributes` (git liest die Attribute aus dem archivierten Commit, also nach dem Commit messen):
 `git archive HEAD | tar -t` zeigt die sieben Seiten, `konfig.js`, `einwilligung.js`, `leiste.js`, `formular.js`,
@@ -36,10 +36,10 @@ Arbeitsbaum. Zum Bauen und Prüfen einen Klon oder `git worktree add` nehmen. Pr
 ## Vor jedem Push prüfen
 
 1. `python bauen.py --pruefen` (Exit 0).
-2. Wörtersperre: `python <lm>/kunden/kfz-gutachter-es/kampagnen-vorbereitung/pruefen/woertersperre.py --ausnahme "Ismet Es Kfz Meisterbetrieb e.K." *.html` muss 0 Funde liefern. Die Ausnahme ist der Firmenname im Transparenzsatz des Impressums (Wettbewerbsrechtler 09.11.2026).
+2. Wörtersperre: `python <lm>/kunden/kfz-gutachter-es/kampagnen-vorbereitung/pruefen/woertersperre.py --ausnahme "Ismet Es Kfz Meisterbetrieb e.K." *.html` muss 0 Funde liefern. Die Ausnahme ist der Firmenname im Transparenzsatz des Impressums (Wettbewerbsrechtler 09.11.2026). Mit `BEWERTUNG_ZEIGEN = True` kommt genau eine zweite Ausnahme dazu, nach Abschnitt „Bewertung und Name“, Schritt 6.
 3. `impeccable detect index.html umland.html ablauf.html kosten.html nachts-wochenende.html impressum.html datenschutz.html` (Ziel 0 Funde).
 4. Screenshots 390 und 1280 ansehen (Skill `hinsehen`, `schirmfoto.mjs` mit Geräteemulation; ein reines `--window-size=390` schneidet rechts ab).
-5. Zeugen, jeder mit Exit 0: `node pruefen/zeuge-einwilligung.js` (Einwilligung, Nummerntausch, Widerruf), `node pruefen/rotprobe-einwilligung.js` (jede Mutation an `einwilligung.js` muss den Zeugen rot machen), `python pruefen/zeuge_bauen.py` (Konfigurationssperre in `bauen.py`). Die Zeugen rechnen ohne Browser; Bild, Umbruch und Anrufleiste sehen sie nicht.
+5. Zeugen, jeder mit Exit 0: `node pruefen/zeuge-einwilligung.js` (Einwilligung, Nummerntausch, Widerruf), `node pruefen/rotprobe-einwilligung.js` (jede Mutation an `einwilligung.js` muss den Zeugen rot machen), `python pruefen/zeuge_bauen.py` (Sperren in `bauen.py`: Konfiguration, Bewertungskasten mit fester Uhr, Kommentare, Fotoschalter), `python pruefen/rotprobe_bauen.py` (jede herausgenommene Regel in `bauen.py` muss diesen Zeugen rot machen). Die Zeugen rechnen ohne Browser; Bild, Umbruch, Anrufleiste und das Ausweichen des Einwilligungsbalkens sehen sie nicht.
 
 ## Staging und Live
 
@@ -77,6 +77,26 @@ Am Tag der Kontoanlage sind die Schritte 1, 2, 6 und 7 dran. Schritt 5 (DNS) ist
 Setzen, erst wenn 1, 2, 4 und 6 belegt und die Dateien aus 5 vorbereitet sind: Aktion im Konto anlegen (Mindestdauer 60 s, Zählung „Eine“, primär), ihr Label nach `labels.website_call` eintragen, Zeugen und `python bauen.py --pruefen` fahren, ausrollen, dann Bedingung 3a, die Conversion-Probe und binnen eines Tages 3b. Vor dem Ausrollen den Commit des laufenden Stands notieren (`ausrollen.sh stand`, letzter Teil der Zeile); er trägt den leeren Schalter und ist der Rückweg. Erlaubt sind im Label Buchstaben, Ziffern, `-` und `_`; ein Platzhalter mit X oder andere Zeichen brechen den Bau ab, sobald `NOINDEX` aus ist, und im Browser steht dann die Konsolenzeile „website_call verworfen“.
 
 Zurück, als ein Zug in derselben Stunde. Erstens, in Sekunden: auf sunds-hub `bash ausrollen.sh zurueck <Commit des vorigen Stands>` (der Stand mit leerem Schalter; `zurueck` nimmt den Commit-Namen, also den letzten Teil der Zeile aus `ausrollen.sh stand`, nicht den ganzen Pfad; das Skript liegt im Ordner des letzten Ausrollens unter `/home/ubuntu/kge-ausrollen-<Datum>/`). Zweitens das Label in `konfig.js` auf `main` wieder auf `""` setzen. Drittens `ads/wache.json` und `go-live.json` der Leadmaschine zurücknehmen. Bis alle drei stehen, rollt niemand aus `main` aus, auch nicht für etwas anderes: Ein Ausrollen aus `main` mit gesetztem Label schaltete den Tausch wieder ein, und weil dann alle Stellen gleich sind, meldeten Tor und Wache grün. Anlass ist ein Ereignis, keine Statistik: ein verwirrter Anrufer, eine Beschwerde des Kunden oder ein gebrochenes Bild.
+
+## Bewertung und Name (`BEWERTUNG_ZEIGEN`, `NAME_ZEIGEN` in `bauen.py`)
+
+Beide stehen auf Start- und Umlandseite unter der Sternchenerklärung, nie zwischen den Knöpfen und dem Sternchen (Wettbewerbsrecht vorab 20.11.2026). Jeder Schalter wirkt allein; sind beide aus, fällt die Zeile `{{vertrauen}}` ganz weg.
+
+`NAME_ZEIGEN = True` seit 20.11.2026: „Ihr Sachverständiger: Cihan Es“. Der Satz „Sie sprechen direkt mit Cihan Es“ kommt erst nach Bestätigung des Kunden.
+
+`BEWERTUNG_ZEIGEN = False`. Eingeschaltet wird nur in dieser Reihenfolge, jeder Schritt mit Beleg:
+
+1. Die Freigabe des Kunden liegt schriftlich vor (die Bewertungen stammen von echten Kunden, keine gekauften oder getauschten; der Hinweis unter der Zeile bleibt; Rechtsbericht kge-cta-r1). Ihre Vorgangsnummer (acht Zeichen) kommt nach `BEWERTUNG_KUNDENBELEG`; leer, kürzer, länger oder ein Platzhalter wie `XXXXXXXX` bricht den Bau ab.
+2. Die Sonntagsangabe im Google-Profil („24 Stunden geöffnet“) hat der Kunde berichtigt. Der Link im Kasten macht die Profilangaben zu unserem Auftritt; vorher nicht einschalten.
+3. Die Antwort liegt bereit, falls der Kunde den Satz „Aus unserem Google-Profil. Wir prüfen nicht, ob die Verfasser unsere Leistung genutzt haben.“ gestrichen haben will (er kann ihn als Zweifel an seinen Bewertungen lesen): „Der Satz ist seit 2022 Pflicht, wenn eine Seite Bewertungen zeigt (§ 5b Abs. 3 UWG). Ohne ihn ist die Zeile abmahnbar, und gerade die Wettbewerbszentrale geht dem nach. Ohne den Satz zeigen wir keine Bewertung auf der Seite.“ Der Hinweis ist Bedingung für die Zeile; es gibt keine Fassung ohne ihn.
+4. Die fünf Werte am selben Tag am Profil ablesen: `BEWERTUNG_NOTE`, `BEWERTUNG_ANZAHL`, `BEWERTUNG_SEIT` (Jahr der ältesten Bewertung), `BEWERTUNG_STAND` (Tag des Ablesens, TT.MM.JJJJ) und `BEWERTUNG_LINK` (die echte Profiladresse, `https://g.page/…`, `https://maps.app.goo.gl/…` oder `https://www.google.com/maps/place/…`). Am selben Tag ein Bildschirmfoto des Profils als PNG nach `belege/bewertung-<JJJJ-MM-TT>.png` legen, das Datum gleich dem Stand (Stand 20.11.2026 heißt `belege/bewertung-2026-11-20.png`). Der Ausschnitt zeigt Name des Betriebs, Note, Anzahl und das Datum, aber keine einzelnen Rezensionen und keine Namen von Verfassern: Das Repo ist öffentlich. `belege/` ist vom Ausliefern ausgenommen (`.gitattributes`). Fehlt das Foto, passt sein Datum nicht oder ist es kein PNG, bricht der Bau ab. Ein altes Foto unter neuem Namen erkennt der Bau nicht; das Datum im Bild prüft der Mensch.
+5. `BEWERTUNG_ZEIGEN = True`, `python bauen.py`. Der Bau bricht ab, wenn ein Wert leer ist, ein Beleg aus Schritt 1 oder 4 fehlt, `SEIT` keine Jahreszahl von 2005 bis heute ist, der Stand in der Zukunft liegt oder der Link keine Profiladresse ist (die heutige Kartensuche bricht also ab, mit und ohne `noindex`).
+6. Wörtersperre (Schritt 2 oben): Mit eingeschaltetem Kasten meldet sie auf `index.html` und `umland.html` je einen Fund „4,9 … (Bewertungszahl ohne Beleg)“. Die Sperre kennt keine Belegliste, nur `--ausnahme` mit einem wörtlichen Satz. Deshalb geht genau die gebaute Zeile als zweite Ausnahme hinein, aus `bauen.py` gelesen, nie abgetippt: `--ausnahme "Ismet Es Kfz Meisterbetrieb e.K." --ausnahme "$(python bauen.py --bewertungszeile)"`. Damit geht nur dieser eine Satz mit Anzahl, Jahr und Stand durch; jede andere „4,9“ bleibt ein Fund. Die zweite Ausnahme nur setzen, wenn das Profilfoto aus Schritt 4 mit demselben Stand abgelegt ist (der Bau aus Schritt 5 hat das schon geprüft). Die Sperre selbst wird hier nicht geändert, sie gehört der Leadmaschine (`kunden/kfz-gutachter-es/kampagnen-vorbereitung/pruefen/`).
+7. Bilder bei 390 und 1280 ansehen. Mit eingeschaltetem Kasten weicht der Einwilligungsbalken am Handy aus (`FREI_HALTEN` in `einwilligung.js`): Bei 390 × 844 erscheint er erst nach rund 150 px Scrollen statt nach 4 s (gemessen 20.11.2026). Wer nicht scrollt, sieht ihn nicht, und dessen Klicks auf der Seite (`phone_click`, `whatsapp_click`, `form_submit`) werden nicht gemessen; den Anruf aus der Anzeige zählt Google ohne die Seite. Gewollt, weil der Hinweis nach § 5b Abs. 3 UWG nicht verdeckt werden darf.
+
+Veralteter Stand: Ist `BEWERTUNG_STAND` älter als 14 Tage, bricht der Bau nicht ab, sondern baut die Seiten OHNE Kasten (die Namenszeile bleibt) und druckt „BEWERTUNG VERALTET, Kasten weggelassen: Stand <Datum>“; `--pruefen` druckt dieselbe Zeile, der Exit hängt weiter nur an Abweichungen der Seiten. So trifft ein alter Stand nicht den nächsten fremden Bau, und niemand ist versucht, den Stand ohne Ablesen auf heute zu setzen. Wer die Zeile sieht: entweder neu ablesen (Schritt 4, mit neuem Foto) oder den Bau so ausrollen, ohne Kasten. Leere oder falsche Werte, fehlende Belege und ein Stand in der Zukunft brechen weiter ab.
+
+Die 14-Tage-Regel greift nur beim Bauen. `ausrollen.sh` baut nicht, und die ausgelieferte Seite zeigt Note, Anzahl und Stand weiter, auch nach Wochen. Ein eingeschalteter Kasten braucht deshalb einen wöchentlichen Nachleser: Profil ablesen, bei einer Abweichung oder einem Stand über 14 Tage neu bauen und ausrollen oder abschalten. **Offen, Wächter noch nicht gebaut** (gehört in die Überwachung der Leadmaschine). Bis er läuft, trägt wer einschaltet den Wochentermin für das Nachlesen selbst ein.
 
 ## Messung ohne Konfiguration
 
