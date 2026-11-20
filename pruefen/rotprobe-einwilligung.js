@@ -107,7 +107,13 @@ const MUTATIONEN = [
     ""],
   ["M32 default ohne wait_for_update",
     "      wait_for_update: 500",
-    "      wait_for_update: 0"]
+    "      wait_for_update: 0"],
+  ["M33 Banner hält den Bewertungskasten nicht mehr frei",
+    ', .hero .bewertung, .hero .name-zeile";',
+    ', .hero .name-zeile";'],
+  ["M34 Banner hält die Namenszeile nicht mehr frei",
+    ', .hero .bewertung, .hero .name-zeile";',
+    ', .hero .bewertung";']
 ];
 
 function zeuge(datei) {

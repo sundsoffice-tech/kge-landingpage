@@ -103,6 +103,17 @@ mark, .marker {
    die Nummer bleibt, der Name wird nur noch vorgelesen. */
 @media (max-width: 379px) { .wortmarke-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } }
 .kopf-tel svg { width: 16px; height: 16px; }
+/* WhatsApp neben der Nummer, nur am Desktop: dort gibt es keine Anrufleiste, und WhatsApp war an 15 von 21
+   Scrollstellen nicht im Bild (Conversion-Prüfung 19.11.2026, O8). Am Handy bleibt der Kopf, wie er ist. */
+.kopf-kontakt { display: flex; align-items: center; gap: 10px; }
+.kopf-wa { display: none; }
+@media (min-width: 900px) {
+  .kopf-wa { color: var(--hell); text-decoration: none; font-weight: 700; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; min-height: 44px; min-width: 44px; padding: 8px 10px; border: 1.5px solid rgba(255,255,255,0.35); border-radius: var(--radius); }
+  .kopf-wa:hover { border-color: var(--amber); color: var(--hell); }
+  .kopf-wa svg { width: 18px; height: 18px; flex: none; }
+}
+/* 900 bis 1099 px: Name, Navigation, Nummer und WhatsApp passen nur mit dem Symbol allein; der Name wird vorgelesen. */
+@media (min-width: 900px) and (max-width: 1099px) { .kopf-wa-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } }
 .kopf-nav { display: none; gap: 22px; font-size: 15px; }
 .kopf-nav a { color: var(--hell-2); text-decoration: none; }
 .kopf-nav a:hover { color: var(--hell); }
@@ -129,6 +140,10 @@ mark, .marker {
 @media (max-width: 379px) { .hero .knopf.zweit .unter { display: none; } }
 /* Sternchen-Link unterstrichen: axe link-in-text-block (serious) fand ihn ohne Unterscheidung vom Text (17.11.2026) */
 .fn-anker { color: inherit; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+/* Trefferfläche mindestens 44 x 44 px, ohne dass das Sternchen größer aussieht oder der Marker sich verschiebt:
+   Polster nach allen Seiten, gleich große negative Außenabstände (11 x 30 px gemessen, Conversion-Prüfung 19.11., O10).
+   position: relative legt den Anker über den Text daneben, sonst fängt der Text die Ränder der Fläche ab. */
+.kosten-kern .fn-anker { display: inline-block; position: relative; padding: 6px 17px; margin: -6px -17px; }
 .knopf-text { display: inline-flex; flex-direction: column; align-items: flex-start; line-height: 1.3; }
 .dunkel .knopf { --schatten-farbe: #000; border-color: #000; }
 .dunkel .knopf.zweit { background: var(--hell); }
@@ -144,6 +159,22 @@ mark, .marker {
 @media (min-width: 900px) { .hero { padding: 56px 0 60px; } .hero .wrap { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); align-items: center; gap: 48px; } }
 .ortszeile { display: flex; align-items: center; gap: 8px; color: var(--hell-2); font-size: 15px; font-weight: 600; margin: 0 0 14px; }
 .ortszeile svg { width: 16px; height: 16px; color: var(--amber); flex: none; }
+/* Zweizeilig bei 320 bis 390 px (O4): die Nadel steht an der ersten Zeile, die Adresse bricht nur als Ganzes um.
+   Trenner ohne JavaScript: Jeder Teil hat 0,8em Abstand links, der Punkt sitzt per negativem Rand in diesem Abstand.
+   Der innere Block ist um 0,8em nach links verschoben und der äußere schneidet ab: Steht die Adresse am Zeilenanfang,
+   liegt ihr Punkt links außerhalb und ist weg; in derselben Zeile steht er zwischen Ort und Adresse. Drei Teile als
+   inline-block, damit Folgezeilen nicht mit abgeschnitten werden und bei 320 bis 360 px „und Rheydt · Karstraße 25“
+   eine Zeile teilen wie vorher; der negative rechte Rand des Anfangs hebt den Abstand vor „und“ auf (normales Leerzeichen). */
+.hero .ortszeile, .seitenkopf .ortszeile { align-items: flex-start; }
+.hero .ortszeile svg, .seitenkopf .ortszeile svg { margin-top: 4px; }
+.ort-text { display: block; overflow: hidden; min-width: 0; }
+.ort-innen { display: block; margin-left: -0.8em; }
+.ort-teil { display: inline-block; margin-left: 0.8em; }
+/* max-width: Der negative rechte Rand gäbe dem Anfang 0,8em mehr Platz, als sichtbar ist; bricht er selbst um
+   (Unterseiten, 18px, 360 px), lief „Mönchengladbach“ in den abgeschnittenen Rand (Runde 2, gemessen). */
+.ort-anfang { margin-right: -0.8em; max-width: calc(100% - 0.8em); }
+.ort-adresse { white-space: nowrap; }
+.ort-adresse::before { content: "·"; content: "·" / ""; display: inline-block; width: 0.8em; margin-left: -0.8em; text-align: center; }
 .hero h1 { font-size: clamp(30px, 5vw, 46px); font-weight: 900; line-height: 1.08; color: var(--hell); margin-bottom: 16px; }
 .hero .unterzeile a { color: var(--amber-hell); font-weight: 800; text-decoration: none; }
 .hero .unterzeile { font-size: 18px; line-height: 1.5; color: var(--hell); max-width: 34rem; margin-bottom: 20px; }
@@ -178,6 +209,15 @@ mark, .marker {
   overflow: hidden;
 }
 .hero-bild img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+/* Bewertungskasten und Namenszeile (O1, Schalter BEWERTUNG_ZEIGEN und NAME_ZEIGEN in bauen.py): unter der
+   Sternchenerklärung, nie zwischen Knöpfen und Sternchen (Wettbewerbsrecht vorab 20.11.2026, Nr. 1 und 5b).
+   Der Hinweis ist so groß wie der Sternchentext (16 px), ohne Klick, im selben Kasten. Keine Sternegrafik. */
+.bewertung { margin: 16px 0 0; max-width: 34rem; padding: 12px 14px; border: 1.5px solid rgba(255,255,255,0.28); border-radius: var(--radius); font-size: 16px; line-height: 1.5; }
+.bewertung a { color: var(--hell); font-weight: 700; display: inline-block; padding-block: 10px; margin-block: -10px; }
+.bewertung a:hover { color: var(--amber-hell); }
+.bewertung p { margin: 6px 0 0; color: var(--hell-2); font-size: 16px; }
+.name-zeile { margin: 12px 0 0; color: var(--hell); font-weight: 600; font-size: 16px; }
+@media (max-width: 899px) { .hero .bewertung, .hero .name-zeile { order: 5; } }
 .hero-fakten { list-style: none; margin: 0; padding: 18px 20px 20px; width: 100%; position: relative; display: flex; flex-direction: column; }
 .hero-fakten li { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.12); font-size: 16px; line-height: 1.4; color: var(--hell); margin: 0; }
 /* Freie Gutachterwahl als erster Fakt, auf allen Breiten gleich (Spieltheoretiker r1 S2, Künstler r2 K1) */
@@ -222,6 +262,15 @@ mark, .marker {
 /* Einzelner Link im Text mit 44 px Trefferfläche, ohne die Zeile höher zu machen (Künstler K12) */
 .ziel { display: inline-block; padding: 12px 0; margin: -12px 0; }
 .weiter svg { width: 16px; height: 16px; }
+/* Abschluss eines Abschnitts: Anrufknopf im Stil des Hero-Knopfs, der Weiter-Link als Textlink darunter
+   (Conversion-Prüfung 19.11.2026, O2). Die Anrufleiste bleibt dabei an: Der Knopf trägt nur den Anruf, die Leiste
+   auch WhatsApp; leiste.js beobachtet weiter nur den Hero-Knopf. */
+.abschluss { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 24px; }
+.abschluss .knopf { min-height: 58px; }
+.abschluss .weiter { margin-top: 0; }
+@media (max-width: 539px) { .abschluss .knopf { align-self: stretch; } }
+/* Betrieb: Knopf als drittes Rasterkind, am Desktop links unter dem Text, am Handy nach den Adressen */
+.zweispaltig > .abschluss-raster { margin-top: 0; }
 
 /* Ablauf: drei Schritte als nummerierte Reihe mit Trennlinien, keine Kacheln */
 .schritte { list-style: none; margin: 0; padding: 0; counter-reset: schritt; border-top: 2px solid var(--navy); }
@@ -254,9 +303,9 @@ mark, .marker {
   #kosten .fussnote { order: 3; margin: 0 0 22px; }
   #kosten .zweispaltig > div:first-child > p:not(.kosten-kern) { order: 4; }
   #kosten .rechtsgrund { order: 5; margin-top: 4px; } /* im Flex fallen Ränder nicht zusammen: 14 + 4 = 18 px wie vorher (Programmierer r3, K2) */
-  #kosten .weiter { order: 6; align-self: flex-start; }
   #kosten h3 { order: 7; margin-top: 28px; }
   #kosten .zweispaltig > div:last-child > p:not(.fussnote) { order: 8; }
+  #kosten .abschluss { order: 9; margin-top: 8px; } /* Anrufknopf und Weiter-Link am Ende des Abschnitts (O2) */
 }
 .kosten-kern { font-size: clamp(26px, 7vw, 32px); font-weight: 800; line-height: 1.3; margin-bottom: 16px; max-width: 30ch; }
 .rechtsgrund { border-top: 2px solid var(--navy); border-bottom: 1px solid var(--linie); padding: 14px 0; margin: 18px 0; font-size: 15px; color: var(--tinte-2); }
@@ -289,17 +338,12 @@ mark, .marker {
 .faq .antwort { padding: 0 0 18px; color: var(--tinte-2); }
 .faq .antwort p:last-child { margin-bottom: 0; }
 
-/* Orte: nicht verlinkte Orte als schlichte Liste, verlinkte als Knöpfe mit ganzer Fläche (Künstler K6) */
+/* Orte als schlichte Liste auf beiden Seiten, der Weg zur anderen Seite ist ein Textlink darunter: Knöpfe ohne
+   Kontaktaktion hatten Knopf-Gewicht (Conversion-Prüfung 19.11.2026, O3; die Regeln für .orte .knopf sind entfallen). */
 .orte-liste { list-style: none; padding: 0; margin: 0 0 18px; font-size: 18px; font-weight: 600; line-height: 1.6; }
 .orte-liste li { display: inline; margin: 0; }
 .orte-liste li:not(:last-child)::after { content: ", "; font-weight: 400; }
 .orte-titel { font-weight: 700; margin: 0 0 10px; }
-/* Orte als ruhige Ziele ohne Schatten: sechs gleich schwere Schattenknöpfe standen lauter als der Anruf (Mobil-Ausbau 17.11.2026).
-   Kein Pfeil im Knopf: bei „Mönchengladbach“ und „Korschenbroich“ saß er auf dem Rand (Programmierer r1, MUSS 1). */
-.orte { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; list-style: none; padding: 0; margin: 0 0 18px; max-width: 760px; }
-.orte li { margin: 0; }
-.orte .knopf { width: 100%; justify-content: flex-start; font-size: 16px; font-weight: 700; min-height: 50px; padding: 10px 14px; white-space: nowrap; box-shadow: none; border-width: 1.5px; }
-.orte .knopf:active { transform: none; box-shadow: none; }
 
 /* Formular */
 .formular { background: var(--papier); border: 2px solid var(--navy); border-radius: var(--radius); padding: 22px 18px 20px; box-shadow: var(--schatten); }

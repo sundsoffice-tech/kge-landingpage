@@ -14,6 +14,7 @@ solange NOINDEX aus ist und konfig.js noch Platzhalter trägt (sonst ginge die S
 Werte, die auf mehreren Seiten stehen, stehen genau einmal hier (WhatsApp, Rückrufzusage, Fotoschalter).
 Die FAQPage-Daten (JSON-LD) erzeugt der Bau aus den sichtbaren <details>-Fragen, damit sie wortgleich bleiben.
 """
+import datetime
 import html
 import json
 import pathlib
@@ -40,6 +41,40 @@ RUECKRUF_SONST = "sobald wir wieder am Telefon sind"
 # Fotos vom Kunden da sind. True zeigt sie wieder; dann die <img> in den Platzhaltern eintragen.
 FOTOS_ZEIGEN = False
 
+# Bewertung im Hero (Conversion-Prüfung 19.11.2026, O1; Wortlaut nach Wettbewerbsrecht vorab 20.11.2026, Nr. 1):
+# ein Kasten unter der Sternchenerklärung, nie zwischen Knöpfen und Sternchen (sonst rückt die Kosteneinschränkung
+# vom Kostenversprechen weg). Die Zeile ist ganz ein Link aufs Google-Profil, der Hinweis nach § 5b Abs. 3 UWG steht
+# direkt darunter, ohne Klick und nicht kleiner als der Sternchentext. Keine Sternegrafik.
+# Vorgabe AUS. Vor dem Einschalten alle fünf Werte am Profil neu ablesen (SEIT = Jahr der ältesten Bewertung,
+# STAND = Tag des Ablesens) und BEWERTUNG_LINK auf die echte Profiladresse setzen (heute nur eine Kartensuche).
+# Der Bau bricht ab, wenn der Schalter AN ist und ein Wert leer ist, SEIT keine Jahreszahl von 2005 bis heute ist,
+# der Stand in der Zukunft liegt, der Link keine Profiladresse ist (nur https://g.page/…, https://maps.app.goo.gl/…
+# oder https://www.google.com/maps/place/…; die Kartensuche von heute bricht also ab) oder ein Beleg fehlt
+# (BEWERTUNG_KUNDENBELEG, Bildschirmfoto belege/bewertung-JJJJ-MM-TT.png zum Stand). Ist der Stand älter als 14 Tage,
+# baut er OHNE Kasten und meldet „BEWERTUNG VERALTET“ (Spieltheoretiker r2, M3). Die 14 Tage gelten nur beim Bauen:
+# Die ausgelieferte Seite altert weiter (DEPLOY.md, „Bewertung und Name“).
+BEWERTUNG_ZEIGEN = False
+BEWERTUNG_NOTE = "4,9"            # Stand 09.11.2026 laut Hausbefund, nicht neu abgelesen
+BEWERTUNG_ANZAHL = "48"           # Stand 09.11.2026 laut Hausbefund, nicht neu abgelesen
+BEWERTUNG_SEIT = ""               # Jahr der ältesten Bewertung, noch nicht abgelesen
+BEWERTUNG_STAND = "09.11.2026"    # TT.MM.JJJJ, Tag des Ablesens
+BEWERTUNG_LINK = "https://www.google.com/maps/search/?api=1&query=Kfz+Gutachter+Es+M%C3%B6nchengladbach"
+BEWERTUNG_HINWEIS = "Aus unserem Google-Profil. Wir prüfen nicht, ob die Verfasser unsere Leistung genutzt haben."
+# Vorgangsnummer der schriftlichen Freigabe des Kunden für den Kasten (acht Zeichen), leer bis sie vorliegt.
+BEWERTUNG_KUNDENBELEG = ""
+BEWERTUNG_HOECHSTALTER_TAGE = 14
+BEWERTUNG_SEIT_FRUEHESTENS = 2005
+# Belege zum Stand, vom Ausliefern ausgenommen (.gitattributes): belege/bewertung-JJJJ-MM-TT.png
+BELEGE = HIER / "belege"
+PNG_KOPF = b"\x89PNG\r\n\x1a\n"
+BEWERTUNG_PROFIL_FORM = r"https://(?:g\.page/|maps\.app\.goo\.gl/|www\.google\.com/maps/place/)[^\s\"'<>]+"
+
+# Name im Hero, eigener Schalter, an derselben Stelle, außerhalb des Bewertungskastens. Vorgabe AN seit 20.11.2026:
+# „Ihr Sachverständiger: Cihan Es“ ist ohne Bestätigung zulässig (Wettbewerbsrecht vorab Nr. 2), die Marketingrolle
+# verlangt den Namen im ersten Bildschirm. „Sie sprechen direkt mit Cihan Es“ erst nach Bestätigung des Kunden.
+NAME_ZEIGEN = True
+NAME_TEXT = "Ihr Sachverständiger: Cihan Es"
+
 
 def whatsapp_nummer():
     ziffern = re.sub(r"\D", "", WHATSAPP_ANZEIGE)
@@ -48,7 +83,16 @@ def whatsapp_nummer():
     return "49" + ziffern[1:]
 
 
+# Ortszeile der Seiten für Mönchengladbach (Start, Ablauf, Kosten, Nachts), steht nur hier (Programmierer r2, F9).
+# Wortlaut nach Wettbewerbsrecht vorab 20.11.2026. Die drei Teile und der Trenner im CSS (stil.css, „Ortszeile“):
+# Steht die Adresse am Zeilenanfang, fällt der Mittelpunkt weg; das Komma liest nur der Vorleser.
+ORTSZEILE_MG = ('<p class="ortszeile"><svg><use href="#i-pin"/></svg><span class="ort-text"><span class="ort-innen">'
+                '<span class="ort-teil ort-anfang">Kfz-Gutachter für Mönchengladbach</span> '
+                '<span class="ort-teil">und&nbsp;Rheydt</span><span class="ort-teil ort-adresse">'
+                '<span class="sr">, </span>Karstraße&nbsp;25</span></span></span></p>')
+
 GLOBAL = {
+    "ortszeile_mg": ORTSZEILE_MG,
     "wa_link": f"https://wa.me/{whatsapp_nummer()}?text={WHATSAPP_TEXT}",
     "wa_anzeige": WHATSAPP_ANZEIGE,
     "rueckruf_werktags": RUECKRUF_WERKTAGS,
@@ -73,13 +117,114 @@ def konfig_fehler(konfig):
     return None
 
 
+def noindex_fehler(konfig):
+    """P2: Ohne noindex darf nur gebaut werden, wenn konfig.js echte Werte trägt und eine eingeschaltete Bewertung
+    nicht auf die Kartensuche zeigt. Gibt die Fehlermeldung zurück oder None. Zeuge: pruefen/zeuge_bauen.py."""
+    fehler = konfig_fehler(konfig)
+    if fehler:
+        return fehler
+    # Doppelt zur Profilform in bewertung_fehler: Diese Sperre bleibt, falls jemand die Profilform lockert.
+    if BEWERTUNG_ZEIGEN and "/maps/search/" in BEWERTUNG_LINK:
+        return ("NOINDEX ist aus und BEWERTUNG_ZEIGEN an, aber BEWERTUNG_LINK ist noch die Kartensuche. "
+                "Echte Profiladresse eintragen oder BEWERTUNG_ZEIGEN = False.")
+    return None
+
+
 def sperre_noindex():
-    """P2: Ohne noindex darf nur gebaut werden, wenn konfig.js echte Werte trägt."""
     if NOINDEX:
         return
-    fehler = konfig_fehler((HIER / "konfig.js").read_text(encoding="utf-8"))
+    fehler = noindex_fehler((HIER / "konfig.js").read_text(encoding="utf-8"))
     if fehler:
         sys.exit(fehler)
+
+
+def bewertung_fehler(heute=None):
+    """Gibt die Fehlermeldung zurück oder None. Nur bei BEWERTUNG_ZEIGEN = True geprüft. Zeuge: pruefen/zeuge_bauen.py
+    mit festem heute."""
+    heute = heute or datetime.date.today()
+    werte = {"NOTE": BEWERTUNG_NOTE, "ANZAHL": BEWERTUNG_ANZAHL, "SEIT": BEWERTUNG_SEIT,
+             "STAND": BEWERTUNG_STAND, "LINK": BEWERTUNG_LINK, "KUNDENBELEG": BEWERTUNG_KUNDENBELEG}
+    leer = [k for k, v in werte.items() if not str(v).strip()]
+    if leer:
+        return f"BEWERTUNG_ZEIGEN ist an, aber leer: {', '.join('BEWERTUNG_' + k for k in leer)}"
+    if not re.fullmatch(r"[A-Za-z0-9_-]{8}", BEWERTUNG_KUNDENBELEG) or re.search(r"X{4,}", BEWERTUNG_KUNDENBELEG, re.I):
+        return (f"BEWERTUNG_KUNDENBELEG ist keine Vorgangsnummer (acht Zeichen aus Buchstaben, Ziffern, - und _, kein "
+                f"Platzhalter): {BEWERTUNG_KUNDENBELEG!r}")
+    seit = BEWERTUNG_SEIT.strip()
+    if not (re.fullmatch(r"\d{4}", seit) and BEWERTUNG_SEIT_FRUEHESTENS <= int(seit) <= heute.year):
+        return (f"BEWERTUNG_SEIT ist keine Jahreszahl von {BEWERTUNG_SEIT_FRUEHESTENS} bis {heute.year}: "
+                f"{BEWERTUNG_SEIT!r} (Jahr der ältesten Bewertung am Profil ablesen)")
+    try:
+        stand = datetime.datetime.strptime(BEWERTUNG_STAND, "%d.%m.%Y").date()
+    except ValueError:
+        return f"BEWERTUNG_STAND ist kein Datum TT.MM.JJJJ: {BEWERTUNG_STAND}"
+    if (heute - stand).days < 0:
+        return f"BEWERTUNG_STAND {BEWERTUNG_STAND} liegt in der Zukunft: Stand ist der Tag des Ablesens."
+    if not re.fullmatch(BEWERTUNG_PROFIL_FORM, BEWERTUNG_LINK):
+        return (f"BEWERTUNG_LINK ist keine Profiladresse (nur https://g.page/…, https://maps.app.goo.gl/… oder "
+                f"https://www.google.com/maps/place/…): {BEWERTUNG_LINK}")
+    foto = bewertung_foto(stand)
+    try:
+        echt = foto.read_bytes()[:8] == PNG_KOPF
+    except OSError:
+        echt = False
+    if not echt:
+        return (f"Beleg fehlt: {foto} (Bildschirmfoto des Google-Profils vom Tag des Stands, PNG). "
+                "Erst ablesen und ablegen, dann einschalten.")
+    return None
+
+
+def bewertung_foto(stand):
+    """Pfad des Belegs zum Stand: belege/bewertung-JJJJ-MM-TT.png (Spieltheoretiker r2, M3)."""
+    return BELEGE / f"bewertung-{stand:%Y-%m-%d}.png"
+
+
+def bewertung_veraltet(heute=None):
+    """Stand älter als BEWERTUNG_HOECHSTALTER_TAGE: Der Bau lässt den Kasten weg, statt abzubrechen (M3 e). Ein Abbruch
+    träfe den nächsten fremden Bau und legte „Stand = heute“ ohne Ablesen nahe. Nur nach bewertung_fehler() rufen."""
+    stand = datetime.datetime.strptime(BEWERTUNG_STAND, "%d.%m.%Y").date()
+    return ((heute or datetime.date.today()) - stand).days > BEWERTUNG_HOECHSTALTER_TAGE
+
+
+def bewertung_meldung(heute=None):
+    """Die laute Zeile für Bau und --pruefen, oder None."""
+    if BEWERTUNG_ZEIGEN and not bewertung_fehler(heute) and bewertung_veraltet(heute):
+        return f"BEWERTUNG VERALTET, Kasten weggelassen: Stand {BEWERTUNG_STAND}"
+    return None
+
+
+def bewertung_zeile():
+    """Die Zeile im Kasten, wortgleich mit der Seite. DEPLOY.md, Schritt 2, gibt sie der Wörtersperre als Ausnahme
+    (python bauen.py --bewertungszeile), damit nur genau dieser belegte Satz durchgeht und keine andere „4,9“."""
+    return (f"{BEWERTUNG_NOTE} von 5 bei Google, {BEWERTUNG_ANZAHL} Bewertungen seit {BEWERTUNG_SEIT}, "
+            f"Stand {BEWERTUNG_STAND}")
+
+
+def vertrauen():
+    """O1: Bewertungskasten und Namenszeile unter der Sternchenerklärung, je mit eigenem Schalter. Leer, wenn beide
+    aus sind; bauen() nimmt dann die ganze Zeile mit dem Platzhalter heraus."""
+    e = html.escape
+    teile = []
+    if BEWERTUNG_ZEIGEN:
+        fehler = bewertung_fehler()
+        if fehler:
+            sys.exit(fehler)
+    if BEWERTUNG_ZEIGEN and not bewertung_veraltet():
+        teile.append(f'<div class="bewertung"><a href="{e(BEWERTUNG_LINK)}" rel="noopener">{e(bewertung_zeile())}</a>'
+                     f'<p>{e(BEWERTUNG_HINWEIS)}</p></div>')
+    if NAME_ZEIGEN:
+        teile.append(f'<p class="name-zeile">{e(NAME_TEXT)}</p>')
+    return "\n      ".join(teile)
+
+
+def ohne_kommentare(text):
+    """Interne Notizen (<!-- ... -->) gehören in die Quelle, nicht in die ausgelieferte Seite (Conversion-Prüfung
+    19.11.2026, Nebenfund). Erst Zeilen, die nur aus einem Kommentar bestehen (auch über mehrere Zeilen), samt
+    Zeilenende, dann jeder übrige Kommentar für sich. Ein Kommentar endet am ersten -->: Der Ausdruck (?:(?!-->).)*
+    läuft nie über ein --> hinweg, so bleibt Inhalt zwischen zwei Kommentaren stehen (Programmierer r2, F3). Ein nicht
+    geschlossenes <!-- bleibt stehen und bricht den Bau an der Kommentarsperre in bauen() ab."""
+    text = re.sub(r"^[ \t]*<!--(?:(?!-->).)*-->[ \t]*\n", "", text, flags=re.S | re.M)
+    return re.sub(r"[ \t]*<!--(?:(?!-->).)*-->", "", text, flags=re.S)
 
 
 def nur_text(roh):
@@ -159,10 +304,15 @@ def bauen(name, meta):
         inhalt = re.sub(r"[ \t]*<!--/?FOTOS-->\n?", "", inhalt)
     else:
         inhalt = re.sub(r"[ \t]*<!--FOTOS-->.*?<!--/FOTOS-->\n?", "", inhalt, flags=re.S)
+    vertrauen_html = vertrauen()
+    if not vertrauen_html:  # beide aus, oder nur die Bewertung an und veraltet: die Zeile fällt ganz weg
+        inhalt = re.sub(r"^[ \t]*\{\{vertrauen\}\}[ \t]*\n", "", inhalt, flags=re.M)
+    schale, inhalt = ohne_kommentare(schale), ohne_kommentare(inhalt)
     # Inhalt zuerst einsetzen, damit seine Platzhalter (WhatsApp, Rückruf) in der Schleife mit ersetzt werden.
     werte = {"inhalt": inhalt.strip()}
     werte.update(meta)
     werte["noindex"] = '<meta name="robots" content="noindex">' if NOINDEX else ""
+    werte["vertrauen"] = vertrauen_html
     werte.update(GLOBAL)
     seite = schale
     for schluessel, wert in werte.items():
@@ -171,12 +321,20 @@ def bauen(name, meta):
         seite = seite.replace("{{faq_jsonld}}", faq_jsonld(seite))
     if "{{" in seite:
         sys.exit(f"{name}: Platzhalter offen: {seite[seite.index('{{'):seite.index('{{') + 30]}")
+    if "<!--" in seite:
+        sys.exit(f"{name}: Kommentar in der gebauten Seite: {seite[seite.index('<!--'):seite.index('<!--') + 60]}")
     return seite
 
 
 def main():
+    if "--bewertungszeile" in sys.argv:
+        print(bewertung_zeile())
+        return
     sperre_noindex()
     pruefen = "--pruefen" in sys.argv
+    meldung = bewertung_meldung()
+    if meldung:  # laut, in Bau und Prüfung; der Exit bleibt davon unberührt
+        print(meldung)
     abweichungen = 0
     for name, meta in SEITEN.items():
         neu = bauen(name, meta)

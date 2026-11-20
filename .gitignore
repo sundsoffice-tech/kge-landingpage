@@ -1,1 +1,4 @@
 __pycache__/
+# Arbeitsberichte, Messpakete und Bilder eines Bauers bleiben lokal: Das Repo ist öffentlich, und ausrollen.sh
+# liefert per git archive alles Verfolgte aus (Programmierer kge-cta-r2, F1).
+_bericht/

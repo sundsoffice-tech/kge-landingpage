@@ -321,8 +321,10 @@
 
   /* Würde der Banner einen Hero-Knopf oder die Sternchenerklärung verdecken? Gerechnet mit der gemessenen
      Kante von Banner und Anrufleiste (kante()). Die Sternchenerklärung gehört dazu, weil sie bei 390 x 664 sonst nach 4 s unter dem
-     Banner lag (Spieltheoretiker 17.11.2026, M2). */
-  var FREI_HALTEN = ".hero .knoepfe .knopf, .hero .stern";
+     Banner lag (Spieltheoretiker 17.11.2026, M2). Bewertungskasten und Namenszeile (bauen.py, BEWERTUNG_ZEIGEN und
+     NAME_ZEIGEN) gehören dazu, weil der Hinweis nach § 5b Abs. 3 UWG ohne Klick lesbar bleiben muss; ohne sie lag der
+     Kasten bei 390 x 844 bis y 784 unter dem Banner ab y 734 (Bau kge-cta, 20.11.2026). */
+  var FREI_HALTEN = ".hero .knoepfe .knopf, .hero .stern, .hero .bewertung, .hero .name-zeile";
   /* Gemessene Kante: Abstand der Banner-Oberkante vom unteren Rand bei ausgeblendeter Anrufleiste (Höhe plus
      Safe-Area) und die Höhe der Leiste, falls sie sichtbar ist. Die Leiste zählt nur mit, wenn sie sichtbar ist
      (leiste.js setzt leiste-aus; Programmierer und Spieltheoretiker r2, K1). */
