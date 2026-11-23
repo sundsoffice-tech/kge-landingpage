@@ -49,7 +49,7 @@ window.KGE_KONFIG = {
     website_call: ""
   },
   einwilligungsModus: "einfach",
-  telefonAnzeige: "02161 622 57 68",
+  telefonAnzeige: "02161 688 86 91",
   leadEndpunkt: "https://leads.sundsconnect.de/lead",
   kunde: "kge"
 };

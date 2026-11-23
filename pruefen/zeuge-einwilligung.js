@@ -17,7 +17,7 @@ const fs = require("fs"), path = require("path"), vm = require("vm");
 const DATEI = process.argv[2] || path.join(__dirname, "..", "einwilligung.js");
 const QUELLE = fs.readFileSync(DATEI, "utf8");
 const SCHL = "kge-einwilligung-v2";
-const ECHT = "02161 622 57 68", ECHT_TEL = "tel:+4921616225768";
+const ECHT = "02161 688 86 91", ECHT_TEL = "tel:+4921616888691";
 const G = ["02161 000 11 22", "+49 2161 0001122"], G_ZIEL = "tel:+4921610001122";
 const ZIELE_ECHT = [ECHT_TEL, ECHT_TEL, ECHT_TEL, ECHT_TEL, ECHT_TEL, ECHT_TEL];
 const ZIELE_G = [G_ZIEL, G_ZIEL, G_ZIEL, G_ZIEL, G_ZIEL, G_ZIEL];
@@ -53,8 +53,8 @@ function passt(e, sel) {
 /* Eine Welt ist ein Dokument (ein Tab, ein Aufruf). speicher und kekse können zwei Welten teilen. */
 function welt(opt) {
   const pc = { href: ECHT_TEL, "data-messung": "phone_click" };
-  const klar1 = el("span", { "data-echte-nummer": "" }, [text("(international +49 2161 6225768)")]);
-  const klar2 = el("span", { "data-echte-nummer": "" }, [text("(+49 2161 6225768)")]);
+  const klar1 = el("span", { "data-echte-nummer": "" }, [text("(international +49 2161 6888691)")]);
+  const klar2 = el("span", { "data-echte-nummer": "" }, [text("(+49 2161 6888691)")]);
   const impressum = el("a", { href: ECHT_TEL }, [text(ECHT)]);
   const anrufLinks = opt.ohneLinks ? [] : [
     el("a", pc, [text(ECHT)]),
@@ -185,7 +185,7 @@ fall("A/B/C Laden, Tausch, Widerruf im selben Tab", () => {
   pruefe("A2 Callback: Text je Link getauscht, auch verschachtelt; „Anrufen“ bleibt", w.texte(), TEXTE_G);
   pruefe("A2 Fund 4: Impressum-Link (ohne data-messung) bleibt die echte Nummer", w.impressum(), ECHT_TEL + "|" + ECHT);
   pruefe("A2 Fund 5: Klartext neben getauschten Links ausgeblendet", w.klartextVerborgen(), [true, true]);
-  pruefe("A2 Fund 5: Klartext selbst unverändert (nur ausgeblendet)", w.klartext(), ["(international +49 2161 6225768)", "(+49 2161 6225768)"]);
+  pruefe("A2 Fund 5: Klartext selbst unverändert (nur ausgeblendet)", w.klartext(), ["(international +49 2161 6888691)", "(+49 2161 6888691)"]);
   w.callback()("02161 999 99 99", "+4921619999999");
   pruefe("A3 zweiter Callback mit anderer Nummer: ohne Wirkung", [w.ziele(), w.texte()], [ZIELE_G, TEXTE_G]);
   w.telKlick();
