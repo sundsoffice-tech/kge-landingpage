@@ -1,0 +1,62 @@
+<main>
+<section class="seitenkopf dunkel">
+  <div class="wrap">
+    <h1>Kontakt und <mark>Anfahrt</mark></h1>
+    <p>Zwei Adressen in Mönchengladbach: Besichtigt wird mit Hebebühne an der Karstraße 25, das Büro liegt an der Dahlener Straße 286 in Rheydt.</p>
+  </div>
+</section>
+
+<section class="inhalt">
+  <div class="wrap">
+    <h2>So erreichen Sie das Büro</h2>
+    <ul class="kontaktliste">
+      <li><svg><use href="#i-tel"/></svg><div><b>Telefon</b><a href="tel:+4921616888691" data-messung="phone_click">02161 688 86 91</a> <span data-echte-nummer>(international +49 2161 6888691)</span><span>Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr</span></div></li>
+      <li><svg><use href="#i-wa"/></svg><div><b>WhatsApp</b><a href="{{wa_link}}" rel="noopener" data-messung="whatsapp_click">{{wa_anzeige}}</a><span>Fotos zur ersten Einschätzung, auch außerhalb der Telefonzeiten. Antwort Mo bis Fr ab 8&nbsp;Uhr, Sa ab 9&nbsp;Uhr. Bitte nur Ihr eigenes Fahrzeug fotografieren.</span></div></li>
+      <li><svg><use href="#i-mail"/></svg><div><b>E-Mail</b><a href="mailto:info@kfz-gutachten-es.de">info@kfz-gutachten-es.de</a></div></li>
+      <li><svg><use href="#i-uhr"/></svg><div><b>Rückruf</b><a href="#rueckruf">Nummer hinterlassen</a><span>Wenn Sie gerade nicht telefonieren können.</span></div></li>
+    </ul>
+
+    <h2 id="anfahrt">Anfahrt: zwei Adressen</h2>
+    <div class="zweispaltig">
+      <div class="ort-block">
+        <h3>Besichtigung mit Hebebühne</h3>
+        <address class="anschrift">Karstraße 25<br>41068 Mönchengladbach</address>
+        <p>Hierhin kommen Sie mit Ihrem Fahrzeug, wenn die Besichtigung auf der Hebebühne stattfindet. Den Termin vereinbaren Sie vorher am Telefon. Die Hebebühne steht in einer eigenständigen Werkstatt. Reparieren lassen Sie, wo Sie wollen.</p>
+        <a class="weiter" href="https://www.google.com/maps/dir/?api=1&amp;destination=Karstra%C3%9Fe+25%2C+41068+M%C3%B6nchengladbach" rel="noopener">Route zur Karstraße 25 in Google Maps<svg><use href="#i-pfeil"/></svg></a>
+      </div>
+      <div class="ort-block">
+        <h3>Büro und Postanschrift</h3>
+        <address class="anschrift">Dahlener Straße 286<br>41239 Mönchengladbach</address>
+        <p>Das Büro liegt in Rheydt. Hierhin geht die Post. Wenn Sie persönlich vorbeikommen möchten, rufen Sie bitte vorher an.</p>
+        <a class="weiter" href="https://www.google.com/maps/dir/?api=1&amp;destination=Dahlener+Stra%C3%9Fe+286%2C+41239+M%C3%B6nchengladbach" rel="noopener">Route zur Dahlener Straße 286 in Google Maps<svg><use href="#i-pfeil"/></svg></a>
+      </div>
+    </div>
+
+    <h2 id="einsatzgebiet">Ihr Fahrzeug steht woanders?</h2>
+    <p>Cihan Es besichtigt auch dort, wo Ihr Fahrzeug steht: zu Hause, beim Arbeitgeber oder in der Werkstatt Ihrer Wahl. In Mönchengladbach mit allen Stadtteilen und in Viersen, Willich, Korschenbroich, Neuss, Kaarst und Grevenbroich.</p>
+    <a class="weiter" href="umland.html">Einsatzgebiet und Besichtigung vor Ort<svg><use href="#i-pfeil"/></svg></a>
+  </div>
+</section>
+
+<section class="abschnitt dunkel" id="rueckruf">
+  <div class="wrap zweispaltig">
+    <div>
+      <h2>Rückruf anfordern</h2>
+      <p class="vorspann">Sie können gerade nicht telefonieren? Hinterlassen Sie Ihre Nummer. Der Rückruf kommt Mo bis Fr ab 8&nbsp;Uhr, Sa ab 9&nbsp;Uhr.</p>
+    </div>
+    <form class="formular" id="rueckruf-formular" novalidate aria-label="Rückruf anfordern" data-erfolg="Danke. Ihre Nummer ist angekommen. Der Rückruf kommt Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr.">
+      <p class="hinweis">Drei Felder, nur die Telefonnummer ist Pflicht.</p>
+      <label for="f-tel">Ihre Telefonnummer</label>
+      <input id="f-tel" name="telefon" type="tel" autocomplete="tel" inputmode="tel" required aria-describedby="f-status" placeholder="z. B. 0177 1234567">
+      <label for="f-name">Ihr Name <span class="frei">(freiwillig)</span></label>
+      <input id="f-name" name="name" type="text" autocomplete="name">
+      <label for="f-text">Was ist passiert? <span class="frei">(freiwillig)</span></label>
+      <textarea id="f-text" name="nachricht" rows="3" placeholder="z. B. Auffahrunfall gestern in Rheydt, Heck beschädigt, Gegner hat Schuld eingeräumt"></textarea>
+      <div class="honig" aria-hidden="true"><label for="f-website">Website</label><input id="f-website" name="website" type="checkbox" tabindex="-1" autocomplete="off"></div>
+      <button class="knopf" type="submit">Rückruf anfordern</button>
+      <p class="status" id="f-status" role="status" aria-live="polite"></p>
+      <p class="datenschutz">Ihre Angaben werden nur für den Rückruf genutzt. Die Anfrage geht an einen Server in Deutschland. Mehr dazu im <a class="ziel" href="datenschutz.html#formular">Datenschutz</a>.</p>
+    </form>
+  </div>
+</section>
+</main>

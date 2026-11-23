@@ -35,7 +35,7 @@ WHATSAPP_TEXT = "Hallo%2C%20ich%20hatte%20einen%20Unfall%20und%20schicke%20Fotos
 # die Seite die Uhrzeiten selbst, damit dieselbe Wendung je Seite höchstens zweimal steht (Künstler Runde 3, Ä1).
 # Nach Bestätigung zum Beispiel RUECKRUF_WERKTAGS = "innerhalb einer Stunde".
 RUECKRUF_WERKTAGS = "zeitnah"
-RUECKRUF_SONST = "sobald wir wieder am Telefon sind"
+RUECKRUF_SONST = "sobald das Telefon wieder besetzt ist"
 
 # Betriebsfotos: False blendet die Bildplätze (<!--FOTOS--> bis <!--/FOTOS--> in inhalte/) aus, bis echte
 # Fotos vom Kunden da sind. True zeigt sie wieder; dann die <img> in den Platzhaltern eintragen.
@@ -91,8 +91,34 @@ ORTSZEILE_MG = ('<p class="ortszeile"><svg><use href="#i-pin"/></svg><span class
                 '<span class="ort-teil">und&nbsp;Rheydt</span><span class="ort-teil ort-adresse">'
                 '<span class="sr">, </span>Karstraße&nbsp;25</span></span></span></p>')
 
+# Anrufzeile im Kopf der Unterseiten: Nummer als Text und als Link, steht nur hier. Auf der Startseite trägt der
+# Knopf im Hero die Nummer. Große Anrufknöpfe am Ende der Abschnitte gibt es seit dem Umbau vom 23.11.2026 nicht mehr:
+# Anrufstellen sind Kopf, ein Knopf oder diese Zeile oben, die Anrufleiste am Handy und der Kontaktabschnitt.
+RUF_ZEILE = ('<p class="ruf"><a href="tel:+4921616888691" data-messung="phone_click"><svg><use href="#i-tel"/></svg>'
+             '02161 688 86 91</a><span>Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr</span></p>')
+
+# Menü: eine Liste für die Kopfzeile (ab 1024 px) und das Handy-Menü (details, ohne JavaScript). Die Punkte führen
+# auf Seiten, nicht auf Sprungmarken der Startseite. Die Adresse umland.html bleibt, weil Anzeigen darauf zeigen;
+# sichtbar heißt die Seite Einsatzgebiet.
+MENUE = [("./", "Start"), ("ablauf.html", "Nach dem Unfall"), ("kosten.html", "Wer zahlt?"),
+         ("umland.html", "Einsatzgebiet"), ("kontakt.html", "Kontakt und Anfahrt")]
+
+
+def menue(name, mit_start, einzug):
+    """Die Links des Menüs für die Seite name; die eigene Seite trägt aria-current."""
+    eigen = "./" if name == "index.html" else name
+    zeilen = []
+    for ziel, text in MENUE:
+        if ziel == "./" and not mit_start:
+            continue
+        aktuell = ' aria-current="page"' if ziel == eigen else ""
+        zeilen.append(f'<a href="{ziel}"{aktuell}>{html.escape(text)}</a>')
+    return ("\n" + " " * einzug).join(zeilen)
+
+
 GLOBAL = {
     "ortszeile_mg": ORTSZEILE_MG,
+    "ruf": RUF_ZEILE,
     "wa_link": f"https://wa.me/{whatsapp_nummer()}?text={WHATSAPP_TEXT}",
     "wa_anzeige": WHATSAPP_ANZEIGE,
     "rueckruf_werktags": RUECKRUF_WERKTAGS,
@@ -246,52 +272,51 @@ def faq_jsonld(seite):
 
 SEITEN = {
     "index.html": {
-        "titel": "Kfz-Gutachter Mönchengladbach · Unfallgutachten vor Ort · Kfz Gutachter Es",
-        "beschreibung": "Kfz-Sachverständiger Cihan Es, Mönchengladbach: Unfallgutachten mit Besichtigung vor Ort oder auf der Hebebühne Karstraße 25. Bei unverschuldetem Unfall zahlt die gegnerische Versicherung das Gutachten. Telefon 02161 688 86 91.",
+        "titel": "Kfz-Gutachter in Mönchengladbach: Cihan Es, Unfallgutachten vor Ort | Kfz Gutachter Es",
+        "beschreibung": "Cihan Es, Kfz-Sachverständiger für Unfallschäden in Mönchengladbach. Besichtigung dort, wo Ihr Fahrzeug steht, oder auf der Hebebühne an der Karstraße 25. Büro in Rheydt. Telefon 02161 688 86 91.",
         "kanonisch": "./",
-        "nav": "",
-        "skripte": '<script src="formular.js" defer></script>',
-    },
-    "umland.html": {
-        "titel": "Kfz-Gutachter für Viersen, Willich, Neuss, Kaarst, Korschenbroich, Grevenbroich · Kfz Gutachter Es",
-        "beschreibung": "Unfall im Umland von Mönchengladbach? Kfz-Sachverständiger Cihan Es kommt zur Besichtigung nach Viersen, Willich, Korschenbroich, Neuss, Kaarst und Grevenbroich. Bei unverschuldetem Unfall zahlt die gegnerische Versicherung das Gutachten.",
-        "kanonisch": "umland.html",
-        "nav": "",
         "skripte": '<script src="formular.js" defer></script>',
     },
     "ablauf.html": {
-        "titel": "So läuft ein Unfallgutachten ab · Kfz Gutachter Es, Mönchengladbach",
-        "beschreibung": "Vom Anruf zur Besichtigung zum Gutachten: der Ablauf in drei Schritten, die ersten Schritte direkt nach dem Unfall und was im Gutachten steht. Kfz-Sachverständiger Cihan Es, Mönchengladbach.",
+        "titel": "Nach dem Unfall: erste Schritte und Weg zum Gutachten | Kfz Gutachter Es",
+        "beschreibung": "Was Sie an der Unfallstelle tun sollten, was Sie zur Besichtigung brauchen, wie ein Unfallgutachten entsteht und was darin steht. Kfz-Sachverständiger Cihan Es, Mönchengladbach.",
         "kanonisch": "ablauf.html",
-        "nav": "index.html",
         "skripte": "",
     },
     "kosten.html": {
-        "titel": "Was kostet ein Unfallgutachten? Honorar nach BVSK · Kfz Gutachter Es",
-        "beschreibung": "Wer zahlt das Gutachten nach einem Unfall, was bei Teilschuld, Bagatellschaden und Kasko gilt und wie Kfz-Sachverständige nach der BVSK-Honorarbefragung 2024 abrechnen. Kfz Gutachter Es, Mönchengladbach.",
+        "titel": "Wer zahlt das Unfallgutachten? Kosten und Honorar | Kfz Gutachter Es",
+        "beschreibung": "Wer das Gutachten nach einem Unfall zahlt, was bei Teilschuld, kleinem Schaden und Kasko gilt, was Ihnen außerdem zusteht und wie Sachverständige nach der BVSK-Honorarbefragung 2024 abrechnen.",
         "kanonisch": "kosten.html",
-        "nav": "index.html",
         "skripte": "",
     },
+    "umland.html": {
+        "titel": "Kfz-Gutachter für Viersen, Willich, Korschenbroich, Neuss und Kaarst | Kfz Gutachter Es",
+        "beschreibung": "Kfz-Sachverständiger Cihan Es aus Mönchengladbach besichtigt Unfallfahrzeuge auch in Viersen, Willich, Korschenbroich, Neuss, Kaarst und Grevenbroich: zu Hause, beim Arbeitgeber oder in der Werkstatt Ihrer Wahl.",
+        "kanonisch": "umland.html",
+        "skripte": '<script src="formular.js" defer></script>',
+    },
+    "kontakt.html": {
+        "titel": "Kontakt und Anfahrt | Kfz Gutachter Es, Mönchengladbach",
+        "beschreibung": "Telefon 02161 688 86 91, WhatsApp und Rückruf. Besichtigung mit Hebebühne an der Karstraße 25 in Mönchengladbach, Büro an der Dahlener Straße 286 in Rheydt. Telefonzeiten Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr.",
+        "kanonisch": "kontakt.html",
+        "skripte": '<script src="formular.js" defer></script>',
+    },
     "nachts-wochenende.html": {
-        "titel": "Unfall nachts oder am Wochenende · Kfz Gutachter Es, Mönchengladbach",
-        "beschreibung": "Unfall außerhalb der Bürozeiten: was Sie jetzt tun können, wie Sie uns erreichen und wann wir zurückrufen. Kfz-Sachverständiger Cihan Es, Mönchengladbach.",
+        "titel": "Unfall abends oder am Wochenende | Kfz Gutachter Es, Mönchengladbach",
+        "beschreibung": "Unfall außerhalb der Telefonzeiten: was Sie jetzt schon tun können, wie Sie das Büro erreichen und wann der Rückruf kommt. Kfz-Sachverständiger Cihan Es, Mönchengladbach.",
         "kanonisch": "nachts-wochenende.html",
-        "nav": "index.html",
         "skripte": "",
     },
     "impressum.html": {
-        "titel": "Impressum · Kfz Gutachter Es, Mönchengladbach",
+        "titel": "Impressum | Kfz Gutachter Es, Mönchengladbach",
         "beschreibung": "Anbieterkennzeichnung der Seite von Kfz Gutachter Es, Cihan Es, Mönchengladbach.",
         "kanonisch": "impressum.html",
-        "nav": "index.html",
         "skripte": "",
     },
     "datenschutz.html": {
-        "titel": "Datenschutzerklärung · Kfz Gutachter Es, Mönchengladbach",
+        "titel": "Datenschutzerklärung | Kfz Gutachter Es, Mönchengladbach",
         "beschreibung": "Welche Daten diese Seite verarbeitet: Aufruf, Rückruf-Formular, Anruf, WhatsApp, Google Ads Conversion-Messung mit Einwilligung.",
         "kanonisch": "datenschutz.html",
-        "nav": "index.html",
         "skripte": "",
     },
 }
@@ -313,6 +338,8 @@ def bauen(name, meta):
     werte.update(meta)
     werte["noindex"] = '<meta name="robots" content="noindex">' if NOINDEX else ""
     werte["vertrauen"] = vertrauen_html
+    werte["nav_kopf"] = menue(name, False, 6)
+    werte["nav_menue"] = menue(name, True, 10)
     werte.update(GLOBAL)
     seite = schale
     for schluessel, wert in werte.items():
