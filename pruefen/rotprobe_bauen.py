@@ -114,6 +114,49 @@ MUTATIONEN = [
     ("R32 sperre_bilder wird in main nicht mehr gerufen",
      '    sperre_bilder()\n',
      '    pass\n'),
+    # R33 und R35: Mit --pruefen bricht main weiter mit „Bildplatz unfall“ ab, G12 bleibt also grün; schreibend
+    # greift die Sperre gar nicht (R33) oder erst nach dem Schreiben (R35). Nur G13 sieht das (Programmierer KANN 3).
+    ("R33 sperre_bilder nur noch bei --pruefen, nicht beim Schreiben",
+     '    sperre_bilder()\n    pruefen = "--pruefen" in sys.argv\n',
+     '    pruefen = "--pruefen" in sys.argv\n    if pruefen:\n        sperre_bilder()\n'),
+    ("R35 sperre_bilder erst hinter der Seitenschleife, nach dem Schreiben",
+     '    sperre_bilder()\n'
+     '    pruefen = "--pruefen" in sys.argv\n'
+     '    meldung = bewertung_meldung()\n'
+     '    if meldung:  # laut, in Bau und Prüfung; der Exit bleibt davon unberührt\n'
+     '        print(meldung)\n'
+     '    abweichungen = 0\n'
+     '    for name, meta in SEITEN.items():\n'
+     '        neu = bauen(name, meta)\n'
+     '        ziel = HIER / name\n'
+     '        if pruefen:\n'
+     '            alt = ziel.read_text(encoding="utf-8") if ziel.exists() else ""\n'
+     '            if alt != neu:\n'
+     '                print(f"ABWEICHUNG {name}")\n'
+     '                abweichungen += 1\n'
+     '        else:\n'
+     '            ziel.write_text(neu, encoding="utf-8", newline="\\n")\n'
+     '            print(f"{name}: {len(neu.encode(\'utf-8\'))} Bytes")\n',
+     '    pruefen = "--pruefen" in sys.argv\n'
+     '    meldung = bewertung_meldung()\n'
+     '    if meldung:  # laut, in Bau und Prüfung; der Exit bleibt davon unberührt\n'
+     '        print(meldung)\n'
+     '    abweichungen = 0\n'
+     '    for name, meta in SEITEN.items():\n'
+     '        neu = bauen(name, meta)\n'
+     '        ziel = HIER / name\n'
+     '        if pruefen:\n'
+     '            alt = ziel.read_text(encoding="utf-8") if ziel.exists() else ""\n'
+     '            if alt != neu:\n'
+     '                print(f"ABWEICHUNG {name}")\n'
+     '                abweichungen += 1\n'
+     '        else:\n'
+     '            ziel.write_text(neu, encoding="utf-8", newline="\\n")\n'
+     '            print(f"{name}: {len(neu.encode(\'utf-8\'))} Bytes")\n'
+     '    sperre_bilder()\n'),
+    ("R34 FOTOS_ZEIGEN = False schaltet die Bildsperre nicht mehr ab",
+     '    if not FOTOS_ZEIGEN:\n        return\n    for platz in BILDER:',
+     '    for platz in BILDER:'),
 ]
 
 
