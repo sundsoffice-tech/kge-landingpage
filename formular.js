@@ -13,7 +13,7 @@
   var konfig = window.KGE_KONFIG || {};
   var ENDPUNKT = konfig.leadEndpunkt || "https://leads.sundsconnect.de/lead";
   var KUNDE = konfig.kunde || "kge";
-  var TELEFON = konfig.telefonAnzeige || "02161 622 57 68";
+  var TELEFON = konfig.telefonAnzeige || "02161 688 86 91";
   var TELEFON_LINK = "tel:+" + (TELEFON.replace(/\D/g, "").replace(/^0/, "49"));
 
   var form = document.getElementById("rueckruf-formular");

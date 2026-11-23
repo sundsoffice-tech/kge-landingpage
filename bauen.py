@@ -247,7 +247,7 @@ def faq_jsonld(seite):
 SEITEN = {
     "index.html": {
         "titel": "Kfz-Gutachter Mönchengladbach · Unfallgutachten vor Ort · Kfz Gutachter Es",
-        "beschreibung": "Kfz-Sachverständiger Cihan Es, Mönchengladbach: Unfallgutachten mit Besichtigung vor Ort oder auf der Hebebühne Karstraße 25. Bei unverschuldetem Unfall zahlt die gegnerische Versicherung das Gutachten. Telefon 02161 622 57 68.",
+        "beschreibung": "Kfz-Sachverständiger Cihan Es, Mönchengladbach: Unfallgutachten mit Besichtigung vor Ort oder auf der Hebebühne Karstraße 25. Bei unverschuldetem Unfall zahlt die gegnerische Versicherung das Gutachten. Telefon 02161 688 86 91.",
         "kanonisch": "./",
         "nav": "",
         "skripte": '<script src="formular.js" defer></script>',
