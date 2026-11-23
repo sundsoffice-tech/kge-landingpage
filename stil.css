@@ -498,8 +498,9 @@ main ol:not([class]) li::marker { font-weight: 700; }
 .hero-bild .bild { margin: 0; max-width: none; }
 .hero-bild .bild img { border: 0; border-radius: 0; }
 .hero-bild .bild figcaption { color: var(--hell-2); margin: 0; padding: 8px 20px 0; }
-/* Funde der Prüfung vom 23.11.2026: Sprungliste mit Luft zu ihren Linien, Wortmarke mit 44 px Trefferhöhe,
-   lange Adressen brechen um (Datenschutz lief bei 320 px auf 365 px Breite). */
+/* Funde der Prüfung vom 23.11.2026: Sprungliste mit Luft zu ihren Linien, Wortmarke mit 44 x 44 px Trefferfläche
+   (unter 380 px steht nur das Zeichen), lange Adressen im Fließtext brechen um, Seitenkopf bei 320 px kleiner. */
 .sprung { padding: 6px 0; }
-.wortmarke { min-height: 44px; }
+.wortmarke { min-height: 44px; min-width: 44px; }
+@media (max-width: 359px) { .seitenkopf h1 { font-size: 26px; } }
 .inhalt { overflow-wrap: break-word; }
