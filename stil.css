@@ -493,3 +493,14 @@ mark, .marker {
 .anschrift { font-style: normal; font-size: clamp(22px, 2.8vw, 26px); font-weight: 800; line-height: 1.25; letter-spacing: -0.02em; margin: 0 0 12px; }
 .ort-block p { color: var(--tinte-2); }
 .inhalt .kontaktliste { margin-bottom: 8px; max-width: var(--mass); }
+
+/* Themenblöcke auf „Wer zahlt?“: Zwischenüberschriften mit Luft nach oben */
+.themen h3 { margin-top: 26px; }
+.themen h3:first-child { margin-top: 0; }
+/* Listen im Fließtext: Quadrat in der Akzentfarbe statt Punkt */
+main ul:not([class]) { list-style: square; }
+main ul:not([class]) li::marker { color: var(--amber-tinte); }
+main ol:not([class]) li::marker { font-weight: 700; }
+/* Einsatzgebiet: die Ortsnamen stehen in der Überschrift, deshalb eine Stufe kleiner */
+.seitenkopf h1.lang { font-size: clamp(24px, 3.8vw, 38px); line-height: 1.15; max-width: 22em; }
+.inhalt .orte-liste { max-width: none; }
