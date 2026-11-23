@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Zeuge für die Sperren in bauen.py: Konfiguration (konfig_fehler, vor allem labels.website_call), Bewertungskasten
 (bewertung_fehler mit fester Uhr, noindex_fehler), Kommentare (ohne_kommentare und Kommentarsperre), Fotoschalter
-und der Wegfall von {{vertrauen}}. Rotprobe: pruefen/rotprobe_bauen.py.
+und der Wegfall von {{vertrauen}}. Rotprobe: pruefen/rotprobe_bauen.py. Die Regeln der gebauten Seiten (Menü, Nummer,
+„Umland“, Bilder und Nachweise, Anker) prüft pruefen/zeuge_seiten.py.
 
 Aufruf: python pruefen/zeuge_bauen.py   Exit 0, wenn jeder Fall stimmt, sonst Exit 1.
 Geprüft wird die Funktion, die sperre_noindex bei NOINDEX = False aufruft: leer ist erlaubt (kein Nummerntausch),
@@ -283,6 +284,47 @@ def main_bricht_bei_unvollstaendigem_bild():
     return False
 
 
+def schreibordner():
+    """Eigener Bauordner mit Kopien von vorlagen/ und inhalte/: main() schreibt im Zeugen dorthin, nie ins Repo."""
+    ordner = pathlib.Path(tempfile.mkdtemp(dir=WURZEL_TMP))
+    for teil in ("vorlagen", "inhalte"):
+        shutil.copytree(HIER.parent / teil, ordner / teil)
+    return ordner
+
+
+def main_schreibend(an):
+    """main() OHNE --pruefen, also schreibend, in einen eigenen Ordner (bauen.HIER), mit belegtem Platz unfall ohne
+    Bilddatei. Gibt (Abbruchmeldung oder None, geschriebene Seiten, deren Text) zurück (Programmierer Nachblick
+    6e2d4ce, KANN 3: G12 läuft nur mit --pruefen und sieht nicht, ob die Sperre vor dem Schreiben greift)."""
+    ordner = schreibordner()
+    # NOINDEX fest an: sonst läse sperre_noindex konfig.js aus dem leeren Bauordner, und G13/G14 kippten am Tag
+    # des Scharfschaltens aus einem Grund, der nichts mit der Bildsperre zu tun hat (Codex-Gegenlauf 19:15).
+    with schalter(HIER=ordner, NOINDEX=True, FOTOS_ZEIGEN=an, BILDER=tabelle(), BILDWURZEL=bildordner(vorhanden=False)), \
+            contextlib.redirect_stdout(io.StringIO()):
+        argv, sys.argv = sys.argv, ["bauen.py"]
+        abbruch = None
+        try:
+            bauen.main()
+        except SystemExit as e:
+            abbruch = str(e.code)
+        finally:
+            sys.argv = argv
+    seiten = sorted(ordner.glob("*.html"))
+    return abbruch, [p.name for p in seiten], "".join(p.read_text(encoding="utf-8") for p in seiten)
+
+
+def sperre_vor_dem_schreiben():
+    """G13: Schalter an, Platz unvollständig: Abbruch mit „Bildplatz unfall“, und keine Seite ist geschrieben."""
+    abbruch, seiten, _ = main_schreibend(True)
+    return bool(abbruch) and "Bildplatz unfall" in abbruch and seiten == []
+
+
+def sperre_aus_mit_schalter():
+    """G14: FOTOS_ZEIGEN = False schaltet die Sperre ab: kein Abbruch, alle Seiten geschrieben, keine figure."""
+    abbruch, seiten, text = main_schreibend(False)
+    return abbruch is None and seiten == sorted(bauen.SEITEN) and "<figure" not in text
+
+
 OK = None  # erwartet: keine Meldung
 FEHLER = "Meldung"  # erwartet: eine Meldung
 
@@ -360,6 +402,9 @@ WEITERE = [
     ("G10 gezeigtes Bild: Abschnitt Bildnachweise im Impressum", lambda: nachweise_im_impressum(True), True),
     ("G11 Hauptschalter aus: kein Abschnitt Bildnachweise, keine Leerzeile", lambda: nachweise_im_impressum(False), True),
     ("G12 main bricht ab, wenn ein eingetragener Bildplatz unvollständig ist", main_bricht_bei_unvollstaendigem_bild, True),
+    ("G13 main ohne --pruefen: die Bildsperre greift, bevor eine Seite geschrieben ist", sperre_vor_dem_schreiben, True),
+    ("G14 FOTOS_ZEIGEN = False schaltet die Bildsperre ab: alle Seiten geschrieben, kein Bild", sperre_aus_mit_schalter,
+     True),
     ("V1 beide Schalter aus: {{vertrauen}} samt Zeile weg, keine Leerzeile", vertrauen_aus_ohne_leerzeile, True),
     ("V2 Bewertung an, gültig: Kasten mit Profil-Link und Hinweis, Name dahinter", bewertung_im_bau, True),
     ("V3 Bewertung an mit SEIT JJJJ: der Bau bricht ab", lambda: isinstance(baue(**mit_belegen(dict(
