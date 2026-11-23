@@ -303,7 +303,7 @@
     kasten.setAttribute("aria-label", "Einwilligung zur Werbe-Messung");
     kasten.innerHTML =
       '<div class="innen">' +
-      "<p>Dürfen wir mit Google Ads messen, ob unsere Anzeige zu Ihrem Anruf geführt hat? " +
+      "<p>Darf diese Seite mit Google messen, ob eine Google-Anzeige Sie zu Ihrem Anruf geführt hat? " +
       '<a href="datenschutz.html#messung">Details</a></p>' +
       '<div class="knoepfe"><button type="button" class="nein" id="kge-e-nein">Ablehnen</button>' +
       '<button type="button" class="ja" id="kge-e-ja">Erlauben</button></div></div>';

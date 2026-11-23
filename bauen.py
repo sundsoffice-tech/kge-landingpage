@@ -51,14 +51,14 @@ BILDER = {
     "start": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": "", "vorrang": True},
     # Nach dem Unfall, vor „An der Unfallstelle“, 16:9.
     "unfall": {"datei": "bilder/unfall-blechschaden.jpg",
-               "alt": "Weißes Auto mit Schrammen und eingedrücktem Stoßfänger am Straßenrand",
-               "breite": 800, "hoehe": 450, "unterschrift": "Symbolbild",
+               "alt": "Weißes Auto auf einem Parkplatz mit Streifschaden an Kotflügel und Stoßfänger",
+               "breite": 800, "hoehe": 450, "unterschrift": "Symbolbild: Streifschaden an Kotflügel und Stoßfänger",
                "nachweis": "Seite „Nach dem Unfall“, Auto mit Schrammen: Foto von Volodymyr Dobrovolskyy, Unsplash "
                            "(Unsplash-Lizenz), Ausschnitt"},
     # Startseite, Abschnitt „Was in Ihrem Gutachten steht“, unter der Überschrift, 4:3.
     "schadendetail": {"datei": "bilder/schadendetail-lack.jpg",
-                      "alt": "Gerissener Lack am hinteren Kotflügel eines grauen Autos",
-                      "breite": 800, "hoehe": 600, "unterschrift": "Symbolbild",
+                      "alt": "Eingedrückte hintere Seitenwand mit gerissenem Lack",
+                      "breite": 800, "hoehe": 600, "unterschrift": "Symbolbild: eingedrückte Seitenwand mit gerissenem Lack",
                       "nachweis": "Startseite, Lackschaden: Foto von Kenny, Unsplash (Unsplash-Lizenz), Ausschnitt"},
     # Einsatzgebiet, neben den Ortslisten, 3:2.
     "ort": {"datei": "bilder/moenchengladbach-muenster.jpg",
@@ -372,8 +372,8 @@ SEITEN = {
         "skripte": "",
     },
     "umland.html": {
-        "titel": "Kfz-Gutachter für Viersen, Willich, Korschenbroich, Neuss und Kaarst | Kfz Gutachter Es",
-        "beschreibung": "Kfz-Sachverständiger Cihan Es aus Mönchengladbach besichtigt Unfallfahrzeuge auch in Viersen, Willich, Korschenbroich, Neuss, Kaarst und Grevenbroich: zu Hause, beim Arbeitgeber oder in der Werkstatt Ihrer Wahl.",
+        "titel": "Kfz-Gutachter für Viersen, Neuss und Kaarst | Kfz Gutachter Es",
+        "beschreibung": "Kfz-Sachverständiger Cihan Es aus Mönchengladbach besichtigt Unfallfahrzeuge in Viersen, Neuss und Kaarst, ebenso in Willich, Korschenbroich und Grevenbroich: zu Hause, beim Arbeitgeber oder in der Werkstatt Ihrer Wahl.",
         "kanonisch": "umland.html",
         "skripte": "",
     },

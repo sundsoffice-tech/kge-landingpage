@@ -486,8 +486,6 @@ main ul:not([class]) li::marker, main ul.liste-zwei li::marker { color: var(--am
 .liste-zwei { max-width: none; }
 @media (min-width: 900px) { .liste-zwei { columns: 2; column-gap: 56px; } .liste-zwei li { break-inside: avoid; } }
 main ol:not([class]) li::marker { font-weight: 700; }
-/* Einsatzgebiet: die Ortsnamen stehen in der Überschrift, deshalb eine Stufe kleiner */
-.seitenkopf h1.lang { font-size: clamp(24px, 3.8vw, 38px); line-height: 1.15; max-width: 22em; }
 .inhalt .orte-liste { max-width: none; }
 
 /* Bildplätze (FOTOS_ZEIGEN in bauen.py): Bild mit Unterschrift. Aus heißt: die Zeile fehlt ganz, kein leerer Kasten. */
