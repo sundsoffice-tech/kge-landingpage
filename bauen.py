@@ -41,7 +41,7 @@ RUECKRUF_SONST = "sobald das Telefon wieder besetzt ist"
 # Bildnachweis eingetragen sind und die Datei unter bilder/ liegt; sonst fehlt seine Zeile ganz (kein Kasten, kein
 # „Foto folgt“). In inhalte/ steht je Platz nur der Platzhalter {{bild_<name>}}. FOTOS_ZEIGEN ist der Hauptschalter:
 # False blendet alle Bilder und die Bildnachweise aus. Ist ein Platz eingetragen, aber unvollständig, bricht
-# python bauen.py ab (sperre_bilder), damit kein Bild still fehlt. Die Bildnachweise der gezeigten Plätze erscheinen
+# python bauen.py ab (sperre_bilder, Zeuge G12), damit kein Bild still fehlt. Die Bildnachweise der gezeigten Plätze erscheinen
 # im Impressum. „Symbolbild“ steht bei gekauften oder freien Bildern, die nicht den Betrieb zeigen; bei einem echten
 # Foto des Betriebs bleibt die Unterschrift leer. vorrang=True (nur das Bild oben auf der Startseite) lädt das Bild
 # bevorzugt, alle anderen laden erst beim Heranscrollen.
@@ -49,13 +49,17 @@ FOTOS_ZEIGEN = True
 BILDER = {
     # Startseite oben, über den Adressen: wartet auf das echte Foto des Kunden (Begutachtung am Fahrzeug), 4:3.
     "start": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": "", "vorrang": True},
-    # Nach dem Unfall, vor „An der Unfallstelle“, 16:9.
-    "unfall": {"datei": "bilder/unfall-blechschaden.jpg",
-               "alt": "Weißes Auto auf einem Parkplatz mit Streifschaden an Kotflügel und Stoßfänger",
-               "breite": 800, "hoehe": 450, "unterschrift": "Symbolbild: Streifschaden an Kotflügel und Stoßfänger",
-               "nachweis": "Seite „Nach dem Unfall“, Auto mit Schrammen: Foto von Volodymyr Dobrovolskyy, Unsplash "
-                           "(Unsplash-Lizenz), Ausschnitt"},
-    # Startseite, Abschnitt „Was in Ihrem Gutachten steht“, unter der Überschrift, 4:3.
+    # Nach dem Unfall, vor „An der Unfallstelle“: leer seit der Nachbesserung vom 23.11.2026, 16:9.
+    "unfall": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": ""},
+    # Wer zahlt?, in der Zeile „Kleiner Schaden“ (verdeckte Schäden hinter dem Stoßfänger), 4:3. Der Ausschnitt lässt
+    # das Markenzeichen auf der Felge weg.
+    "streifschaden": {"datei": "bilder/streifschaden-kotfluegel.jpg",
+                      "alt": "Weißes Auto auf einem Parkplatz mit Streifschaden an Kotflügel und Stoßfänger",
+                      "breite": 560, "hoehe": 420,
+                      "unterschrift": "Symbolbild: Streifschaden an Kotflügel und Stoßfänger",
+                      "nachweis": "Seite „Wer zahlt?“, Auto mit Streifschaden: Foto von Volodymyr Dobrovolskyy, "
+                                  "Unsplash (Unsplash-Lizenz), Ausschnitt"},
+    # Startseite, Abschnitt „So läuft es ab“, unter der Überschrift, 4:3.
     "schadendetail": {"datei": "bilder/schadendetail-lack.jpg",
                       "alt": "Eingedrückte hintere Seitenwand mit gerissenem Lack",
                       "breite": 800, "hoehe": 600, "unterschrift": "Symbolbild: eingedrückte Seitenwand mit gerissenem Lack",
@@ -74,9 +78,11 @@ BILDER = {
 BILDWURZEL = HIER
 
 # Bewertung im Hero (Conversion-Prüfung 19.11.2026, O1; Wortlaut nach Wettbewerbsrecht vorab 20.11.2026, Nr. 1):
-# ein Kasten unter der Sternchenerklärung, nie zwischen Knöpfen und Sternchen (sonst rückt die Kosteneinschränkung
-# vom Kostenversprechen weg). Die Zeile ist ganz ein Link aufs Google-Profil, der Hinweis nach § 5b Abs. 3 UWG steht
-# direkt darunter, ohne Klick und nicht kleiner als der Sternchentext. Keine Sternegrafik.
+# ein Kasten im Hero der Startseite. Im HTML steht er vor der Namenszeile zwischen h1 und Anrufknopf (Platzhalter
+# vertrauen), stil.css ordnet ihn per order hinter den Knopf. Die Sternchenerklärung, auf die sich die Vorgabe vom
+# 20.11.2026 bezog, gibt es seit dem 23.11.2026 nicht mehr: Lage vor dem Einschalten ansehen und neu abstimmen.
+# Die Zeile ist ganz ein Link aufs Google-Profil, der Hinweis nach § 5b Abs. 3 UWG steht direkt darunter, ohne Klick
+# und in 16 px. Keine Sternegrafik.
 # Vorgabe AUS. Vor dem Einschalten alle fünf Werte am Profil neu ablesen (SEIT = Jahr der ältesten Bewertung,
 # STAND = Tag des Ablesens) und BEWERTUNG_LINK auf die echte Profiladresse setzen (heute nur eine Kartensuche).
 # Der Bau bricht ab, wenn der Schalter AN ist und ein Wert leer ist, SEIT keine Jahreszahl von 2005 bis heute ist,
@@ -115,14 +121,6 @@ def whatsapp_nummer():
     return "49" + ziffern[1:]
 
 
-# Ortszeile der Seiten für Mönchengladbach (Start, Ablauf, Kosten, Nachts), steht nur hier (Programmierer r2, F9).
-# Wortlaut nach Wettbewerbsrecht vorab 20.11.2026. Die drei Teile und der Trenner im CSS (stil.css, „Ortszeile“):
-# Steht die Adresse am Zeilenanfang, fällt der Mittelpunkt weg; das Komma liest nur der Vorleser.
-ORTSZEILE_MG = ('<p class="ortszeile"><svg><use href="#i-pin"/></svg><span class="ort-text"><span class="ort-innen">'
-                '<span class="ort-teil ort-anfang">Kfz-Gutachter für Mönchengladbach</span> '
-                '<span class="ort-teil">und&nbsp;Rheydt</span><span class="ort-teil ort-adresse">'
-                '<span class="sr">, </span>Karstraße&nbsp;25</span></span></span></p>')
-
 # Anrufzeile im Kopf der Unterseiten: Nummer als Text und als Link, steht nur hier. Auf der Startseite trägt der
 # Knopf im Hero die Nummer. Große Anrufknöpfe am Ende der Abschnitte gibt es seit dem Umbau vom 23.11.2026 nicht mehr:
 # Anrufstellen sind Kopf, ein Knopf oder diese Zeile oben, die Anrufleiste am Handy und der Kontaktabschnitt.
@@ -149,7 +147,6 @@ def menue(name, mit_start, einzug):
 
 
 GLOBAL = {
-    "ortszeile_mg": ORTSZEILE_MG,
     "ruf": RUF_ZEILE,
     "wa_link": f"https://wa.me/{whatsapp_nummer()}?text={WHATSAPP_TEXT}",
     "wa_anzeige": WHATSAPP_ANZEIGE,
@@ -259,7 +256,7 @@ def bewertung_zeile():
 
 
 def vertrauen():
-    """O1: Bewertungskasten und Namenszeile unter der Sternchenerklärung, je mit eigenem Schalter. Leer, wenn beide
+    """O1: Bewertungskasten und Namenszeile im Hero der Startseite (zwischen h1 und Knopf), je mit eigenem Schalter. Leer, wenn beide
     aus sind; bauen() nimmt dann die ganze Zeile mit dem Platzhalter heraus."""
     e = html.escape
     teile = []

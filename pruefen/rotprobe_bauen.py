@@ -111,6 +111,9 @@ MUTATIONEN = [
     ("R31 vorrang wirkt nicht (kein fetchpriority)",
      'if b.get("vorrang") else',
      'if False else'),
+    ("R32 sperre_bilder wird in main nicht mehr gerufen",
+     '    sperre_bilder()\n',
+     '    pass\n'),
 ]
 
 

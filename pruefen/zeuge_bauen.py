@@ -268,6 +268,21 @@ def nachweise_im_impressum(an):
     return seite == seite_mit_bild("impressum.html", platz=None) and "Bildnachweise" not in seite
 
 
+def main_bricht_bei_unvollstaendigem_bild():
+    """main() mit einem eingetragenen Bildplatz ohne Bilddatei: Abbruch mit der Meldung des Platzes, bevor eine Seite
+    geschrieben wird (--pruefen schreibt ohnehin nichts)."""
+    with schalter(FOTOS_ZEIGEN=True, BILDER=tabelle(), BILDWURZEL=bildordner(vorhanden=False)), \
+            contextlib.redirect_stdout(io.StringIO()):
+        argv, sys.argv = sys.argv, ["bauen.py", "--pruefen"]
+        try:
+            bauen.main()
+        except SystemExit as e:
+            return isinstance(e.code, str) and "Bildplatz unfall" in e.code
+        finally:
+            sys.argv = argv
+    return False
+
+
 OK = None  # erwartet: keine Meldung
 FEHLER = "Meldung"  # erwartet: eine Meldung
 
@@ -344,6 +359,7 @@ WEITERE = [
     ("G9 Unterschrift leer: keine figcaption", lambda: enthaelt("<figure", fehlt=("<figcaption",), unterschrift=""), True),
     ("G10 gezeigtes Bild: Abschnitt Bildnachweise im Impressum", lambda: nachweise_im_impressum(True), True),
     ("G11 Hauptschalter aus: kein Abschnitt Bildnachweise, keine Leerzeile", lambda: nachweise_im_impressum(False), True),
+    ("G12 main bricht ab, wenn ein eingetragener Bildplatz unvollständig ist", main_bricht_bei_unvollstaendigem_bild, True),
     ("V1 beide Schalter aus: {{vertrauen}} samt Zeile weg, keine Leerzeile", vertrauen_aus_ohne_leerzeile, True),
     ("V2 Bewertung an, gültig: Kasten mit Profil-Link und Hinweis, Name dahinter", bewertung_im_bau, True),
     ("V3 Bewertung an mit SEIT JJJJ: der Bau bricht ab", lambda: isinstance(baue(**mit_belegen(dict(

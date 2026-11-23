@@ -1,6 +1,6 @@
 # Landingpage Kfz Gutachter Es: Aufbau, Bauen, Ausrollen
 
-Stand 09.11.2026 (Neuaufbau auf Zweig `neu-2026-11-09`). Zielseite der Google-Ads-Kampagne ab 16.11.2026.
+Stand 09.11.2026 (Neuaufbau auf Zweig `neu-2026-11-09`). Zielseite der Google-Ads-Kampagne ab 16.11.2026. Umbau zur Website mit Seitenmenü am 23.11.2026 (Zweig `kge/website-umbau-2026-11-23`), siehe Abschnitt „Seiten, Menü und Bildplätze“.
 
 ## Dateien
 
@@ -9,7 +9,7 @@ Stand 09.11.2026 (Neuaufbau auf Zweig `neu-2026-11-09`). Zielseite der Google-Ad
 | `vorlagen/schale.html` | Kopf, Fuß, Sticky-Callbar, Icon-Sprite, Skripte: steht genau einmal |
 | `inhalte/<seite>.html` | Inhalt je Seite (`<main>` plus JSON-LD) |
 | `bauen.py` | schreibt aus Schale und Inhalt die fertigen Seiten; `--pruefen` meldet Abweichungen (Exit 1) |
-| `index.html` | Startseite (Kopf mit Name, Adressen und Anrufknopf, Versicherung des Gegners, erste Schritte, wer zahlt, Ablauf, Gutachteninhalt, Sachverständiger, Einsatzgebiet, Fragen, Kontakt und Rückruf-Formular) |
+| `index.html` | Startseite (Kopf mit Name, Adressen und Anrufknopf, Versicherung des Gegners, Verweis auf die ersten Schritte, wer zahlt, Ablauf mit Gutachteninhalt, Über Cihan Es, Einsatzgebiet in zwei Sätzen, Fragen, Kontakt und Rückruf-Formular) |
 | `umland.html` | Seite „Einsatzgebiet“ für Viersen, Willich, Korschenbroich, Neuss, Kaarst, Grevenbroich. Die Adresse bleibt, weil Anzeigen darauf zeigen; das Wort aus dem Dateinamen steht nirgends sichtbar |
 | `kontakt.html` | „Kontakt und Anfahrt“: beide Adressen, Telefonzeiten, Rückruf-Formular |
 | `ablauf.html` („Nach dem Unfall“), `kosten.html` („Wer zahlt?“), `nachts-wochenende.html` („Abends und am Wochenende“, nur im Fuß) | Fachseiten und Sitelink-Ziele (Google lehnt Sitelinks auf Anker derselben Seite ab) |
@@ -22,7 +22,7 @@ Stand 09.11.2026 (Neuaufbau auf Zweig `neu-2026-11-09`). Zielseite der Google-Ad
 | `pruefen/` | Zeugen ohne Browser: `zeuge-einwilligung.js`, `rotprobe-einwilligung.js`, `zeuge_bauen.py`, `rotprobe_bauen.py`; werden nicht ausgeliefert |
 | `.gitattributes` | nimmt Bauquellen und Zeugen aus `git archive` aus (`export-ignore`) |
 | `schriften/` | Archivo (variable, woff2, latin und latin-ext), selbst gehostet |
-| `bilder/` | Favicon; Betriebsfotos kommen hierher (Platzhalter `<!-- FOTO: ... -->` in den Inhalten) |
+| `bilder/` | Favicon und die Bilder der Bildplätze (in den Inhalten steht je Platz `{{bild_<name>}}`, die Tabelle `BILDER` in `bauen.py` schaltet jeden Platz einzeln) |
 
 Die fertigen HTML-Dateien liegen im Repo, weil sie ohne Bauschritt ausgeliefert werden (sunds-hub, `ausrollen.sh`). Geändert wird in `inhalte/`,
 `vorlagen/` oder `stil.css`, danach `python bauen.py`. Ein direkter Edit an `index.html` geht beim nächsten Bau verloren.
@@ -81,7 +81,7 @@ Zurück, als ein Zug in derselben Stunde. Erstens, in Sekunden: auf sunds-hub `b
 
 ## Bewertung und Name (`BEWERTUNG_ZEIGEN`, `NAME_ZEIGEN` in `bauen.py`)
 
-Beide stehen im Hero der Startseite: der Name direkt unter der Überschrift, der Bewertungskasten unter dem Anrufknopf. Die Sternchenerklärung gibt es seit dem Umbau vom 23.11.2026 nicht mehr; die Lage des Kastens vor dem Einschalten neu mit dem Wettbewerbsrecht abstimmen (Vorgabe vom 20.11.2026 bezog sich auf das Sternchen). Jeder Schalter wirkt allein; sind beide aus, fällt die Zeile `{{vertrauen}}` ganz weg.
+Beide stehen im Hero der Startseite. Im HTML steht `{{vertrauen}}` zwischen h1 und Anrufknopf, der Bewertungskasten vor der Namenszeile, also über dem Knopf; `stil.css` ordnet den Kasten per `order` hinter den Knopf. Mit eingeschaltetem Kasten ist das nicht angesehen. Die Sternchenerklärung gibt es seit dem Umbau vom 23.11.2026 nicht mehr; die Lage des Kastens vor dem Einschalten neu mit dem Wettbewerbsrecht abstimmen (Vorgabe vom 20.11.2026 bezog sich auf das Sternchen). Jeder Schalter wirkt allein; sind beide aus, fällt die Zeile `{{vertrauen}}` ganz weg.
 
 `NAME_ZEIGEN = True` seit 20.11.2026: „Ihr Sachverständiger: Cihan Es“. Der Satz „Sie sprechen direkt mit Cihan Es“ kommt erst nach Bestätigung des Kunden.
 
@@ -93,7 +93,7 @@ Beide stehen im Hero der Startseite: der Name direkt unter der Überschrift, der
 4. Die fünf Werte am selben Tag am Profil ablesen: `BEWERTUNG_NOTE`, `BEWERTUNG_ANZAHL`, `BEWERTUNG_SEIT` (Jahr der ältesten Bewertung), `BEWERTUNG_STAND` (Tag des Ablesens, TT.MM.JJJJ) und `BEWERTUNG_LINK` (die echte Profiladresse, `https://g.page/…`, `https://maps.app.goo.gl/…` oder `https://www.google.com/maps/place/…`). Am selben Tag ein Bildschirmfoto des Profils als PNG nach `belege/bewertung-<JJJJ-MM-TT>.png` legen, das Datum gleich dem Stand (Stand 20.11.2026 heißt `belege/bewertung-2026-11-20.png`). Der Ausschnitt zeigt Name des Betriebs, Note, Anzahl und das Datum, aber keine einzelnen Rezensionen und keine Namen von Verfassern: Das Repo ist öffentlich. `belege/` ist vom Ausliefern ausgenommen (`.gitattributes`). Fehlt das Foto, passt sein Datum nicht oder ist es kein PNG, bricht der Bau ab. Ein altes Foto unter neuem Namen erkennt der Bau nicht; das Datum im Bild prüft der Mensch.
 5. `BEWERTUNG_ZEIGEN = True`, `python bauen.py`. Der Bau bricht ab, wenn ein Wert leer ist, ein Beleg aus Schritt 1 oder 4 fehlt, `SEIT` keine Jahreszahl von 2005 bis heute ist, der Stand in der Zukunft liegt oder der Link keine Profiladresse ist (die heutige Kartensuche bricht also ab, mit und ohne `noindex`).
 6. Wörtersperre (Schritt 2 oben): Mit eingeschaltetem Kasten meldet sie auf `index.html` einen Fund „4,9 … (Bewertungszahl ohne Beleg)“. Die Sperre kennt keine Belegliste, nur `--ausnahme` mit einem wörtlichen Satz. Deshalb geht genau die gebaute Zeile als zweite Ausnahme hinein, aus `bauen.py` gelesen, nie abgetippt: `--ausnahme "Ismet Es Kfz Meisterbetrieb e.K." --ausnahme "$(python bauen.py --bewertungszeile)"`. Damit geht nur dieser eine Satz mit Anzahl, Jahr und Stand durch; jede andere „4,9“ bleibt ein Fund. Die zweite Ausnahme nur setzen, wenn das Profilfoto aus Schritt 4 mit demselben Stand abgelegt ist (der Bau aus Schritt 5 hat das schon geprüft). Die Sperre selbst wird hier nicht geändert, sie gehört der Leadmaschine (`kunden/kfz-gutachter-es/kampagnen-vorbereitung/pruefen/`).
-7. Bilder bei 390 und 1280 ansehen. Mit eingeschaltetem Kasten weicht der Einwilligungsbalken am Handy aus (`FREI_HALTEN` in `einwilligung.js`): Bei 390 × 844 erscheint er erst nach rund 150 px Scrollen statt nach 4 s (gemessen 20.11.2026). Wer nicht scrollt, sieht ihn nicht, und dessen Klicks auf der Seite (`phone_click`, `whatsapp_click`, `form_submit`) werden nicht gemessen; den Anruf aus der Anzeige zählt Google ohne die Seite. Gewollt, weil der Hinweis nach § 5b Abs. 3 UWG nicht verdeckt werden darf.
+7. Bilder bei 390 und 1280 ansehen. Mit eingeschaltetem Kasten weicht der Einwilligungsbalken am Handy aus (`FREI_HALTEN` in `einwilligung.js`): Bei 390 × 844 erscheint er erst nach rund 150 px Scrollen statt nach 4 s (gemessen 20.11.2026 am alten Hero mit Sternchen; am Aufbau vom 23.11.2026 nicht neu gemessen). Wer nicht scrollt, sieht ihn nicht, und dessen Klicks auf der Seite (`phone_click`, `whatsapp_click`, `form_submit`) werden nicht gemessen; den Anruf aus der Anzeige zählt Google ohne die Seite. Gewollt, weil der Hinweis nach § 5b Abs. 3 UWG nicht verdeckt werden darf.
 
 Veralteter Stand: Ist `BEWERTUNG_STAND` älter als 14 Tage, bricht der Bau nicht ab, sondern baut die Seiten OHNE Kasten (die Namenszeile bleibt) und druckt „BEWERTUNG VERALTET, Kasten weggelassen: Stand <Datum>“; `--pruefen` druckt dieselbe Zeile, der Exit hängt weiter nur an Abweichungen der Seiten. So trifft ein alter Stand nicht den nächsten fremden Bau, und niemand ist versucht, den Stand ohne Ablesen auf heute zu setzen. Wer die Zeile sieht: entweder neu ablesen (Schritt 4, mit neuem Foto) oder den Bau so ausrollen, ohne Kasten. Leere oder falsche Werte, fehlende Belege und ein Stand in der Zukunft brechen weiter ab.
 
@@ -116,17 +116,24 @@ Die Seite ist seit dem 23.11.2026 eine Website mit Seitenmenü, keine Landingpag
 - **Sprache:** kein „wir“ (Einzelunternehmen) und keine Ich-Form (nicht bestätigt), sondern dritte Person und direkte Anrede. Zeitzusagen (Termin am selben Tag, 24 Stunden, Dauer der Besichtigung) und „Sie strecken nichts vor“ stehen nicht auf der Seite, bis der Kunde sie bestätigt.
 - **Bagatellgrenze:** steht je Seite einmal: Startseite im Hero, `kosten.html` unter „Kleiner Schaden“ (dazu die Tabellenzeile 750 der BVSK-Übersicht). Sternchen und Fußnoten gibt es nicht mehr.
 
-Bildplätze: jeder Platz ist einzeln schaltbar über die Tabelle `BILDER` in `bauen.py`. Ein Platz erscheint genau dann, wenn dort Datei, alt-Text, Maße und Bildnachweis eingetragen sind und die Datei unter `bilder/` liegt. Sonst fehlt seine Zeile ganz (kein Kasten, kein „Foto folgt“). `FOTOS_ZEIGEN` ist der Hauptschalter (Vorgabe an; aus blendet alle Bilder und die Bildnachweise aus). Ist ein Platz eingetragen, aber unvollständig, bricht `python bauen.py` ab.
+Bildplätze: jeder Platz ist einzeln schaltbar über die Tabelle `BILDER` in `bauen.py`. Ein Platz erscheint genau dann, wenn dort Datei, alt-Text, Maße und Bildnachweis eingetragen sind und die Datei unter `bilder/` liegt. Sonst fehlt seine Zeile ganz (kein Kasten, kein „Foto folgt“). `FOTOS_ZEIGEN` ist der Hauptschalter (Vorgabe an; aus blendet alle Bilder und die Bildnachweise aus). Ist ein Platz eingetragen, aber unvollständig, bricht `python bauen.py` ab (Zeuge G12).
 
 | Platz in `BILDER` | Stelle | Seitenverhältnis | Stand 23.11.2026 |
 |---|---|---|---|
 | `start` | Startseite oben, über den Adressen (`{{bild_start}}`), lädt bevorzugt | 4:3, 1600 px breit | leer, wartet auf das Foto des Kunden (Begutachtung am Fahrzeug) |
-| `unfall` | `ablauf.html`, vor „An der Unfallstelle“ | 16:9 | `bilder/unfall-blechschaden.jpg`, 800 x 450, Symbolbild |
-| `schadendetail` | Startseite, „Was in Ihrem Gutachten steht“, unter der Überschrift | 4:3 | `bilder/schadendetail-lack.jpg`, 800 x 600, Symbolbild |
-| `ort` | `umland.html`, neben den Ortslisten | 3:2 | `bilder/moenchengladbach-muenster.jpg`, 960 x 640, Unterschrift nennt den Ort |
+| `schadendetail` | Startseite, „So läuft es ab“, unter der Überschrift | 4:3 | `bilder/schadendetail-lack.jpg`, 800 x 600, 49 KB, Symbolbild |
+| `streifschaden` | `kosten.html`, Zeile „Kleiner Schaden“ | 4:3 | `bilder/streifschaden-kotfluegel.jpg`, 560 x 420, Symbolbild; der Ausschnitt lässt das Markenzeichen auf der Felge weg |
+| `ort` | `umland.html`, neben den Ortslisten | 3:2 | `bilder/moenchengladbach-muenster.jpg`, 960 x 640, 154 KB, Unterschrift nennt den Ort |
+| `unfall` | `ablauf.html`, vor „An der Unfallstelle“ | 16:9, 1600 px breit | leer |
 | `hebebuehne` | `umland.html`, Abschnitt Hebebühne | 16:9, 1600 px breit | leer, kein freies Bild |
 | `unterlagen` | `kosten.html`, vor „In der Regel zahlen Sie nichts“ | 16:9, 1600 px breit | leer, kein freigegebenes Bild |
 
-Die drei Bilder sind Ausschnitte aus den geprüften Vorschauen (800 und 960 px breit), ohne EXIF, als JPEG unter 100 KB. Die Originale ließen sich am 23.11.2026 nicht automatisch laden (Unsplash antwortet einem Abrufwerkzeug mit einer Browserprüfung, Wikimedia mit „Too many requests“). Wer die Originale von Hand lädt: auf dasselbe Seitenverhältnis zuschneiden, höchstens 1600 px breit, unter etwa 200 KB, EXIF entfernen, Datei ersetzen und `breite` und `hoehe` in `BILDER` anpassen. Beim Bild `unfall` das Markenzeichen auf der Felge nicht in die Bildmitte rücken.
+Die drei Bilder sind Ausschnitte aus den geprüften Vorschauen (560 bis 960 px breit), ohne EXIF, als JPEG, jedes unter 200 KB. Die Originale ließen sich am 23.11.2026 nicht automatisch laden (Unsplash antwortet einem Abrufwerkzeug mit einer Browserprüfung, Wikimedia mit „Too many requests“). Wer die Originale von Hand lädt: auf dasselbe Seitenverhältnis zuschneiden, höchstens 1600 px breit, unter etwa 200 KB, EXIF entfernen, Datei ersetzen und `breite` und `hoehe` in `BILDER` anpassen. Beim Bild `streifschaden` bleibt das Markenzeichen auf der Felge außerhalb des Ausschnitts.
 
-Jedes `<img>` trägt `width`, `height`, `alt` und `loading="lazy"` (oben `fetchpriority="high"`). Die Unterschrift „Symbolbild“ steht bei Bildern, die nicht den Betrieb zeigen; bei einem echten Foto des Betriebs bleibt `unterschrift` leer. Bildnachweise der gezeigten Plätze erscheinen als Abschnitt im Impressum. Die Bilder liegen lokal in `bilder/`, nichts wird von fremden Servern geladen.
+Jedes `<img>` trägt `width`, `height`, `alt` und `loading="lazy"` (oben `fetchpriority="high"`). Die Unterschrift beginnt mit „Symbolbild“ bei Bildern, die nicht den Betrieb zeigen; bei einem echten Foto des Betriebs bleibt `unterschrift` leer. Bildnachweise der gezeigten Plätze erscheinen als Abschnitt im Impressum. Die Bilder liegen lokal in `bilder/`, nichts wird von fremden Servern geladen.
+
+Offen (Stand 23.11.2026):
+
+- `einwilligung.js`, `FREI_HALTEN` nennt noch `.hero .stern`. Den Sternchentext gibt es nicht mehr, der Wähler trifft auf keiner Seite etwas. Der Zeuge S2 prüft nur den Wortlaut der Konstante und bleibt grün. Die Datei blieb beim Umbau bis auf den Fragesatz des Balkens unverändert; beim nächsten Eingriff den Wähler entfernen und Zeuge und Rotprobe mitziehen.
+- Die Lage des Bewertungskastens (siehe „Bewertung und Name“) ist am neuen Hero nicht angesehen und nicht mit der Rechtsprüfung abgestimmt.
+- Der Leuchtstift (Marker) steht nur noch in der h1 der Startseite, die Ortszeile über den Überschriften der Unterseiten gibt es nicht mehr.
