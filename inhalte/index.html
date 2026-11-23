@@ -12,9 +12,7 @@
       <p class="kostenzeile">Unverschuldeter Unfall, Schaden über etwa 750 Euro: Das Gutachten zahlt die Versicherung des Unfallgegners. <a href="kosten.html">Wer zahlt in welchem Fall?</a></p>
     </div>
     <div class="hero-bild">
-      <!--FOTOS--> <!-- Bildplatz: erscheint nur mit FOTOS_ZEIGEN = True in bauen.py -->
-      <figure class="bild"><img src="bilder/start-begutachtung.jpg" alt="Ein Kfz-Sachverständiger begutachtet den Schaden an einem Fahrzeug" width="1600" height="1200" fetchpriority="high"><figcaption>Symbolbild</figcaption></figure>
-      <!--/FOTOS-->
+      {{bild_start}}
       <ul class="hero-fakten">
         <li><svg><use href="#i-pin"/></svg><span><small>Besichtigung mit Hebebühne</small>Karstraße 25<br>41068 Mönchengladbach</span></li>
         <li><svg><use href="#i-pin"/></svg><span><small>Büro und Post, Rheydt</small>Dahlener Straße 286<br>41239 Mönchengladbach</span></li>
@@ -77,7 +75,7 @@
         <div><dt>Gutachten</dt><dd>Sie erhalten das Gutachten schriftlich. Bei Totalschaden dauert es länger, weil Restwertangebote eingeholt werden.</dd></div>
         <div><dt>Versand</dt><dd>Auf Wunsch geht das Gutachten direkt an die gegnerische Versicherung.</dd></div>
       </dl>
-      <p>Wie lange es dauert, sagt Ihnen Cihan Es beim ersten Gespräch.</p>
+      <p>Wie lange es dauert, erfahren Sie beim ersten Gespräch.</p>
       <a class="weiter" href="ablauf.html#mitbringen">Was Sie zur Besichtigung brauchen<svg><use href="#i-pfeil"/></svg></a>
     </div>
   </div>
@@ -85,7 +83,10 @@
 
 <section class="abschnitt" id="gutachten">
   <div class="wrap spalten">
-    <h2>Was in Ihrem Gutachten steht</h2>
+    <div>
+      <h2>Was in Ihrem Gutachten steht</h2>
+      {{bild_schadendetail}}
+    </div>
     <div>
       <ul>
         <li><b>Reparaturkosten</b> nach Herstellervorgaben.</li>

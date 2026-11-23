@@ -37,22 +37,41 @@ WHATSAPP_TEXT = "Hallo%2C%20ich%20hatte%20einen%20Unfall%20und%20schicke%20Fotos
 RUECKRUF_WERKTAGS = "zeitnah"
 RUECKRUF_SONST = "sobald das Telefon wieder besetzt ist"
 
-# Betriebsfotos: False blendet die Bildplätze (<!--FOTOS--> bis <!--/FOTOS--> in inhalte/) aus, bis echte
-# Fotos vom Kunden da sind. True zeigt sie wieder; dann die <img> in den Platzhaltern eintragen.
-FOTOS_ZEIGEN = False
-
-# Bildplätze seit 23.11.2026: je eine <figure>-Zeile zwischen <!--FOTOS--> und <!--/FOTOS--> auf der Startseite (oben),
-# auf „Nach dem Unfall“, „Wer zahlt?“ und im Einsatzgebiet (Hebebühne). Aus heißt: Die Zeile fehlt ganz, die Seite
-# trägt ohne Bild. Vor dem Einschalten die Dateien nach bilder/ legen, alt-Text und Unterschrift („Symbolbild“ nur
-# bei gekauften Bildern) in inhalte/ an das echte Bild anpassen und hier je Datei den Bildnachweis eintragen; er
-# erscheint im Impressum. Der Bau bricht bei eingeschalteten Fotos ab, wenn eine Datei, ein alt-Text, ein Maß oder
-# ein Nachweis fehlt (bild_fehler, Zeuge G1 bis G7).
-BILDNACHWEISE = {
-    "bilder/start-begutachtung.jpg": "",
-    "bilder/unfall-blechschaden.jpg": "",
-    "bilder/hebebuehne-unterboden.jpg": "",
-    "bilder/unterlagen-gutachten.jpg": "",
+# Bildplätze: jeder Platz ist einzeln schaltbar. Ein Platz erscheint genau dann, wenn hier Datei, alt-Text, Maße und
+# Bildnachweis eingetragen sind und die Datei unter bilder/ liegt; sonst fehlt seine Zeile ganz (kein Kasten, kein
+# „Foto folgt“). In inhalte/ steht je Platz nur der Platzhalter {{bild_<name>}}. FOTOS_ZEIGEN ist der Hauptschalter:
+# False blendet alle Bilder und die Bildnachweise aus. Ist ein Platz eingetragen, aber unvollständig, bricht
+# python bauen.py ab (sperre_bilder), damit kein Bild still fehlt. Die Bildnachweise der gezeigten Plätze erscheinen
+# im Impressum. „Symbolbild“ steht bei gekauften oder freien Bildern, die nicht den Betrieb zeigen; bei einem echten
+# Foto des Betriebs bleibt die Unterschrift leer. vorrang=True (nur das Bild oben auf der Startseite) lädt das Bild
+# bevorzugt, alle anderen laden erst beim Heranscrollen.
+FOTOS_ZEIGEN = True
+BILDER = {
+    # Startseite oben, über den Adressen: wartet auf das echte Foto des Kunden (Begutachtung am Fahrzeug), 4:3.
+    "start": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": "", "vorrang": True},
+    # Nach dem Unfall, vor „An der Unfallstelle“, 16:9.
+    "unfall": {"datei": "bilder/unfall-blechschaden.jpg",
+               "alt": "Weißes Auto mit Schrammen und eingedrücktem Stoßfänger am Straßenrand",
+               "breite": 800, "hoehe": 450, "unterschrift": "Symbolbild",
+               "nachweis": "Seite „Nach dem Unfall“, Auto mit Schrammen: Foto von Volodymyr Dobrovolskyy, Unsplash "
+                           "(Unsplash-Lizenz), Ausschnitt"},
+    # Startseite, Abschnitt „Was in Ihrem Gutachten steht“, unter der Überschrift, 4:3.
+    "schadendetail": {"datei": "bilder/schadendetail-lack.jpg",
+                      "alt": "Gerissener Lack am hinteren Kotflügel eines grauen Autos",
+                      "breite": 800, "hoehe": 600, "unterschrift": "Symbolbild",
+                      "nachweis": "Startseite, Lackschaden: Foto von Kenny, Unsplash (Unsplash-Lizenz), Ausschnitt"},
+    # Einsatzgebiet, neben den Ortslisten, 3:2.
+    "ort": {"datei": "bilder/moenchengladbach-muenster.jpg",
+            "alt": "Das Münster St. Vitus in Mönchengladbach, vom Park aus gesehen",
+            "breite": 960, "hoehe": 640, "unterschrift": "Mönchengladbach, Münster St. Vitus",
+            "nachweis": "Seite „Einsatzgebiet“, Münster St. Vitus: Foto von BjøRe, Wikimedia Commons (CC0), Ausschnitt"},
+    # Einsatzgebiet, Abschnitt Hebebühne: kein freies Bild gefunden, 16:9.
+    "hebebuehne": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": ""},
+    # Wer zahlt?, vor „In der Regel zahlen Sie nichts“: kein freigegebenes Bild, 16:9.
+    "unterlagen": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": ""},
 }
+# Ordner, in dem bilder/ liegt; der Zeuge setzt ihn auf einen eigenen Ordner.
+BILDWURZEL = HIER
 
 # Bewertung im Hero (Conversion-Prüfung 19.11.2026, O1; Wortlaut nach Wettbewerbsrecht vorab 20.11.2026, Nr. 1):
 # ein Kasten unter der Sternchenerklärung, nie zwischen Knöpfen und Sternchen (sonst rückt die Kosteneinschränkung
@@ -256,41 +275,52 @@ def vertrauen():
     return "\n      ".join(teile)
 
 
-def bild_fehler(inhalt, wurzel=None):
-    """Prüft die <img> eines Inhalts für eingeschaltete Fotos; gibt die Fehlermeldung zurück oder None.
-    Zeuge: pruefen/zeuge_bauen.py, G1 bis G5."""
-    wurzel = wurzel or HIER
-    for img in re.findall(r"<img\b[^>]*>", inhalt):
-        quelle = re.search(r'\bsrc="([^"]+)"', img)
-        if not quelle:
-            return f"<img> ohne src: {img[:80]}"
-        datei = quelle.group(1)
-        fehlt = [a for a in ("alt", "width", "height") if not re.search(a + r'="[^"]+"', img)]
-        if fehlt:
-            return f"{datei}: <img> ohne {', '.join(fehlt)}"
-        if not (wurzel / datei).is_file():
-            return f"{datei}: Bilddatei fehlt, FOTOS_ZEIGEN ist an"
-        if not BILDNACHWEISE.get(datei, "").strip():
-            return f"{datei}: Bildnachweis fehlt in BILDNACHWEISE"
+def bild_fehler(platz):
+    """Prüft einen Bildplatz aus BILDER; gibt die Fehlermeldung zurück oder None. Ein leerer Platz (keine Datei
+    eingetragen) ist kein Fehler, er erscheint einfach nicht. Zeuge: pruefen/zeuge_bauen.py, G1 bis G6."""
+    b = BILDER[platz]
+    datei = b["datei"]
+    if not datei:
+        return None
+    if not str(b["alt"]).strip():
+        return f"Bildplatz {platz}: alt-Text fehlt"
+    if not (isinstance(b["breite"], int) and isinstance(b["hoehe"], int) and b["breite"] > 0 and b["hoehe"] > 0):
+        return f"Bildplatz {platz}: Breite und Höhe fehlen"
+    if not str(b["nachweis"]).strip():
+        return f"Bildplatz {platz}: Bildnachweis fehlt"
+    if not (BILDWURZEL / datei).is_file():
+        return f"Bildplatz {platz}: Datei {datei} fehlt"
     return None
 
 
+def bild_html(platz):
+    """Die <figure>-Zeile eines Bildplatzes, oder leer: Hauptschalter aus, Platz nicht belegt oder unvollständig."""
+    b = BILDER[platz]
+    if not FOTOS_ZEIGEN or not b["datei"] or bild_fehler(platz):
+        return ""
+    e = html.escape
+    laden = 'fetchpriority="high"' if b.get("vorrang") else 'loading="lazy"'
+    unter = f'<figcaption>{e(b["unterschrift"])}</figcaption>' if b["unterschrift"] else ""
+    return (f'<figure class="bild"><img src="{e(b["datei"])}" alt="{e(b["alt"])}" width="{b["breite"]}" '
+            f'height="{b["hoehe"]}" {laden}>{unter}</figure>')
+
+
 def sperre_bilder():
-    """Bei eingeschalteten Fotos bricht der Bau ab, wenn ein Bildplatz unvollständig ist. Steht in main und nicht in
-    bauen(), damit der Zeuge die Seiten ohne Bilddateien bauen kann."""
+    """Ein eingetragener, aber unvollständiger Bildplatz bricht den Bau ab (bauen() selbst lässt ihn nur weg, damit
+    der Zeuge Seiten bauen kann). Steht in main."""
     if not FOTOS_ZEIGEN:
         return
-    for name in SEITEN:
-        fehler = bild_fehler(ohne_kommentare((HIER / "inhalte" / name).read_text(encoding="utf-8")))
-        if fehler:
-            sys.exit(f"{name}: {fehler}")
+    for platz in BILDER:
+        meldung = bild_fehler(platz)
+        if meldung:
+            sys.exit(meldung)
 
 
 def bildnachweise():
-    """Abschnitt fürs Impressum: nur bei eingeschalteten Fotos, je Bild eine Zeile. Leer, wenn nichts zu nennen ist;
-    bauen() nimmt dann die Zeile mit dem Platzhalter heraus."""
-    zeilen = [html.escape(n.strip()) for n in BILDNACHWEISE.values() if n.strip()]
-    if not (FOTOS_ZEIGEN and zeilen):
+    """Abschnitt fürs Impressum: je gezeigtem Bild eine Zeile. Leer, wenn kein Bild gezeigt wird; bauen() nimmt dann
+    die Zeile mit dem Platzhalter heraus."""
+    zeilen = [html.escape(BILDER[platz]["nachweis"].strip()) for platz in BILDER if bild_html(platz)]
+    if not zeilen:
         return ""
     return "<h2>Bildnachweise</h2>\n    <p>" + "<br>".join(zeilen) + "</p>"
 
@@ -377,10 +407,10 @@ SEITEN = {
 def bauen(name, meta):
     schale = (HIER / "vorlagen" / "schale.html").read_text(encoding="utf-8")
     inhalt = (HIER / "inhalte" / name).read_text(encoding="utf-8")
-    if FOTOS_ZEIGEN:
-        inhalt = re.sub(r"[ \t]*<!--/?FOTOS-->\n?", "", inhalt)
-    else:
-        inhalt = re.sub(r"[ \t]*<!--FOTOS-->.*?<!--/FOTOS-->\n?", "", inhalt, flags=re.S)
+    bilder_html = {"bild_" + platz: bild_html(platz) for platz in BILDER}
+    for schluessel, wert in bilder_html.items():
+        if not wert:  # leerer Platz: die ganze Zeile fällt weg, kein Kasten
+            inhalt = re.sub(r"^[ \t]*\{\{" + schluessel + r"\}\}[ \t]*\n", "", inhalt, flags=re.M)
     vertrauen_html = vertrauen()
     if not vertrauen_html:  # beide aus, oder nur die Bewertung an und veraltet: die Zeile fällt ganz weg
         inhalt = re.sub(r"^[ \t]*\{\{vertrauen\}\}[ \t]*\n", "", inhalt, flags=re.M)
@@ -394,6 +424,7 @@ def bauen(name, meta):
     werte["noindex"] = '<meta name="robots" content="noindex">' if NOINDEX else ""
     werte["vertrauen"] = vertrauen_html
     werte["bildnachweise"] = nachweise_html
+    werte.update(bilder_html)
     werte["nav_kopf"] = menue(name, False, 6)
     werte["nav_menue"] = menue(name, True, 10)
     werte.update(GLOBAL)

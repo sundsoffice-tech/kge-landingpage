@@ -173,7 +173,6 @@ def baue(seite="index.html", **werte):
 
 
 NAME_ZEILE = '      <p class="name-zeile">Ihr Sachverständiger: Cihan Es</p>\n'
-FOTO_TEXT = "bilder/start-begutachtung.jpg"
 
 
 def vertrauen_aus_ohne_leerzeile():
@@ -193,23 +192,6 @@ def bewertung_im_bau():
     return 0 < k < n and bauen.BEWERTUNG_HINWEIS in seite and "seit 2019, Stand" in seite
 
 
-def fotos(an):
-    seite = baue(FOTOS_ZEIGEN=an)
-    return isinstance(seite, str) and "<!--" not in seite and (FOTO_TEXT in seite) == an
-
-
-FOTO_ZEILEN = ['<figure class="bild"><img src="bilder/start-begutachtung.jpg" alt="Ein Kfz-Sachverständiger begutachtet den Schaden an einem Fahrzeug" width="1600" height="1200" fetchpriority="high"><figcaption>Symbolbild</figcaption></figure>']
-
-
-def fotos_genau():
-    """FOTOS an gegen aus: Auf der Startseite kommt genau die Zeile des Bildplatzes dazu, keine Leerzeile, nichts fällt weg."""
-    an, aus = baue(FOTOS_ZEIGEN=True), baue(FOTOS_ZEIGEN=False)
-    if not (isinstance(an, str) and isinstance(aus, str)):
-        return False
-    d = [z for z in difflib.ndiff(aus.splitlines(), an.splitlines()) if z[:2] in ("+ ", "- ")]
-    return all(z.startswith("+ ") for z in d) and [z[2:].strip() for z in d] == FOTO_ZEILEN
-
-
 def sperre_ohne_entfernen():
     """Kommentarsperre: Entfernt ohne_kommentare nichts, bricht der Bau ab (die Schale trägt Kommentare)."""
     with schalter(ohne_kommentare=lambda t: t):
@@ -220,29 +202,70 @@ def sperre_ohne_entfernen():
     return False
 
 
-BILD = '<img src="bilder/x.jpg" alt="Text" width="1600" height="900">'
 NACHWEIS = "Startseite: Foto Beispiel, Quelle Beispiel"
+EIN = {"datei": "bilder/x.jpg", "alt": "Text", "breite": 1600, "hoehe": 900, "unterschrift": "Symbolbild",
+       "nachweis": NACHWEIS}
+LEER = {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": ""}
+FIGUR = ('<figure class="bild"><img src="bilder/x.jpg" alt="Text" width="1600" height="900" loading="lazy">'
+         '<figcaption>Symbolbild</figcaption></figure>')
 
 
-def bild(datei=True, nachweis=NACHWEIS, img=BILD):
-    """bild_fehler an einem eigenen Ordner: mit oder ohne Bilddatei, mit oder ohne Nachweis, mit eigenem <img>."""
+def bildordner(vorhanden=True):
+    """Eigener Ordner je Fall, mit oder ohne die Bilddatei bilder/x.jpg."""
     ordner = pathlib.Path(tempfile.mkdtemp(dir=WURZEL_TMP))
     (ordner / "bilder").mkdir()
-    if datei:
+    if vorhanden:
         (ordner / "bilder" / "x.jpg").write_bytes(b"\xff\xd8\xff\xe0")
-    with schalter(BILDNACHWEISE={"bilder/x.jpg": nachweis}):
-        return bauen.bild_fehler("<figure>" + img + "</figure>", ordner)
+    return ordner
+
+
+def tabelle(platz="unfall", **abweichung):
+    """Bildtabelle für einen Fall: alle Plätze leer, nur platz belegt (None: keiner)."""
+    t = {p: dict(LEER) for p in bauen.BILDER}
+    if platz:
+        t[platz] = dict(EIN, **abweichung)
+    return t
+
+
+def platz_fehler(vorhanden=True, **abweichung):
+    with schalter(BILDER=tabelle(**abweichung), BILDWURZEL=bildordner(vorhanden)):
+        return bauen.bild_fehler("unfall")
+
+
+def seite_mit_bild(seite="ablauf.html", an=True, vorhanden=True, platz="unfall", **abweichung):
+    """Baut eine Seite mit eigener Bildtabelle und eigenem Bildordner; der Platz unfall steht auf ablauf.html."""
+    return baue(seite, FOTOS_ZEIGEN=an, BILDER=tabelle(platz, **abweichung), BILDWURZEL=bildordner(vorhanden))
+
+
+def schalter_aus_wie_leer():
+    """Hauptschalter aus: kein Bild, die Seite gleicht der mit leerer Tabelle."""
+    aus, leer = seite_mit_bild(an=False), seite_mit_bild(platz=None)
+    return isinstance(aus, str) and aus == leer and "<figure" not in aus
+
+
+def bild_genau():
+    """Platz belegt gegen leer: genau die eine Zeile mit der Figur mehr, keine Leerzeile, nichts fällt weg."""
+    an, aus = seite_mit_bild(), seite_mit_bild(platz=None)
+    if not (isinstance(an, str) and isinstance(aus, str)):
+        return False
+    d = [z for z in difflib.ndiff(aus.splitlines(), an.splitlines()) if z[:2] in ("+ ", "- ")]
+    return all(z.startswith("+ ") for z in d) and [z[2:].strip() for z in d] == [FIGUR]
+
+
+def enthaelt(teil, fehlt=(), **fall):
+    seite = seite_mit_bild(**fall)
+    return isinstance(seite, str) and teil in seite and not any(f in seite for f in fehlt)
 
 
 def nachweise_im_impressum(an):
-    """Impressum mit gesetztem Nachweis: Der Abschnitt steht nur bei eingeschalteten Fotos; aus gleicht die Seite der
-    ohne jeden Nachweis (keine Leerzeile, kein Platzhalter)."""
-    seite = baue("impressum.html", FOTOS_ZEIGEN=an, BILDNACHWEISE={"bilder/x.jpg": NACHWEIS})
+    """Impressum mit einem gezeigten Bild: Abschnitt Bildnachweise mit dem Nachweis. Hauptschalter aus: kein
+    Abschnitt, die Seite gleicht der mit leerer Tabelle (keine Leerzeile, kein Platzhalter)."""
+    seite = seite_mit_bild("impressum.html", an=an)
     if not isinstance(seite, str):
         return False
     if an:
         return "<h2>Bildnachweise</h2>" in seite and NACHWEIS in seite
-    return seite == baue("impressum.html", FOTOS_ZEIGEN=False, BILDNACHWEISE={"bilder/x.jpg": ""}) and "Bildnachweise" not in seite
+    return seite == seite_mit_bild("impressum.html", platz=None) and "Bildnachweise" not in seite
 
 
 OK = None  # erwartet: keine Meldung
@@ -307,16 +330,20 @@ WEITERE = [
     ("K6 nicht geschlossener Kommentar bleibt stehen (Sperre fängt ihn)", lambda: bauen.ohne_kommentare(
         "<p>A</p> <!-- offen\n<p>B</p>\n"), "<p>A</p> <!-- offen\n<p>B</p>\n"),
     ("S1 Kommentarsperre: ohne Entfernen bricht der Bau ab", sperre_ohne_entfernen, True),
-    ("F1 FOTOS_ZEIGEN = False: Bildplätze weg, 0 Kommentare", lambda: fotos(False), True),
-    ("F2 FOTOS_ZEIGEN = True: Bildplätze da, 0 Kommentare", lambda: fotos(True), True),
-    ("F3 FOTOS an gegen aus: genau die Zeile des Bildplatzes mehr, keine Leerzeile", fotos_genau, True),
-    ("G1 Fotos an, Bilddatei fehlt: Abbruch", lambda: bild(datei=False), FEHLER),
-    ("G2 Fotos an, Datei, Maße, alt und Nachweis da: baut", lambda: bild(), OK),
-    ("G3 Bildnachweis leer: Abbruch", lambda: bild(nachweis="  "), FEHLER),
-    ("G4 <img> ohne alt: Abbruch", lambda: bild(img='<img src="bilder/x.jpg" width="1600" height="900">'), FEHLER),
-    ("G5 <img> ohne height: Abbruch", lambda: bild(img='<img src="bilder/x.jpg" alt="Text" width="1600">'), FEHLER),
-    ("G6 Fotos an mit Nachweis: Abschnitt Bildnachweise im Impressum", lambda: nachweise_im_impressum(True), True),
-    ("G7 Fotos aus mit Nachweis: kein Abschnitt, keine Leerzeile", lambda: nachweise_im_impressum(False), True),
+    ("F1 Hauptschalter FOTOS_ZEIGEN aus: kein Bild, Seite wie mit leerer Tabelle", schalter_aus_wie_leer, True),
+    ("F2 Platz belegt: Figur mit Maßen, alt, lazy und Unterschrift", lambda: enthaelt(FIGUR), True),
+    ("F3 Platz belegt gegen leer: genau die Zeile der Figur mehr, keine Leerzeile", bild_genau, True),
+    ("G1 Platz eingetragen, Bilddatei fehlt: Meldung", lambda: platz_fehler(vorhanden=False), FEHLER),
+    ("G2 Datei, Maße, alt und Nachweis da: keine Meldung", lambda: platz_fehler(), OK),
+    ("G3 Bildnachweis leer: Meldung", lambda: platz_fehler(nachweis="  "), FEHLER),
+    ("G4 alt-Text leer: Meldung", lambda: platz_fehler(alt=""), FEHLER),
+    ("G5 Höhe 0: Meldung", lambda: platz_fehler(hoehe=0), FEHLER),
+    ("G6 leerer Platz (keine Datei eingetragen): keine Meldung", lambda: platz_fehler(datei=""), OK),
+    ("G7 Datei fehlt: der Platz erscheint nicht, der Bau läuft", lambda: enthaelt("<main>", fehlt=("<figure",), vorhanden=False), True),
+    ("G8 vorrang: fetchpriority statt lazy", lambda: enthaelt('fetchpriority="high"', fehlt=('loading="lazy"',), vorrang=True), True),
+    ("G9 Unterschrift leer: keine figcaption", lambda: enthaelt("<figure", fehlt=("<figcaption",), unterschrift=""), True),
+    ("G10 gezeigtes Bild: Abschnitt Bildnachweise im Impressum", lambda: nachweise_im_impressum(True), True),
+    ("G11 Hauptschalter aus: kein Abschnitt Bildnachweise, keine Leerzeile", lambda: nachweise_im_impressum(False), True),
     ("V1 beide Schalter aus: {{vertrauen}} samt Zeile weg, keine Leerzeile", vertrauen_aus_ohne_leerzeile, True),
     ("V2 Bewertung an, gültig: Kasten mit Profil-Link und Hinweis, Name dahinter", bewertung_im_bau, True),
     ("V3 Bewertung an mit SEIT JJJJ: der Bau bricht ab", lambda: isinstance(baue(**mit_belegen(dict(
