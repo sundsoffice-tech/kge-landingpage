@@ -293,7 +293,7 @@ SEITEN = {
         "titel": "Kfz-Gutachter für Viersen, Willich, Korschenbroich, Neuss und Kaarst | Kfz Gutachter Es",
         "beschreibung": "Kfz-Sachverständiger Cihan Es aus Mönchengladbach besichtigt Unfallfahrzeuge auch in Viersen, Willich, Korschenbroich, Neuss, Kaarst und Grevenbroich: zu Hause, beim Arbeitgeber oder in der Werkstatt Ihrer Wahl.",
         "kanonisch": "umland.html",
-        "skripte": '<script src="formular.js" defer></script>',
+        "skripte": "",
     },
     "kontakt.html": {
         "titel": "Kontakt und Anfahrt | Kfz Gutachter Es, Mönchengladbach",
