@@ -99,9 +99,6 @@ mark, .marker {
 .wortmarke .marke { width: 32px; height: 32px; background: var(--amber); color: var(--navy); display: grid; place-items: center; font-size: 13px; font-weight: 900; border-radius: 4px; flex: none; }
 .kopf-tel { color: var(--hell); text-decoration: none; font-weight: 700; font-size: 15px; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; min-height: 44px; padding: 8px 10px; border: 1.5px solid rgba(255,255,255,0.35); border-radius: var(--radius); }
 .kopf-tel:hover { border-color: var(--amber); color: var(--hell); }
-/* Unter 380 px passen Wortmarke und Nummer nicht nebeneinander (320 px: 372 px breit, Programmierer offen):
-   die Nummer bleibt, der Name wird nur noch vorgelesen. */
-@media (max-width: 379px) { .wortmarke-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } }
 .kopf-tel svg { width: 16px; height: 16px; }
 /* WhatsApp neben der Nummer, nur am Desktop: dort gibt es keine Anrufleiste, und WhatsApp war an 15 von 21
    Scrollstellen nicht im Bild (Conversion-Prüfung 19.11.2026, O8). Am Handy bleibt der Kopf, wie er ist. */
@@ -114,10 +111,6 @@ mark, .marker {
 }
 /* 900 bis 1099 px: Name, Navigation, Nummer und WhatsApp passen nur mit dem Symbol allein; der Name wird vorgelesen. */
 @media (min-width: 900px) and (max-width: 1099px) { .kopf-wa-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } }
-.kopf-nav { display: none; gap: 22px; font-size: 15px; }
-.kopf-nav a { color: var(--hell-2); text-decoration: none; }
-.kopf-nav a:hover { color: var(--hell); }
-@media (min-width: 900px) { .kopf-nav { display: flex; } }
 
 /* ---------- Knöpfe: harter Offset-Schatten, Radius 6 px ---------- */
 .knopf {
@@ -134,19 +127,7 @@ mark, .marker {
 .knopf:hover { background: var(--amber-hell); color: var(--navy); }
 .knopf:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--schatten-farbe); }
 .knopf:disabled, .knopf[aria-disabled="true"] { opacity: 0.6; cursor: default; transform: none; box-shadow: var(--schatten); }
-.knopf.zweit { background: var(--papier); color: var(--navy); }
-.knopf.zweit:hover { background: var(--sanft); }
-.knopf .unter { display: block; font-weight: 500; font-size: 13px; }
-@media (max-width: 379px) { .hero .knopf.zweit .unter { display: none; } }
-/* Sternchen-Link unterstrichen: axe link-in-text-block (serious) fand ihn ohne Unterscheidung vom Text (17.11.2026) */
-.fn-anker { color: inherit; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
-/* Trefferfläche mindestens 44 x 44 px, ohne dass das Sternchen größer aussieht oder der Marker sich verschiebt:
-   Polster nach allen Seiten, gleich große negative Außenabstände (11 x 30 px gemessen, Conversion-Prüfung 19.11., O10).
-   position: relative legt den Anker über den Text daneben, sonst fängt der Text die Ränder der Fläche ab. */
-.kosten-kern .fn-anker { display: inline-block; position: relative; padding: 6px 17px; margin: -6px -17px; }
-.knopf-text { display: inline-flex; flex-direction: column; align-items: flex-start; line-height: 1.3; }
 .dunkel .knopf { --schatten-farbe: #000; border-color: #000; }
-.dunkel .knopf.zweit { background: var(--hell); }
 
 /* ---------- Hero ---------- */
 .hero { background: var(--navy); color: var(--hell); padding: 28px 0 40px; position: relative; }
@@ -157,42 +138,15 @@ mark, .marker {
 }
 .hero .wrap { display: grid; gap: 28px; }
 @media (min-width: 900px) { .hero { padding: 56px 0 60px; } .hero .wrap { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); align-items: center; gap: 48px; } }
-.ortszeile { display: flex; align-items: center; gap: 8px; color: var(--hell-2); font-size: 15px; font-weight: 600; margin: 0 0 14px; }
-.ortszeile svg { width: 16px; height: 16px; color: var(--amber); flex: none; }
-/* Zweizeilig bei 320 bis 390 px (O4): die Nadel steht an der ersten Zeile, die Adresse bricht nur als Ganzes um.
-   Trenner ohne JavaScript: Jeder Teil hat 0,8em Abstand links, der Punkt sitzt per negativem Rand in diesem Abstand.
-   Der innere Block ist um 0,8em nach links verschoben und der äußere schneidet ab: Steht die Adresse am Zeilenanfang,
-   liegt ihr Punkt links außerhalb und ist weg; in derselben Zeile steht er zwischen Ort und Adresse. Drei Teile als
-   inline-block, damit Folgezeilen nicht mit abgeschnitten werden und bei 320 bis 360 px „und Rheydt · Karstraße 25“
-   eine Zeile teilen wie vorher; der negative rechte Rand des Anfangs hebt den Abstand vor „und“ auf (normales Leerzeichen). */
-.hero .ortszeile, .seitenkopf .ortszeile { align-items: flex-start; }
-.hero .ortszeile svg, .seitenkopf .ortszeile svg { margin-top: 4px; }
-.ort-text { display: block; overflow: hidden; min-width: 0; }
-.ort-innen { display: block; margin-left: -0.8em; }
-.ort-teil { display: inline-block; margin-left: 0.8em; }
-/* max-width: Der negative rechte Rand gäbe dem Anfang 0,8em mehr Platz, als sichtbar ist; bricht er selbst um
-   (Unterseiten, 18px, 360 px), lief „Mönchengladbach“ in den abgeschnittenen Rand (Runde 2, gemessen). */
-.ort-anfang { margin-right: -0.8em; max-width: calc(100% - 0.8em); }
-.ort-adresse { white-space: nowrap; }
-.ort-adresse::before { content: "·"; content: "·" / ""; display: inline-block; width: 0.8em; margin-left: -0.8em; text-align: center; }
 .hero h1 { font-size: clamp(30px, 5vw, 46px); font-weight: 900; line-height: 1.08; color: var(--hell); margin-bottom: 16px; }
 .hero .unterzeile a { color: var(--amber-hell); font-weight: 800; text-decoration: none; }
 .hero .unterzeile { font-size: 18px; line-height: 1.5; color: var(--hell); max-width: 34rem; margin-bottom: 20px; }
-/* Erklärung zum Sternchen direkt unter den Knöpfen, Normalgröße: so bleibt „Jetzt anrufen“ auch bei 320 x 568
-   ohne Scrollen sichtbar (Runde 3, vorher Unterkante 593 px); der Satz nennt die Versicherung selbst (K3). */
-.hero .stern { font-size: 16px; line-height: 1.5; color: var(--hell-2); max-width: 34rem; margin: 16px 0 0; }
 @media (min-width: 900px) { .hero .unterzeile { font-size: 20px; } }
 .hero .knoepfe { display: flex; flex-direction: column; gap: 14px; max-width: 420px; }
 @media (min-width: 540px) { .hero .knoepfe { flex-direction: row; flex-wrap: wrap; max-width: none; } }
 .hero .knopf { min-height: 58px; }
 /* 320 x 568: Hero 30 px dichter, damit der WhatsApp-Knopf mit Beschriftung über der Leiste steht statt als 5-px-Kante (Künstler Runde 3, Fund 14). */
-@media (max-width: 379px) { .hero { padding-top: 16px; } .hero .ortszeile { margin-bottom: 8px; } .hero h1 { margin-bottom: 10px; } .hero .unterzeile { margin-bottom: 14px; } }
-/* 320 px: „Ihnen.“ stand allein in der dritten Zeile und der Marker zerfiel (Künstler 17.11.2026, SOLL 3) */
-/* Gemessen bei 320 (Inhalt 288 px): Marker bei 26 px in 2 Zeilen, bei 25 px in einer; 24 px lässt Luft */
-@media (max-width: 359px) { .hero h1 { font-size: 24px; } }
-/* 360 (Inhalt 328 px): bei 30 px 2 Zeilen gemessen, bei 27 px 309,8 px breit. Bis 379 px, weil der Marker bei
-   30 px schon unter 372 px Breite umbricht und 375 (iPhone) sonst nur 3 px Luft hätte (Wissenschaftler r2). */
-@media (min-width: 360px) and (max-width: 379px) { .hero h1 { font-size: 27px; } }
+@media (max-width: 379px) { .hero { padding-top: 16px; } .hero h1 { margin-bottom: 10px; } .hero .unterzeile { margin-bottom: 14px; } }
 .zeiten { margin: 22px 0 0; color: var(--hell-2); font-size: 15px; line-height: 1.5; max-width: 34rem; }
 .zeiten b { color: var(--hell); font-weight: 700; }
 .zeiten a { color: var(--hell); }
@@ -208,7 +162,6 @@ mark, .marker {
   display: flex; align-items: flex-end;
   overflow: hidden;
 }
-.hero-bild img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
 /* Bewertungskasten und Namenszeile (O1, Schalter BEWERTUNG_ZEIGEN und NAME_ZEIGEN in bauen.py): unter der
    Sternchenerklärung, nie zwischen Knöpfen und Sternchen (Wettbewerbsrecht vorab 20.11.2026, Nr. 1 und 5b).
    Der Hinweis ist so groß wie der Sternchentext (16 px), ohne Klick, im selben Kasten. Keine Sternegrafik. */
@@ -217,33 +170,11 @@ mark, .marker {
 .bewertung a:hover { color: var(--amber-hell); }
 .bewertung p { margin: 6px 0 0; color: var(--hell-2); font-size: 16px; }
 .name-zeile { margin: 12px 0 0; color: var(--hell); font-weight: 600; font-size: 16px; }
-@media (max-width: 899px) { .hero .bewertung, .hero .name-zeile { order: 5; } }
 .hero-fakten { list-style: none; margin: 0; padding: 18px 20px 20px; width: 100%; position: relative; display: flex; flex-direction: column; }
 .hero-fakten li { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.12); font-size: 16px; line-height: 1.4; color: var(--hell); margin: 0; }
-/* Freie Gutachterwahl als erster Fakt, auf allen Breiten gleich (Spieltheoretiker r1 S2, Künstler r2 K1) */
-.hero-fakten li:nth-child(3) { order: -1; border-top: 0; }
 .hero-fakten svg { width: 22px; height: 22px; color: var(--amber); flex: none; margin-top: 1px; }
 .hero-fakten small { display: block; color: var(--hell-2); font-size: 14px; }
 @media (min-width: 900px) { .hero-bild { align-self: center; } }
-/* Handy und Tablet: die drei Fakten erscheinen im Hero statt zu fehlen. Die Sternchenerklärung bleibt direkt
-   unter den Knöpfen und in 16 px (Rechtsrunde 09.11., Spieltheoretiker 17.11. M1), danach die Telefonzeiten
-   (wer abends anruft, soll sie vorher sehen, S1), dann die Fakten mit der freien Gutachterwahl zuerst (S2).
-   Die linke Spalte löst sich auf (display: contents), damit die Reihenfolge ohne Änderung am HTML gilt. */
-@media (max-width: 899px) {
-  .hero .wrap { gap: 0; }
-  .hero .wrap > div:first-child { display: contents; }
-  .hero .ortszeile { order: 1; }
-  .hero h1 { order: 2; }
-  .hero .unterzeile { order: 3; }
-  .hero .knoepfe { order: 4; }
-  .hero .stern { order: 5; margin-top: 14px; }
-  .hero .zeiten { order: 6; margin-top: 14px; }
-  .hero-bild { order: 7; margin-top: 20px; background: var(--navy-2); border-color: rgba(255,255,255,0.12); }
-  .hero-fakten { padding: 4px 16px; max-width: none; } /* ohne max-width endeten die Linien bei 768 nach 565 von 712 px (Programmierer r1, SOLL 2) */
-  .hero-fakten li { font-size: 15px; font-weight: 600; }
-  .hero-fakten small { font-weight: 400; margin-top: 2px; }
-  .hero-fakten svg { width: 20px; height: 20px; }
-}
 
 /* ---------- Abschnitte ---------- */
 .abschnitt { padding: 44px 0; }
@@ -262,15 +193,6 @@ mark, .marker {
 /* Einzelner Link im Text mit 44 px Trefferfläche, ohne die Zeile höher zu machen (Künstler K12) */
 .ziel { display: inline-block; padding: 12px 0; margin: -12px 0; }
 .weiter svg { width: 16px; height: 16px; }
-/* Abschluss eines Abschnitts: Anrufknopf im Stil des Hero-Knopfs, der Weiter-Link als Textlink darunter
-   (Conversion-Prüfung 19.11.2026, O2). Die Anrufleiste bleibt dabei an: Der Knopf trägt nur den Anruf, die Leiste
-   auch WhatsApp; leiste.js beobachtet weiter nur den Hero-Knopf. */
-.abschluss { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 24px; }
-.abschluss .knopf { min-height: 58px; }
-.abschluss .weiter { margin-top: 0; }
-@media (max-width: 539px) { .abschluss .knopf { align-self: stretch; } }
-/* Betrieb: Knopf als drittes Rasterkind, am Desktop links unter dem Text, am Handy nach den Adressen */
-.zweispaltig > .abschluss-raster { margin-top: 0; }
 
 /* Ablauf: drei Schritte als nummerierte Reihe mit Trennlinien, keine Kacheln */
 .schritte { list-style: none; margin: 0; padding: 0; counter-reset: schritt; border-top: 2px solid var(--navy); }
@@ -289,43 +211,10 @@ mark, .marker {
 .dunkel .schritte li::before { color: var(--navy); }
 .dunkel .schritte p { color: var(--hell-2); }
 
-/* Kosten: Aussage, Rechtsgrundlage, Fußnote */
-/* Die Frage als Dachzeile, die Antwort „nichts.*“ als die eine große Aussage (Künstler 17.11.2026, SOLL 2) */
-#kosten h2 { font-size: 19px; font-weight: 700; color: var(--tinte-2); letter-spacing: 0; margin-bottom: 8px; }
-#kosten .fussnote { border-top: 1px solid var(--linie); padding-top: 14px; margin-top: 20px; }
-/* Handy und Tablet: die Fußnote zu „nichts.*“ steht direkt unter dem Kostensatz statt rund 100 px tiefer im zweiten
-   Block (Spieltheoretiker r2, S1). Beide Spalten lösen sich auf, die Reihenfolge setzt order; HTML unverändert. */
-@media (max-width: 899px) {
-  #kosten .zweispaltig { display: flex; flex-direction: column; gap: 0; }
-  #kosten .zweispaltig > div { display: contents; }
-  #kosten h2 { order: 1; }
-  #kosten .kosten-kern { order: 2; }
-  #kosten .fussnote { order: 3; margin: 0 0 22px; }
-  #kosten .zweispaltig > div:first-child > p:not(.kosten-kern) { order: 4; }
-  #kosten .rechtsgrund { order: 5; margin-top: 4px; } /* im Flex fallen Ränder nicht zusammen: 14 + 4 = 18 px wie vorher (Programmierer r3, K2) */
-  #kosten h3 { order: 7; margin-top: 28px; }
-  #kosten .zweispaltig > div:last-child > p:not(.fussnote) { order: 8; }
-  #kosten .abschluss { order: 9; margin-top: 8px; } /* Anrufknopf und Weiter-Link am Ende des Abschnitts (O2) */
-}
-.kosten-kern { font-size: clamp(26px, 7vw, 32px); font-weight: 800; line-height: 1.3; margin-bottom: 16px; max-width: 30ch; }
-.rechtsgrund { border-top: 2px solid var(--navy); border-bottom: 1px solid var(--linie); padding: 14px 0; margin: 18px 0; font-size: 15px; color: var(--tinte-2); }
-.rechtsgrund b { color: var(--tinte); }
 .fussnote { font-size: 14px; color: var(--tinte-2); line-height: 1.5; }
 .dunkel .fussnote { color: var(--hell-2); }
 
 /* Betrieb */
-.foto {
-  background: var(--sanft); border: 1px solid var(--linie); border-radius: var(--radius);
-  aspect-ratio: 4 / 3; display: flex; align-items: flex-end; padding: 14px 16px; position: relative; overflow: hidden;
-}
-.foto span { font-size: 14px; color: var(--tinte-2); font-weight: 600; }
-.foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.fotos { display: grid; gap: 14px; grid-template-columns: 1fr 1fr; margin-top: 22px; }
-@media (max-width: 539px) { .foto { aspect-ratio: 1 / 1; } }
-.adressen { list-style: none; padding: 0; margin: 0; border-top: 2px solid var(--navy); }
-.adressen li { padding: 14px 0; border-bottom: 1px solid var(--linie); margin: 0; }
-.adressen b { display: block; }
-.adressen span { color: var(--tinte-2); }
 
 /* FAQ */
 .faq details { border-bottom: 1px solid var(--linie); }
@@ -381,12 +270,11 @@ mark, .marker {
 /* Trefferfläche mindestens 44 px, ohne die Zeile zu verschieben: Polster nach oben und unten, gleich große
    negative Außenabstände (Runde 3, vorher 17 px). position: relative legt den Link über die folgende
    Textzeile, sonst fängt deren Text die untere Hälfte ab (gemessen 35 statt 45 px bei 320). */
-.kontaktliste a, .adressen a { display: inline-block; position: relative; padding: 10px 0; margin: -10px 0; }
+.kontaktliste a { display: inline-block; position: relative; padding: 10px 0; margin: -10px 0; }
 .kontaktliste span { color: var(--tinte-2); font-size: 15px; display: block; }
 .dunkel .kontaktliste { border-top-color: var(--amber); }
 .dunkel .kontaktliste span { color: var(--hell-2); }
 .dunkel .kontaktliste svg { color: var(--amber); }
-@media (max-width: 899px) { #rueckruf .kontaktliste { display: none; } }
 
 /* Tabellen (Honorarseite) */
 .tabelle { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; margin: 0 0 12px; font-size: 16px; }
@@ -406,7 +294,6 @@ mark, .marker {
 .seitenkopf { background: var(--navy); color: var(--hell); padding: 32px 0 44px; position: relative; }
 .seitenkopf h1 { font-size: clamp(30px, 5vw, 46px); font-weight: 900; line-height: 1.08; color: var(--hell); margin-bottom: 12px; }
 .seitenkopf p { color: var(--hell-2); font-size: 18px; margin: 0; max-width: 36rem; }
-.seitenkopf .ortszeile { margin-bottom: 10px; }
 /* Notruf oben auf der Nachtseite, gut sichtbar statt Fußnote (Künstler K20) */
 .seitenkopf .notruf { margin-top: 18px; padding: 12px 14px; border: 2px solid var(--amber); border-radius: var(--radius); color: var(--hell); font-size: 17px; }
 .seitenkopf .notruf b { color: var(--amber-hell); }
@@ -420,14 +307,6 @@ mark, .marker {
 .kasten { border: 1.5px solid var(--linie); border-radius: var(--radius); padding: 18px 20px; margin: 0 0 18px; background: var(--sanft); }
 .kasten p:last-child, .kasten ul:last-child { margin-bottom: 0; }
 
-/* CTA-Band für Unterseiten */
-.band { background: var(--navy); color: var(--hell); padding: 36px 0; }
-.band .wrap { display: grid; gap: 18px; }
-@media (min-width: 900px) { .band .wrap { grid-template-columns: minmax(0, 1fr) auto; align-items: center; } }
-.band h2 { color: var(--hell); margin-bottom: 6px; font-size: clamp(22px, 3vw, 30px); }
-.band p { color: var(--hell-2); margin: 0; }
-.band .knoepfe { display: flex; flex-direction: column; gap: 12px; }
-@media (min-width: 540px) { .band .knoepfe { flex-direction: row; } }
 
 /* Fuß */
 .fuss { background: var(--sanft); border-top: 1px solid var(--linie); padding: 36px 0 32px; font-size: 15px; color: var(--tinte-2); }
@@ -477,3 +356,141 @@ mark, .marker {
 
 /* Nur für Vorleser sichtbar */
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- Umbau 23.11.2026: Website mit Seitenmenü statt Landingpage ---------- */
+[id] { scroll-margin-top: 76px; }
+
+/* Kopfnavigation: ab 1024 px in der Zeile, darunter das Menü (details, funktioniert ohne JavaScript).
+   Die Menüpunkte führen auf Seiten, nicht auf Sprungmarken der Startseite. */
+.kopf-nav { display: none; gap: 20px; font-size: 15px; }
+.kopf-nav a { color: var(--hell-2); text-decoration: none; display: inline-flex; align-items: center; min-height: 44px; white-space: nowrap; }
+.kopf-nav a:hover { color: var(--hell); }
+.kopf-nav a[aria-current="page"] { color: var(--hell); box-shadow: inset 0 -3px 0 var(--amber); }
+.menue summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; min-width: 44px; padding: 8px 12px; border: 1.5px solid rgba(255,255,255,0.35); border-radius: var(--radius); color: var(--hell); font-weight: 700; font-size: 15px; white-space: nowrap; user-select: none; }
+.menue summary::-webkit-details-marker { display: none; }
+.menue summary svg { width: 18px; height: 18px; flex: none; }
+.menue summary:hover, .menue[open] summary { border-color: var(--amber); }
+.menue nav { position: absolute; left: 0; right: 0; top: 100%; z-index: 45; background: var(--navy-2); border-top: 1px solid rgba(255,255,255,0.12); border-bottom: 3px solid var(--amber); padding: 4px 16px 12px; display: flex; flex-direction: column; }
+.menue nav a { display: flex; align-items: center; min-height: 52px; color: var(--hell); text-decoration: none; font-weight: 700; font-size: 18px; border-bottom: 1px solid rgba(255,255,255,0.12); }
+.menue nav a:last-child { border-bottom: 0; }
+.menue nav a:hover { color: var(--amber-hell); }
+.menue nav a[aria-current="page"] { color: var(--amber-hell); }
+@media (min-width: 700px) { .menue nav { padding-left: 28px; padding-right: 28px; } }
+@media (min-width: 1024px) { .kopf-nav { display: flex; } .menue { display: none; } }
+/* Handy: Name, Anrufsymbol und Menü passen in eine Zeile; die Nummer steht als Text im Seitenkopf und im Fuß,
+   im Kopf wird sie vorgelesen. Ab 600 px steht sie auch im Kopf. */
+@media (max-width: 599px) {
+  .kopf-tel { padding: 8px; min-width: 44px; justify-content: center; }
+  .kopf-tel svg { width: 20px; height: 20px; }
+  .kopf-tel-nr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+
+/* Hero der Startseite: Ort, Name, ein Anrufknopf, Zeiten, eine Kostenzeile. Die Reihenfolge steht hier und gilt auf
+   allen Breiten; am Handy löst sich die linke Spalte auf, damit die Adressen ans Ende rücken. */
+.hero .wrap > div:first-child { display: flex; flex-direction: column; align-items: flex-start; }
+.hero h1 { order: 2; margin-bottom: 10px; }
+.hero .name-zeile { order: 2; margin: 0 0 16px; font-size: 20px; font-weight: 700; color: var(--hell); }
+.hero .unterzeile { order: 3; }
+.hero .knoepfe { order: 4; }
+.hero .bewertung { order: 5; }
+.hero .zeiten { order: 6; margin-top: 20px; }
+.hero .kostenzeile { order: 7; margin: 16px 0 0; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.16); font-size: 16px; line-height: 1.5; color: var(--hell); max-width: 34rem; }
+.hero .kostenzeile a { color: var(--hell); font-weight: 700; display: inline-block; padding-block: 12px; margin-block: -12px; }
+.hero .kostenzeile a:hover { color: var(--amber-hell); }
+.hero-fakten li:first-child { border-top: 0; }
+.hero-fakten small { margin-bottom: 2px; }
+.hero-fakten span { font-weight: 700; }
+.hero-fakten small { font-weight: 500; }
+.hero-fakten a { color: var(--hell); font-weight: 700; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; }
+.hero-fakten a:hover { color: var(--amber-hell); }
+.hero-fakten a svg { width: 16px; height: 16px; margin: 0; }
+@media (max-width: 899px) {
+  .hero .wrap { gap: 0; }
+  .hero .wrap > div:first-child { display: contents; }
+  .hero .knoepfe { width: 100%; }
+  .hero-bild { order: 8; margin-top: 22px; border-color: rgba(255,255,255,0.12); }
+  .hero-fakten { padding: 4px 16px; max-width: none; }
+  .hero-fakten li { font-size: 16px; }
+  .hero-fakten svg { width: 20px; height: 20px; }
+}
+
+/* Abschnitte der Startseite: Überschrift links, Inhalt rechts (ab 900 px), darunter gestapelt */
+.spalten { display: grid; gap: 14px; }
+@media (min-width: 900px) { .spalten { grid-template-columns: minmax(0, 5fr) minmax(0, 8fr); gap: 56px; align-items: start; } }
+.spalten > h2 { margin-bottom: 0; }
+.spalten > div > :last-child { margin-bottom: 0; }
+.merksatz { font-size: clamp(20px, 2.6vw, 24px); font-weight: 800; line-height: 1.35; max-width: 26em; margin-bottom: 16px; }
+.abschnitt .weiter, .inhalt .weiter { margin-top: 10px; }
+
+/* Zeilen mit Begriff links und Erklärung rechts (wer zahlt, Ablauf, Besichtigungsorte): Linien, keine Kacheln */
+.zeilen { margin: 0 0 18px; padding: 0; border-top: 2px solid var(--navy); max-width: none; }
+.zeilen > div { display: grid; gap: 4px 24px; padding: 14px 0; border-bottom: 1px solid var(--linie); }
+@media (min-width: 700px) { .zeilen > div { grid-template-columns: minmax(0, 13rem) minmax(0, 1fr); } }
+.zeilen dt { font-weight: 700; }
+.zeilen dd { margin: 0; color: var(--tinte-2); max-width: var(--mass); }
+
+/* Erste Schritte in je einer Zeile: kleinere Ziffer, Text daneben */
+.schritte.kurz li { grid-template-columns: 40px minmax(0, 1fr); gap: 4px 14px; padding: 14px 0; align-items: center; }
+.schritte.kurz li::before { grid-row: 1; width: 40px; height: 40px; font-size: 22px; }
+.schritte.kurz p { grid-column: 2; color: var(--tinte-2); }
+.schritte.kurz b { color: var(--tinte); }
+
+/* Unterseiten: Nummer als Text und Link im Seitenkopf, kein Knopf (die Anrufleiste trägt den Knopf am Handy) */
+.seitenkopf .ruf { margin-top: 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 16px; font-size: 16px; color: var(--hell-2); max-width: none; }
+.seitenkopf .ruf a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--hell); font-weight: 800; font-size: 19px; text-decoration: underline; text-decoration-color: var(--amber); text-decoration-thickness: 2px; text-underline-offset: 5px; }
+.seitenkopf .ruf a:hover { color: var(--amber-hell); }
+.seitenkopf .ruf svg { width: 18px; height: 18px; color: var(--amber); flex: none; }
+
+/* Sprungliste am Anfang langer Seiten */
+.sprung { list-style: none; padding: 0; margin: 0 0 30px; display: flex; flex-wrap: wrap; gap: 0 24px; max-width: none; border-top: 2px solid var(--navy); border-bottom: 1px solid var(--linie); }
+.sprung li { margin: 0; }
+.sprung a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; text-decoration: none; }
+.sprung a:hover { text-decoration: underline; }
+
+/* Kontakt und Anfahrt: zwei Adressen, die Anschrift ist die große Zeile */
+.ort-block { border-top: 2px solid var(--navy); padding-top: 16px; }
+.ort-block h3 { color: var(--tinte-2); font-size: 16px; letter-spacing: 0; margin-bottom: 6px; }
+.anschrift { font-style: normal; font-size: clamp(22px, 2.8vw, 26px); font-weight: 800; line-height: 1.25; letter-spacing: -0.02em; margin: 0 0 12px; }
+.ort-block p { color: var(--tinte-2); }
+.inhalt .kontaktliste { margin-bottom: 8px; max-width: var(--mass); }
+
+/* Themenblöcke auf „Wer zahlt?“: Zwischenüberschriften mit Luft nach oben */
+.themen h3 { margin-top: 26px; }
+.themen h3:first-child { margin-top: 0; }
+/* Listen im Fließtext: Quadrat in der Akzentfarbe statt Punkt */
+main ul:not([class]), main ul.liste-zwei { list-style: square; }
+main ul:not([class]) li::marker, main ul.liste-zwei li::marker { color: var(--amber-tinte); }
+/* Lange Liste ab 900 px in zwei Spalten, darunter eine durchgehende Liste ohne Lücke */
+.liste-zwei { max-width: none; }
+@media (min-width: 900px) { .liste-zwei { columns: 2; column-gap: 56px; } .liste-zwei li { break-inside: avoid; } }
+main ol:not([class]) li::marker { font-weight: 700; }
+.inhalt .orte-liste { max-width: none; }
+
+/* Bildplätze (FOTOS_ZEIGEN in bauen.py): Bild mit Unterschrift. Aus heißt: die Zeile fehlt ganz, kein leerer Kasten. */
+.bild { margin: 0 0 26px; max-width: 46rem; }
+.bild img { width: 100%; height: auto; border: 1px solid var(--linie); border-radius: var(--radius); }
+.bild figcaption { font-size: 14px; color: var(--tinte-2); margin-top: 6px; }
+.hero-bild { flex-direction: column; align-items: stretch; }
+.hero-bild .bild { margin: 0; max-width: none; }
+.hero-bild .bild img { border: 0; border-radius: 0; }
+.hero-bild .bild figcaption { color: var(--hell-2); margin: 0; padding: 8px 20px 0; }
+/* Funde der Prüfung vom 23.11.2026: Sprungliste mit Luft zu ihren Linien, Wortmarke mit 44 x 44 px Trefferfläche
+   (unter 380 px steht nur das Zeichen), lange Adressen im Fließtext brechen um, Seitenkopf bei 320 px kleiner. */
+.sprung { padding: 6px 0; }
+.wortmarke { min-height: 44px; min-width: 44px; }
+@media (max-width: 359px) { .seitenkopf h1 { font-size: 26px; } }
+.inhalt { overflow-wrap: break-word; }
+/* Bild neben den Ortslisten (Einsatzgebiet) und unter der Abschnittsüberschrift (Startseite) */
+.zweispaltig > .bild { margin: 0 0 20px; max-width: none; }
+.spalten > div:first-child > h2:last-child { margin-bottom: 0; }
+.spalten > div:first-child > .bild { margin: 18px 0 0; max-width: 30rem; }
+/* Nachbesserung 23.11.2026 */
+/* Unter 380 px bleibt der Name im Kopf, das Zeichen fällt weg; unter 360 px trägt der Menüknopf nur das Symbol. */
+@media (max-width: 379px) { .wortmarke .marke { display: none; } }
+@media (max-width: 359px) { .menue-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } }
+/* Verweiszeile der Startseite auf „Nach dem Unfall“ */
+.abschnitt.schmal { padding: 22px 0; }
+.verweis { margin: 0; max-width: none; display: flex; flex-wrap: wrap; align-items: center; gap: 0 12px; font-size: 18px; }
+.verweis .weiter { margin-top: 0; }
+/* Bild in einer Zeile der Zeilenliste (Wer zahlt?, kleiner Schaden) */
+.zeilen dd .bild { margin: 14px 0 0; max-width: 30rem; }

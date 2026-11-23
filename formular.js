@@ -46,7 +46,7 @@
     var tel = telFeld.value.trim();
     if (!telefonGueltig(tel)) {
       telFeld.setAttribute("aria-invalid", "true");
-      melde("Bitte geben Sie eine Telefonnummer an, unter der wir Sie erreichen.", "fehler");
+      melde("Bitte geben Sie eine Telefonnummer an, unter der Sie erreichbar sind.", "fehler");
       telFeld.focus();
       return;
     }
@@ -79,7 +79,7 @@
     }).catch(function (err) {
       knopf.disabled = false;
       knopf.textContent = knopfText;
-      melde("Das hat leider nicht geklappt. Bitte rufen Sie uns direkt an: ", "fehler");
+      melde("Das hat leider nicht geklappt. Bitte rufen Sie direkt an: ", "fehler");
       var anruf = document.createElement("a");
       anruf.href = TELEFON_LINK;
       anruf.className = "ziel";

@@ -35,16 +35,54 @@ WHATSAPP_TEXT = "Hallo%2C%20ich%20hatte%20einen%20Unfall%20und%20schicke%20Fotos
 # die Seite die Uhrzeiten selbst, damit dieselbe Wendung je Seite höchstens zweimal steht (Künstler Runde 3, Ä1).
 # Nach Bestätigung zum Beispiel RUECKRUF_WERKTAGS = "innerhalb einer Stunde".
 RUECKRUF_WERKTAGS = "zeitnah"
-RUECKRUF_SONST = "sobald wir wieder am Telefon sind"
+RUECKRUF_SONST = "sobald das Telefon wieder besetzt ist"
 
-# Betriebsfotos: False blendet die Bildplätze (<!--FOTOS--> bis <!--/FOTOS--> in inhalte/) aus, bis echte
-# Fotos vom Kunden da sind. True zeigt sie wieder; dann die <img> in den Platzhaltern eintragen.
-FOTOS_ZEIGEN = False
+# Bildplätze: jeder Platz ist einzeln schaltbar. Ein Platz erscheint genau dann, wenn hier Datei, alt-Text, Maße und
+# Bildnachweis eingetragen sind und die Datei unter bilder/ liegt; sonst fehlt seine Zeile ganz (kein Kasten, kein
+# „Foto folgt“). In inhalte/ steht je Platz nur der Platzhalter {{bild_<name>}}. FOTOS_ZEIGEN ist der Hauptschalter:
+# False blendet alle Bilder und die Bildnachweise aus. Ist ein Platz eingetragen, aber unvollständig, bricht
+# python bauen.py ab (sperre_bilder, Zeuge G12), damit kein Bild still fehlt. Die Bildnachweise der gezeigten Plätze erscheinen
+# im Impressum. „Symbolbild“ steht bei gekauften oder freien Bildern, die nicht den Betrieb zeigen; bei einem echten
+# Foto des Betriebs bleibt die Unterschrift leer. vorrang=True (nur das Bild oben auf der Startseite) lädt das Bild
+# bevorzugt, alle anderen laden erst beim Heranscrollen.
+FOTOS_ZEIGEN = True
+BILDER = {
+    # Startseite oben, über den Adressen: wartet auf das echte Foto des Kunden (Begutachtung am Fahrzeug), 4:3.
+    "start": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": "", "vorrang": True},
+    # Nach dem Unfall, vor „An der Unfallstelle“: leer seit der Nachbesserung vom 23.11.2026, 16:9.
+    "unfall": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": ""},
+    # Wer zahlt?, in der Zeile „Kleiner Schaden“ (verdeckte Schäden hinter dem Stoßfänger), 4:3. Der Ausschnitt lässt
+    # das Markenzeichen auf der Felge weg.
+    "streifschaden": {"datei": "bilder/streifschaden-kotfluegel.jpg",
+                      "alt": "Weißes Auto auf einem Parkplatz mit Streifschaden an Kotflügel und Stoßfänger",
+                      "breite": 560, "hoehe": 420,
+                      "unterschrift": "Symbolbild: Streifschaden an Kotflügel und Stoßfänger",
+                      "nachweis": "Seite „Wer zahlt?“, Auto mit Streifschaden: Foto von Volodymyr Dobrovolskyy, "
+                                  "Unsplash (Unsplash-Lizenz), Ausschnitt"},
+    # Startseite, Abschnitt „So läuft es ab“, unter der Überschrift, 4:3.
+    "schadendetail": {"datei": "bilder/schadendetail-lack.jpg",
+                      "alt": "Eingedrückte hintere Seitenwand mit gerissenem Lack",
+                      "breite": 800, "hoehe": 600, "unterschrift": "Symbolbild: eingedrückte Seitenwand mit gerissenem Lack",
+                      "nachweis": "Startseite, Lackschaden: Foto von Kenny, Unsplash (Unsplash-Lizenz), Ausschnitt"},
+    # Einsatzgebiet, neben den Ortslisten, 3:2.
+    "ort": {"datei": "bilder/moenchengladbach-muenster.jpg",
+            "alt": "Das Münster St. Vitus in Mönchengladbach, vom Park aus gesehen",
+            "breite": 960, "hoehe": 640, "unterschrift": "Mönchengladbach, Münster St. Vitus",
+            "nachweis": "Seite „Einsatzgebiet“, Münster St. Vitus: Foto von BjøRe, Wikimedia Commons (CC0), Ausschnitt"},
+    # Einsatzgebiet, Abschnitt Hebebühne: kein freies Bild gefunden, 16:9.
+    "hebebuehne": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": ""},
+    # Wer zahlt?, vor „In der Regel zahlen Sie nichts“: kein freigegebenes Bild, 16:9.
+    "unterlagen": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": ""},
+}
+# Ordner, in dem bilder/ liegt; der Zeuge setzt ihn auf einen eigenen Ordner.
+BILDWURZEL = HIER
 
 # Bewertung im Hero (Conversion-Prüfung 19.11.2026, O1; Wortlaut nach Wettbewerbsrecht vorab 20.11.2026, Nr. 1):
-# ein Kasten unter der Sternchenerklärung, nie zwischen Knöpfen und Sternchen (sonst rückt die Kosteneinschränkung
-# vom Kostenversprechen weg). Die Zeile ist ganz ein Link aufs Google-Profil, der Hinweis nach § 5b Abs. 3 UWG steht
-# direkt darunter, ohne Klick und nicht kleiner als der Sternchentext. Keine Sternegrafik.
+# ein Kasten im Hero der Startseite. Im HTML steht er vor der Namenszeile zwischen h1 und Anrufknopf (Platzhalter
+# vertrauen), stil.css ordnet ihn per order hinter den Knopf. Die Sternchenerklärung, auf die sich die Vorgabe vom
+# 20.11.2026 bezog, gibt es seit dem 23.11.2026 nicht mehr: Lage vor dem Einschalten ansehen und neu abstimmen.
+# Die Zeile ist ganz ein Link aufs Google-Profil, der Hinweis nach § 5b Abs. 3 UWG steht direkt darunter, ohne Klick
+# und in 16 px. Keine Sternegrafik.
 # Vorgabe AUS. Vor dem Einschalten alle fünf Werte am Profil neu ablesen (SEIT = Jahr der ältesten Bewertung,
 # STAND = Tag des Ablesens) und BEWERTUNG_LINK auf die echte Profiladresse setzen (heute nur eine Kartensuche).
 # Der Bau bricht ab, wenn der Schalter AN ist und ein Wert leer ist, SEIT keine Jahreszahl von 2005 bis heute ist,
@@ -83,16 +121,33 @@ def whatsapp_nummer():
     return "49" + ziffern[1:]
 
 
-# Ortszeile der Seiten für Mönchengladbach (Start, Ablauf, Kosten, Nachts), steht nur hier (Programmierer r2, F9).
-# Wortlaut nach Wettbewerbsrecht vorab 20.11.2026. Die drei Teile und der Trenner im CSS (stil.css, „Ortszeile“):
-# Steht die Adresse am Zeilenanfang, fällt der Mittelpunkt weg; das Komma liest nur der Vorleser.
-ORTSZEILE_MG = ('<p class="ortszeile"><svg><use href="#i-pin"/></svg><span class="ort-text"><span class="ort-innen">'
-                '<span class="ort-teil ort-anfang">Kfz-Gutachter für Mönchengladbach</span> '
-                '<span class="ort-teil">und&nbsp;Rheydt</span><span class="ort-teil ort-adresse">'
-                '<span class="sr">, </span>Karstraße&nbsp;25</span></span></span></p>')
+# Anrufzeile im Kopf der Unterseiten: Nummer als Text und als Link, steht nur hier. Auf der Startseite trägt der
+# Knopf im Hero die Nummer. Große Anrufknöpfe am Ende der Abschnitte gibt es seit dem Umbau vom 23.11.2026 nicht mehr:
+# Anrufstellen sind Kopf, ein Knopf oder diese Zeile oben, die Anrufleiste am Handy und der Kontaktabschnitt.
+RUF_ZEILE = ('<p class="ruf"><a href="tel:+4921616888691" data-messung="phone_click"><svg><use href="#i-tel"/></svg>'
+             '02161 688 86 91</a><span>Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr</span></p>')
+
+# Menü: eine Liste für die Kopfzeile (ab 1024 px) und das Handy-Menü (details, ohne JavaScript). Die Punkte führen
+# auf Seiten, nicht auf Sprungmarken der Startseite. Die Adresse umland.html bleibt, weil Anzeigen darauf zeigen;
+# sichtbar heißt die Seite Einsatzgebiet.
+MENUE = [("./", "Start"), ("ablauf.html", "Nach dem Unfall"), ("kosten.html", "Wer zahlt?"),
+         ("umland.html", "Einsatzgebiet"), ("kontakt.html", "Kontakt und Anfahrt")]
+
+
+def menue(name, mit_start, einzug):
+    """Die Links des Menüs für die Seite name; die eigene Seite trägt aria-current."""
+    eigen = "./" if name == "index.html" else name
+    zeilen = []
+    for ziel, text in MENUE:
+        if ziel == "./" and not mit_start:
+            continue
+        aktuell = ' aria-current="page"' if ziel == eigen else ""
+        zeilen.append(f'<a href="{ziel}"{aktuell}>{html.escape(text)}</a>')
+    return ("\n" + " " * einzug).join(zeilen)
+
 
 GLOBAL = {
-    "ortszeile_mg": ORTSZEILE_MG,
+    "ruf": RUF_ZEILE,
     "wa_link": f"https://wa.me/{whatsapp_nummer()}?text={WHATSAPP_TEXT}",
     "wa_anzeige": WHATSAPP_ANZEIGE,
     "rueckruf_werktags": RUECKRUF_WERKTAGS,
@@ -201,7 +256,7 @@ def bewertung_zeile():
 
 
 def vertrauen():
-    """O1: Bewertungskasten und Namenszeile unter der Sternchenerklärung, je mit eigenem Schalter. Leer, wenn beide
+    """O1: Bewertungskasten und Namenszeile im Hero der Startseite (zwischen h1 und Knopf), je mit eigenem Schalter. Leer, wenn beide
     aus sind; bauen() nimmt dann die ganze Zeile mit dem Platzhalter heraus."""
     e = html.escape
     teile = []
@@ -215,6 +270,56 @@ def vertrauen():
     if NAME_ZEIGEN:
         teile.append(f'<p class="name-zeile">{e(NAME_TEXT)}</p>')
     return "\n      ".join(teile)
+
+
+def bild_fehler(platz):
+    """Prüft einen Bildplatz aus BILDER; gibt die Fehlermeldung zurück oder None. Ein leerer Platz (keine Datei
+    eingetragen) ist kein Fehler, er erscheint einfach nicht. Zeuge: pruefen/zeuge_bauen.py, G1 bis G6."""
+    b = BILDER[platz]
+    datei = b["datei"]
+    if not datei:
+        return None
+    if not str(b["alt"]).strip():
+        return f"Bildplatz {platz}: alt-Text fehlt"
+    if not (isinstance(b["breite"], int) and isinstance(b["hoehe"], int) and b["breite"] > 0 and b["hoehe"] > 0):
+        return f"Bildplatz {platz}: Breite und Höhe fehlen"
+    if not str(b["nachweis"]).strip():
+        return f"Bildplatz {platz}: Bildnachweis fehlt"
+    if not (BILDWURZEL / datei).is_file():
+        return f"Bildplatz {platz}: Datei {datei} fehlt"
+    return None
+
+
+def bild_html(platz):
+    """Die <figure>-Zeile eines Bildplatzes, oder leer: Hauptschalter aus, Platz nicht belegt oder unvollständig."""
+    b = BILDER[platz]
+    if not FOTOS_ZEIGEN or not b["datei"] or bild_fehler(platz):
+        return ""
+    e = html.escape
+    laden = 'fetchpriority="high"' if b.get("vorrang") else 'loading="lazy"'
+    unter = f'<figcaption>{e(b["unterschrift"])}</figcaption>' if b["unterschrift"] else ""
+    return (f'<figure class="bild"><img src="{e(b["datei"])}" alt="{e(b["alt"])}" width="{b["breite"]}" '
+            f'height="{b["hoehe"]}" {laden}>{unter}</figure>')
+
+
+def sperre_bilder():
+    """Ein eingetragener, aber unvollständiger Bildplatz bricht den Bau ab (bauen() selbst lässt ihn nur weg, damit
+    der Zeuge Seiten bauen kann). Steht in main."""
+    if not FOTOS_ZEIGEN:
+        return
+    for platz in BILDER:
+        meldung = bild_fehler(platz)
+        if meldung:
+            sys.exit(meldung)
+
+
+def bildnachweise():
+    """Abschnitt fürs Impressum: je gezeigtem Bild eine Zeile. Leer, wenn kein Bild gezeigt wird; bauen() nimmt dann
+    die Zeile mit dem Platzhalter heraus."""
+    zeilen = [html.escape(BILDER[platz]["nachweis"].strip()) for platz in BILDER if bild_html(platz)]
+    if not zeilen:
+        return ""
+    return "<h2>Bildnachweise</h2>\n    <p>" + "<br>".join(zeilen) + "</p>"
 
 
 def ohne_kommentare(text):
@@ -246,52 +351,51 @@ def faq_jsonld(seite):
 
 SEITEN = {
     "index.html": {
-        "titel": "Kfz-Gutachter Mönchengladbach · Unfallgutachten vor Ort · Kfz Gutachter Es",
-        "beschreibung": "Kfz-Sachverständiger Cihan Es, Mönchengladbach: Unfallgutachten mit Besichtigung vor Ort oder auf der Hebebühne Karstraße 25. Bei unverschuldetem Unfall zahlt die gegnerische Versicherung das Gutachten. Telefon 02161 688 86 91.",
+        "titel": "Kfz-Gutachter in Mönchengladbach: Cihan Es, Unfallgutachten vor Ort | Kfz Gutachter Es",
+        "beschreibung": "Cihan Es, Kfz-Sachverständiger für Unfallschäden in Mönchengladbach. Besichtigung dort, wo Ihr Fahrzeug steht, oder auf der Hebebühne an der Karstraße 25. Büro in Rheydt. Telefon 02161 688 86 91.",
         "kanonisch": "./",
-        "nav": "",
-        "skripte": '<script src="formular.js" defer></script>',
-    },
-    "umland.html": {
-        "titel": "Kfz-Gutachter für Viersen, Willich, Neuss, Kaarst, Korschenbroich, Grevenbroich · Kfz Gutachter Es",
-        "beschreibung": "Unfall im Umland von Mönchengladbach? Kfz-Sachverständiger Cihan Es kommt zur Besichtigung nach Viersen, Willich, Korschenbroich, Neuss, Kaarst und Grevenbroich. Bei unverschuldetem Unfall zahlt die gegnerische Versicherung das Gutachten.",
-        "kanonisch": "umland.html",
-        "nav": "",
         "skripte": '<script src="formular.js" defer></script>',
     },
     "ablauf.html": {
-        "titel": "So läuft ein Unfallgutachten ab · Kfz Gutachter Es, Mönchengladbach",
-        "beschreibung": "Vom Anruf zur Besichtigung zum Gutachten: der Ablauf in drei Schritten, die ersten Schritte direkt nach dem Unfall und was im Gutachten steht. Kfz-Sachverständiger Cihan Es, Mönchengladbach.",
+        "titel": "Nach dem Unfall: erste Schritte und Weg zum Gutachten | Kfz Gutachter Es",
+        "beschreibung": "Was Sie an der Unfallstelle tun sollten, was Sie zur Besichtigung brauchen, wie ein Unfallgutachten entsteht und was darin steht. Kfz-Sachverständiger Cihan Es, Mönchengladbach.",
         "kanonisch": "ablauf.html",
-        "nav": "index.html",
         "skripte": "",
     },
     "kosten.html": {
-        "titel": "Was kostet ein Unfallgutachten? Honorar nach BVSK · Kfz Gutachter Es",
-        "beschreibung": "Wer zahlt das Gutachten nach einem Unfall, was bei Teilschuld, Bagatellschaden und Kasko gilt und wie Kfz-Sachverständige nach der BVSK-Honorarbefragung 2024 abrechnen. Kfz Gutachter Es, Mönchengladbach.",
+        "titel": "Wer zahlt das Unfallgutachten? Kosten und Honorar | Kfz Gutachter Es",
+        "beschreibung": "Wer das Gutachten nach einem Unfall zahlt, was bei Teilschuld, kleinem Schaden und Kasko gilt, was Ihnen außerdem zusteht und wie Sachverständige nach der BVSK-Honorarbefragung 2024 abrechnen.",
         "kanonisch": "kosten.html",
-        "nav": "index.html",
         "skripte": "",
     },
+    "umland.html": {
+        "titel": "Kfz-Gutachter für Viersen, Neuss und Kaarst | Kfz Gutachter Es",
+        "beschreibung": "Kfz-Sachverständiger Cihan Es aus Mönchengladbach besichtigt Unfallfahrzeuge in Viersen, Neuss und Kaarst, ebenso in Willich, Korschenbroich und Grevenbroich: zu Hause, beim Arbeitgeber oder in der Werkstatt Ihrer Wahl.",
+        "kanonisch": "umland.html",
+        "skripte": "",
+    },
+    "kontakt.html": {
+        "titel": "Kontakt und Anfahrt | Kfz Gutachter Es, Mönchengladbach",
+        "beschreibung": "Telefon 02161 688 86 91, WhatsApp und Rückruf. Besichtigung mit Hebebühne an der Karstraße 25 in Mönchengladbach, Büro an der Dahlener Straße 286 in Rheydt. Telefonzeiten Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr.",
+        "kanonisch": "kontakt.html",
+        "skripte": '<script src="formular.js" defer></script>',
+    },
     "nachts-wochenende.html": {
-        "titel": "Unfall nachts oder am Wochenende · Kfz Gutachter Es, Mönchengladbach",
-        "beschreibung": "Unfall außerhalb der Bürozeiten: was Sie jetzt tun können, wie Sie uns erreichen und wann wir zurückrufen. Kfz-Sachverständiger Cihan Es, Mönchengladbach.",
+        "titel": "Unfall abends oder am Wochenende | Kfz Gutachter Es, Mönchengladbach",
+        "beschreibung": "Unfall außerhalb der Telefonzeiten: was Sie jetzt schon tun können, wie Sie das Büro erreichen und wann der Rückruf kommt. Kfz-Sachverständiger Cihan Es, Mönchengladbach.",
         "kanonisch": "nachts-wochenende.html",
-        "nav": "index.html",
         "skripte": "",
     },
     "impressum.html": {
-        "titel": "Impressum · Kfz Gutachter Es, Mönchengladbach",
+        "titel": "Impressum | Kfz Gutachter Es, Mönchengladbach",
         "beschreibung": "Anbieterkennzeichnung der Seite von Kfz Gutachter Es, Cihan Es, Mönchengladbach.",
         "kanonisch": "impressum.html",
-        "nav": "index.html",
         "skripte": "",
     },
     "datenschutz.html": {
-        "titel": "Datenschutzerklärung · Kfz Gutachter Es, Mönchengladbach",
+        "titel": "Datenschutzerklärung | Kfz Gutachter Es, Mönchengladbach",
         "beschreibung": "Welche Daten diese Seite verarbeitet: Aufruf, Rückruf-Formular, Anruf, WhatsApp, Google Ads Conversion-Messung mit Einwilligung.",
         "kanonisch": "datenschutz.html",
-        "nav": "index.html",
         "skripte": "",
     },
 }
@@ -300,19 +404,26 @@ SEITEN = {
 def bauen(name, meta):
     schale = (HIER / "vorlagen" / "schale.html").read_text(encoding="utf-8")
     inhalt = (HIER / "inhalte" / name).read_text(encoding="utf-8")
-    if FOTOS_ZEIGEN:
-        inhalt = re.sub(r"[ \t]*<!--/?FOTOS-->\n?", "", inhalt)
-    else:
-        inhalt = re.sub(r"[ \t]*<!--FOTOS-->.*?<!--/FOTOS-->\n?", "", inhalt, flags=re.S)
+    bilder_html = {"bild_" + platz: bild_html(platz) for platz in BILDER}
+    for schluessel, wert in bilder_html.items():
+        if not wert:  # leerer Platz: die ganze Zeile fällt weg, kein Kasten
+            inhalt = re.sub(r"^[ \t]*\{\{" + schluessel + r"\}\}[ \t]*\n", "", inhalt, flags=re.M)
     vertrauen_html = vertrauen()
     if not vertrauen_html:  # beide aus, oder nur die Bewertung an und veraltet: die Zeile fällt ganz weg
         inhalt = re.sub(r"^[ \t]*\{\{vertrauen\}\}[ \t]*\n", "", inhalt, flags=re.M)
+    nachweise_html = bildnachweise()
+    if not nachweise_html:
+        inhalt = re.sub(r"^[ \t]*\{\{bildnachweise\}\}[ \t]*\n\n?", "", inhalt, flags=re.M)
     schale, inhalt = ohne_kommentare(schale), ohne_kommentare(inhalt)
     # Inhalt zuerst einsetzen, damit seine Platzhalter (WhatsApp, Rückruf) in der Schleife mit ersetzt werden.
     werte = {"inhalt": inhalt.strip()}
     werte.update(meta)
     werte["noindex"] = '<meta name="robots" content="noindex">' if NOINDEX else ""
     werte["vertrauen"] = vertrauen_html
+    werte["bildnachweise"] = nachweise_html
+    werte.update(bilder_html)
+    werte["nav_kopf"] = menue(name, False, 6)
+    werte["nav_menue"] = menue(name, True, 10)
     werte.update(GLOBAL)
     seite = schale
     for schluessel, wert in werte.items():
@@ -331,6 +442,7 @@ def main():
         print(bewertung_zeile())
         return
     sperre_noindex()
+    sperre_bilder()
     pruefen = "--pruefen" in sys.argv
     meldung = bewertung_meldung()
     if meldung:  # laut, in Bau und Prüfung; der Exit bleibt davon unberührt

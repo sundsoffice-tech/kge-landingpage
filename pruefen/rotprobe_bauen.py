@@ -3,7 +3,7 @@
 dann rot werden. Bleibt er grün, prüft er die Regel nicht (Programmierer r2, F2).
 
 Aufruf: python pruefen/rotprobe_bauen.py   Exit 0, wenn der Stand grün ist und jede Mutation rot macht, sonst Exit 1.
-Gerechnet wird in einer Kopie in einem Temp-Ordner (bauen.py, konfig.js, vorlagen/, inhalte/, pruefen/zeuge_bauen.py);
+Gerechnet wird in einer Kopie in einem Temp-Ordner (bauen.py, konfig.js, vorlagen/, inhalte/, bilder/, pruefen/zeuge_bauen.py);
 der Arbeitsbaum bleibt unberührt. Jede Mutation ersetzt eine Zeichenkette, die in bauen.py genau einmal stehen muss,
 sonst bricht die Probe ab (eine Mutation, die nichts trifft, wäre eine grüne Lüge).
 """
@@ -60,12 +60,6 @@ MUTATIONEN = [
     ("R14 Zeile {{vertrauen}} bleibt bei leerem Inhalt stehen",
      '    if not vertrauen_html:',
      '    if False:'),
-    ("R15 FOTOS aus: Bildplätze bleiben stehen",
-     r'inhalt = re.sub(r"[ \t]*<!--FOTOS-->.*?<!--/FOTOS-->\n?", "", inhalt, flags=re.S)',
-     'pass'),
-    ("R16 FOTOS an: Marken bleiben stehen",
-     r'inhalt = re.sub(r"[ \t]*<!--/?FOTOS-->\n?", "", inhalt)',
-     'pass'),
     ("R17 Bewertungskasten ohne Hinweis nach § 5b",
      "f'<p>{e(BEWERTUNG_HINWEIS)}</p></div>'",
      "'</div>'"),
@@ -93,13 +87,40 @@ MUTATIONEN = [
     ("R25 Bildschirmfoto zu einem beliebigen Tag",
      'return BELEGE / f"bewertung-{stand:%Y-%m-%d}.png"',
      'return next(BELEGE.glob("bewertung-*.png"), BELEGE / "fehlt.png")'),
+    ("R15 Leerer Bildplatz: die Zeile bleibt als Leerzeile stehen",
+     '        if not wert:  # leerer Platz',
+     '        if False:  # leerer Platz'),
+    ("R16 Hauptschalter FOTOS_ZEIGEN wirkt nicht",
+     '    if not FOTOS_ZEIGEN or not b["datei"]',
+     '    if not b["datei"]'),
+    ("R26 Bildplatz: fehlende Bilddatei wird nicht bemerkt",
+     '    if not (BILDWURZEL / datei).is_file():\n',
+     '    if False:\n'),
+    ("R27 Bildplatz: fehlender Bildnachweis wird nicht bemerkt",
+     '    if not str(b["nachweis"]).strip():\n',
+     '    if False:\n'),
+    ("R28 Bildplatz: fehlender alt-Text wird nicht bemerkt",
+     '    if not str(b["alt"]).strip():\n',
+     '    if False:\n'),
+    ("R29 Unvollständiger Bildplatz erscheint trotzdem",
+     ' or bild_fehler(platz):',
+     ':'),
+    ("R30 Bildplatz: fehlende Maße werden nicht bemerkt",
+     'b["breite"] > 0 and b["hoehe"] > 0',
+     'True'),
+    ("R31 vorrang wirkt nicht (kein fetchpriority)",
+     'if b.get("vorrang") else',
+     'if False else'),
+    ("R32 sperre_bilder wird in main nicht mehr gerufen",
+     '    sperre_bilder()\n',
+     '    pass\n'),
 ]
 
 
 def kopie(ziel):
     for name in ("bauen.py", "konfig.js"):
         shutil.copy2(WURZEL / name, ziel / name)
-    for ordner in ("vorlagen", "inhalte"):
+    for ordner in ("vorlagen", "inhalte", "bilder"):
         shutil.copytree(WURZEL / ordner, ziel / ordner)
     (ziel / "pruefen").mkdir()
     shutil.copy2(HIER / "zeuge_bauen.py", ziel / "pruefen" / "zeuge_bauen.py")
