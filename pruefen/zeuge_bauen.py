@@ -173,7 +173,7 @@ def baue(seite="index.html", **werte):
 
 
 NAME_ZEILE = '      <p class="name-zeile">Ihr Sachverständiger: Cihan Es</p>\n'
-FOTO_TEXT = "Foto folgt: Hebebühne Karstraße 25"
+FOTO_TEXT = "bilder/start-begutachtung.jpg"
 
 
 def vertrauen_aus_ohne_leerzeile():
@@ -198,12 +198,11 @@ def fotos(an):
     return isinstance(seite, str) and "<!--" not in seite and (FOTO_TEXT in seite) == an
 
 
-FOTO_ZEILEN = ['<div class="fotos">', '<div class="foto"><span>Foto folgt: Cihan Es, Büro Dahlener Straße</span></div>',
-               '<div class="foto"><span>Foto folgt: Hebebühne Karstraße 25</span></div>', '</div>']
+FOTO_ZEILEN = ['<figure class="bild"><img src="bilder/start-begutachtung.jpg" alt="Ein Kfz-Sachverständiger begutachtet den Schaden an einem Fahrzeug" width="1600" height="1200" fetchpriority="high"><figcaption>Symbolbild</figcaption></figure>']
 
 
 def fotos_genau():
-    """FOTOS an gegen aus: Es kommen genau die vier Zeilen der Bildplätze dazu, keine Leerzeile, nichts fällt weg."""
+    """FOTOS an gegen aus: Auf der Startseite kommt genau die Zeile des Bildplatzes dazu, keine Leerzeile, nichts fällt weg."""
     an, aus = baue(FOTOS_ZEIGEN=True), baue(FOTOS_ZEIGEN=False)
     if not (isinstance(an, str) and isinstance(aus, str)):
         return False
@@ -219,6 +218,31 @@ def sperre_ohne_entfernen():
         except SystemExit as e:
             return "Kommentar in der gebauten Seite" in str(e)
     return False
+
+
+BILD = '<img src="bilder/x.jpg" alt="Text" width="1600" height="900">'
+NACHWEIS = "Startseite: Foto Beispiel, Quelle Beispiel"
+
+
+def bild(datei=True, nachweis=NACHWEIS, img=BILD):
+    """bild_fehler an einem eigenen Ordner: mit oder ohne Bilddatei, mit oder ohne Nachweis, mit eigenem <img>."""
+    ordner = pathlib.Path(tempfile.mkdtemp(dir=WURZEL_TMP))
+    (ordner / "bilder").mkdir()
+    if datei:
+        (ordner / "bilder" / "x.jpg").write_bytes(b"\xff\xd8\xff\xe0")
+    with schalter(BILDNACHWEISE={"bilder/x.jpg": nachweis}):
+        return bauen.bild_fehler("<figure>" + img + "</figure>", ordner)
+
+
+def nachweise_im_impressum(an):
+    """Impressum mit gesetztem Nachweis: Der Abschnitt steht nur bei eingeschalteten Fotos; aus gleicht die Seite der
+    ohne jeden Nachweis (keine Leerzeile, kein Platzhalter)."""
+    seite = baue("impressum.html", FOTOS_ZEIGEN=an, BILDNACHWEISE={"bilder/x.jpg": NACHWEIS})
+    if not isinstance(seite, str):
+        return False
+    if an:
+        return "<h2>Bildnachweise</h2>" in seite and NACHWEIS in seite
+    return seite == baue("impressum.html", FOTOS_ZEIGEN=False, BILDNACHWEISE={"bilder/x.jpg": ""}) and "Bildnachweise" not in seite
 
 
 OK = None  # erwartet: keine Meldung
@@ -285,7 +309,14 @@ WEITERE = [
     ("S1 Kommentarsperre: ohne Entfernen bricht der Bau ab", sperre_ohne_entfernen, True),
     ("F1 FOTOS_ZEIGEN = False: Bildplätze weg, 0 Kommentare", lambda: fotos(False), True),
     ("F2 FOTOS_ZEIGEN = True: Bildplätze da, 0 Kommentare", lambda: fotos(True), True),
-    ("F3 FOTOS an gegen aus: genau die vier Zeilen der Bildplätze mehr, keine Leerzeile", fotos_genau, True),
+    ("F3 FOTOS an gegen aus: genau die Zeile des Bildplatzes mehr, keine Leerzeile", fotos_genau, True),
+    ("G1 Fotos an, Bilddatei fehlt: Abbruch", lambda: bild(datei=False), FEHLER),
+    ("G2 Fotos an, Datei, Maße, alt und Nachweis da: baut", lambda: bild(), OK),
+    ("G3 Bildnachweis leer: Abbruch", lambda: bild(nachweis="  "), FEHLER),
+    ("G4 <img> ohne alt: Abbruch", lambda: bild(img='<img src="bilder/x.jpg" width="1600" height="900">'), FEHLER),
+    ("G5 <img> ohne height: Abbruch", lambda: bild(img='<img src="bilder/x.jpg" alt="Text" width="1600">'), FEHLER),
+    ("G6 Fotos an mit Nachweis: Abschnitt Bildnachweise im Impressum", lambda: nachweise_im_impressum(True), True),
+    ("G7 Fotos aus mit Nachweis: kein Abschnitt, keine Leerzeile", lambda: nachweise_im_impressum(False), True),
     ("V1 beide Schalter aus: {{vertrauen}} samt Zeile weg, keine Leerzeile", vertrauen_aus_ohne_leerzeile, True),
     ("V2 Bewertung an, gültig: Kasten mit Profil-Link und Hinweis, Name dahinter", bewertung_im_bau, True),
     ("V3 Bewertung an mit SEIT JJJJ: der Bau bricht ab", lambda: isinstance(baue(**mit_belegen(dict(

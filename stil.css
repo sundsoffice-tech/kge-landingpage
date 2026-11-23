@@ -130,12 +130,7 @@ mark, .marker {
 .knopf:hover { background: var(--amber-hell); color: var(--navy); }
 .knopf:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--schatten-farbe); }
 .knopf:disabled, .knopf[aria-disabled="true"] { opacity: 0.6; cursor: default; transform: none; box-shadow: var(--schatten); }
-.knopf.zweit { background: var(--papier); color: var(--navy); }
-.knopf.zweit:hover { background: var(--sanft); }
-.knopf .unter { display: block; font-weight: 500; font-size: 13px; }
-.knopf-text { display: inline-flex; flex-direction: column; align-items: flex-start; line-height: 1.3; }
 .dunkel .knopf { --schatten-farbe: #000; border-color: #000; }
-.dunkel .knopf.zweit { background: var(--hell); }
 
 /* ---------- Hero ---------- */
 .hero { background: var(--navy); color: var(--hell); padding: 28px 0 40px; position: relative; }
@@ -188,7 +183,6 @@ mark, .marker {
   display: flex; align-items: flex-end;
   overflow: hidden;
 }
-.hero-bild img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
 /* Bewertungskasten und Namenszeile (O1, Schalter BEWERTUNG_ZEIGEN und NAME_ZEIGEN in bauen.py): unter der
    Sternchenerklärung, nie zwischen Knöpfen und Sternchen (Wettbewerbsrecht vorab 20.11.2026, Nr. 1 und 5b).
    Der Hinweis ist so groß wie der Sternchentext (16 px), ohne Klick, im selben Kasten. Keine Sternegrafik. */
@@ -242,18 +236,6 @@ mark, .marker {
 .dunkel .fussnote { color: var(--hell-2); }
 
 /* Betrieb */
-.foto {
-  background: var(--sanft); border: 1px solid var(--linie); border-radius: var(--radius);
-  aspect-ratio: 4 / 3; display: flex; align-items: flex-end; padding: 14px 16px; position: relative; overflow: hidden;
-}
-.foto span { font-size: 14px; color: var(--tinte-2); font-weight: 600; }
-.foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.fotos { display: grid; gap: 14px; grid-template-columns: 1fr 1fr; margin-top: 22px; }
-@media (max-width: 539px) { .foto { aspect-ratio: 1 / 1; } }
-.adressen { list-style: none; padding: 0; margin: 0; border-top: 2px solid var(--navy); }
-.adressen li { padding: 14px 0; border-bottom: 1px solid var(--linie); margin: 0; }
-.adressen b { display: block; }
-.adressen span { color: var(--tinte-2); }
 
 /* FAQ */
 .faq details { border-bottom: 1px solid var(--linie); }
@@ -309,7 +291,7 @@ mark, .marker {
 /* Trefferfläche mindestens 44 px, ohne die Zeile zu verschieben: Polster nach oben und unten, gleich große
    negative Außenabstände (Runde 3, vorher 17 px). position: relative legt den Link über die folgende
    Textzeile, sonst fängt deren Text die untere Hälfte ab (gemessen 35 statt 45 px bei 320). */
-.kontaktliste a, .adressen a { display: inline-block; position: relative; padding: 10px 0; margin: -10px 0; }
+.kontaktliste a { display: inline-block; position: relative; padding: 10px 0; margin: -10px 0; }
 .kontaktliste span { color: var(--tinte-2); font-size: 15px; display: block; }
 .dunkel .kontaktliste { border-top-color: var(--amber); }
 .dunkel .kontaktliste span { color: var(--hell-2); }
@@ -498,9 +480,26 @@ mark, .marker {
 .themen h3 { margin-top: 26px; }
 .themen h3:first-child { margin-top: 0; }
 /* Listen im Fließtext: Quadrat in der Akzentfarbe statt Punkt */
-main ul:not([class]) { list-style: square; }
-main ul:not([class]) li::marker { color: var(--amber-tinte); }
+main ul:not([class]), main ul.liste-zwei { list-style: square; }
+main ul:not([class]) li::marker, main ul.liste-zwei li::marker { color: var(--amber-tinte); }
+/* Lange Liste ab 900 px in zwei Spalten, darunter eine durchgehende Liste ohne Lücke */
+.liste-zwei { max-width: none; }
+@media (min-width: 900px) { .liste-zwei { columns: 2; column-gap: 56px; } .liste-zwei li { break-inside: avoid; } }
 main ol:not([class]) li::marker { font-weight: 700; }
 /* Einsatzgebiet: die Ortsnamen stehen in der Überschrift, deshalb eine Stufe kleiner */
 .seitenkopf h1.lang { font-size: clamp(24px, 3.8vw, 38px); line-height: 1.15; max-width: 22em; }
 .inhalt .orte-liste { max-width: none; }
+
+/* Bildplätze (FOTOS_ZEIGEN in bauen.py): Bild mit Unterschrift. Aus heißt: die Zeile fehlt ganz, kein leerer Kasten. */
+.bild { margin: 0 0 26px; max-width: 46rem; }
+.bild img { width: 100%; height: auto; border: 1px solid var(--linie); border-radius: var(--radius); }
+.bild figcaption { font-size: 14px; color: var(--tinte-2); margin-top: 6px; }
+.hero-bild { flex-direction: column; align-items: stretch; }
+.hero-bild .bild { margin: 0; max-width: none; }
+.hero-bild .bild img { border: 0; border-radius: 0; }
+.hero-bild .bild figcaption { color: var(--hell-2); margin: 0; padding: 8px 20px 0; }
+/* Funde der Prüfung vom 23.11.2026: Sprungliste mit Luft zu ihren Linien, Wortmarke mit 44 px Trefferhöhe,
+   lange Adressen brechen um (Datenschutz lief bei 320 px auf 365 px Breite). */
+.sprung { padding: 6px 0; }
+.wortmarke { min-height: 44px; }
+.inhalt { overflow-wrap: break-word; }

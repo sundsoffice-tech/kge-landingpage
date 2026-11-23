@@ -93,6 +93,18 @@ MUTATIONEN = [
     ("R25 Bildschirmfoto zu einem beliebigen Tag",
      'return BELEGE / f"bewertung-{stand:%Y-%m-%d}.png"',
      'return next(BELEGE.glob("bewertung-*.png"), BELEGE / "fehlt.png")'),
+    ("R26 Fotos an: fehlende Bilddatei wird nicht bemerkt",
+     '        if not (wurzel / datei).is_file():\n',
+     '        if False:\n'),
+    ("R27 Fotos an: fehlender Bildnachweis wird nicht bemerkt",
+     '        if not BILDNACHWEISE.get(datei, "").strip():\n',
+     '        if False:\n'),
+    ("R28 Fotos an: <img> ohne alt oder Maße wird nicht bemerkt",
+     'for a in ("alt", "width", "height")',
+     'for a in ()'),
+    ("R29 Bildnachweise stehen auch bei ausgeschalteten Fotos im Impressum",
+     '    if not (FOTOS_ZEIGEN and zeilen):\n',
+     '    if not zeilen:\n'),
 ]
 
 

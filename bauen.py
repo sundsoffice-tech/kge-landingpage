@@ -41,6 +41,19 @@ RUECKRUF_SONST = "sobald das Telefon wieder besetzt ist"
 # Fotos vom Kunden da sind. True zeigt sie wieder; dann die <img> in den Platzhaltern eintragen.
 FOTOS_ZEIGEN = False
 
+# Bildplätze seit 23.11.2026: je eine <figure>-Zeile zwischen <!--FOTOS--> und <!--/FOTOS--> auf der Startseite (oben),
+# auf „Nach dem Unfall“, „Wer zahlt?“ und im Einsatzgebiet (Hebebühne). Aus heißt: Die Zeile fehlt ganz, die Seite
+# trägt ohne Bild. Vor dem Einschalten die Dateien nach bilder/ legen, alt-Text und Unterschrift („Symbolbild“ nur
+# bei gekauften Bildern) in inhalte/ an das echte Bild anpassen und hier je Datei den Bildnachweis eintragen; er
+# erscheint im Impressum. Der Bau bricht bei eingeschalteten Fotos ab, wenn eine Datei, ein alt-Text, ein Maß oder
+# ein Nachweis fehlt (bild_fehler, Zeuge G1 bis G7).
+BILDNACHWEISE = {
+    "bilder/start-begutachtung.jpg": "",
+    "bilder/unfall-blechschaden.jpg": "",
+    "bilder/hebebuehne-unterboden.jpg": "",
+    "bilder/unterlagen-gutachten.jpg": "",
+}
+
 # Bewertung im Hero (Conversion-Prüfung 19.11.2026, O1; Wortlaut nach Wettbewerbsrecht vorab 20.11.2026, Nr. 1):
 # ein Kasten unter der Sternchenerklärung, nie zwischen Knöpfen und Sternchen (sonst rückt die Kosteneinschränkung
 # vom Kostenversprechen weg). Die Zeile ist ganz ein Link aufs Google-Profil, der Hinweis nach § 5b Abs. 3 UWG steht
@@ -243,6 +256,45 @@ def vertrauen():
     return "\n      ".join(teile)
 
 
+def bild_fehler(inhalt, wurzel=None):
+    """Prüft die <img> eines Inhalts für eingeschaltete Fotos; gibt die Fehlermeldung zurück oder None.
+    Zeuge: pruefen/zeuge_bauen.py, G1 bis G5."""
+    wurzel = wurzel or HIER
+    for img in re.findall(r"<img\b[^>]*>", inhalt):
+        quelle = re.search(r'\bsrc="([^"]+)"', img)
+        if not quelle:
+            return f"<img> ohne src: {img[:80]}"
+        datei = quelle.group(1)
+        fehlt = [a for a in ("alt", "width", "height") if not re.search(a + r'="[^"]+"', img)]
+        if fehlt:
+            return f"{datei}: <img> ohne {', '.join(fehlt)}"
+        if not (wurzel / datei).is_file():
+            return f"{datei}: Bilddatei fehlt, FOTOS_ZEIGEN ist an"
+        if not BILDNACHWEISE.get(datei, "").strip():
+            return f"{datei}: Bildnachweis fehlt in BILDNACHWEISE"
+    return None
+
+
+def sperre_bilder():
+    """Bei eingeschalteten Fotos bricht der Bau ab, wenn ein Bildplatz unvollständig ist. Steht in main und nicht in
+    bauen(), damit der Zeuge die Seiten ohne Bilddateien bauen kann."""
+    if not FOTOS_ZEIGEN:
+        return
+    for name in SEITEN:
+        fehler = bild_fehler(ohne_kommentare((HIER / "inhalte" / name).read_text(encoding="utf-8")))
+        if fehler:
+            sys.exit(f"{name}: {fehler}")
+
+
+def bildnachweise():
+    """Abschnitt fürs Impressum: nur bei eingeschalteten Fotos, je Bild eine Zeile. Leer, wenn nichts zu nennen ist;
+    bauen() nimmt dann die Zeile mit dem Platzhalter heraus."""
+    zeilen = [html.escape(n.strip()) for n in BILDNACHWEISE.values() if n.strip()]
+    if not (FOTOS_ZEIGEN and zeilen):
+        return ""
+    return "<h2>Bildnachweise</h2>\n    <p>" + "<br>".join(zeilen) + "</p>"
+
+
 def ohne_kommentare(text):
     """Interne Notizen (<!-- ... -->) gehören in die Quelle, nicht in die ausgelieferte Seite (Conversion-Prüfung
     19.11.2026, Nebenfund). Erst Zeilen, die nur aus einem Kommentar bestehen (auch über mehrere Zeilen), samt
@@ -332,12 +384,16 @@ def bauen(name, meta):
     vertrauen_html = vertrauen()
     if not vertrauen_html:  # beide aus, oder nur die Bewertung an und veraltet: die Zeile fällt ganz weg
         inhalt = re.sub(r"^[ \t]*\{\{vertrauen\}\}[ \t]*\n", "", inhalt, flags=re.M)
+    nachweise_html = bildnachweise()
+    if not nachweise_html:
+        inhalt = re.sub(r"^[ \t]*\{\{bildnachweise\}\}[ \t]*\n\n?", "", inhalt, flags=re.M)
     schale, inhalt = ohne_kommentare(schale), ohne_kommentare(inhalt)
     # Inhalt zuerst einsetzen, damit seine Platzhalter (WhatsApp, Rückruf) in der Schleife mit ersetzt werden.
     werte = {"inhalt": inhalt.strip()}
     werte.update(meta)
     werte["noindex"] = '<meta name="robots" content="noindex">' if NOINDEX else ""
     werte["vertrauen"] = vertrauen_html
+    werte["bildnachweise"] = nachweise_html
     werte["nav_kopf"] = menue(name, False, 6)
     werte["nav_menue"] = menue(name, True, 10)
     werte.update(GLOBAL)
@@ -358,6 +414,7 @@ def main():
         print(bewertung_zeile())
         return
     sperre_noindex()
+    sperre_bilder()
     pruefen = "--pruefen" in sys.argv
     meldung = bewertung_meldung()
     if meldung:  # laut, in Bau und Prüfung; der Exit bleibt davon unberührt
