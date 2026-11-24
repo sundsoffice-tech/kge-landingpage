@@ -50,7 +50,7 @@
   --fehler: #A3241A;
   --ok: #2E6B3A;
   --radius: 4px;
-  --schatten: 4px 4px 0 var(--glut-tief);
+  --schatten: 0 10px 22px -10px rgba(14, 13, 12, 0.55);
   --titel: "Archivo", "Helvetica Neue", Arial, sans-serif;
   --text: "Source Serif 4", Georgia, "Times New Roman", serif;
   --schnitt: 760;
@@ -185,15 +185,20 @@ b, strong { font-weight: 650; }
 .buehne-bild .bild-marke { top: 14px; right: 14px; }
 .buehne-text { position: relative; z-index: 3; padding: 120px 0 28px; }
 @media (min-width: 900px) { .buehne-text { padding: 160px 0 72px; } }
-.buehne h1 { font-size: clamp(46px, 8.4vw, 112px); line-height: 0.96; letter-spacing: -0.035em; color: var(--licht); margin-bottom: 18px; max-width: 12ch; text-wrap: initial; }
-.buehne h1 .dach { display: block; font-size: 16px; line-height: 1.3; letter-spacing: 0.01em; color: var(--glut-hell); margin-bottom: 14px; }
-@media (min-width: 900px) { .buehne h1 .dach { font-size: 18px; margin-bottom: 20px; } }
+.buehne h1 { font-size: clamp(46px, 7.6vw, 96px); line-height: 0.96; letter-spacing: -0.035em; color: var(--licht); margin-bottom: 18px; max-width: 12ch; text-wrap: initial; }
+/* Die Frage steht vor der Antwort: Serif in Satzgröße, keine Dachzeile. Die h1 trägt den geprüften Satz ganz, der
+   zweite Halbsatz kleiner in eigener Zeile. */
+.buehne .frage { font-size: 18px; line-height: 1.45; color: var(--licht-2); max-width: 26rem; margin: 0 0 14px; }
+@media (min-width: 900px) { .buehne .frage { font-size: 21px; max-width: 32rem; margin-bottom: 20px; } }
+.buehne h1 .h1-folge { display: block; margin-top: 16px; font-family: var(--text); font-weight: 400; font-size: clamp(19px, 1.9vw, 25px); line-height: 1.4; letter-spacing: 0; color: var(--licht); max-width: 30rem; }
+.hero.buehne h1 { margin-bottom: 26px; max-width: 15ch; text-wrap: balance; }
+@media (max-width: 699px) { .hero.buehne h1 { font-size: 42px; letter-spacing: -0.04em; max-width: none; } }
 .buehne .unterzeile { font-size: 18px; line-height: 1.5; color: var(--licht); max-width: 30rem; margin-bottom: 24px; }
 @media (min-width: 900px) { .buehne .unterzeile { font-size: 21px; max-width: 34rem; margin-bottom: 30px; } }
 .buehne .knoepfe { display: flex; }
 .buehne .knopf { min-height: 58px; }
 @media (max-width: 539px) { .buehne .knoepfe .knopf { width: 100%; } }
-@media (max-width: 379px) { .buehne h1 { font-size: 40px; } .buehne .unterzeile { font-size: 17px; margin-bottom: 18px; } }
+@media (max-width: 379px) { .buehne h1 { font-size: 40px; } .buehne .unterzeile, .buehne .frage { font-size: 17px; margin-bottom: 12px; } }
 /* Die eine inszenierte Bewegung: das Bühnenfoto setzt sich beim Laden langsam (nur transform) */
 @media (prefers-reduced-motion: no-preference) {
   .hero .buehne-bild img { animation: setzen 1600ms cubic-bezier(0.16, 1, 0.3, 1) both; }
@@ -229,7 +234,8 @@ b, strong { font-weight: 650; }
 /* ---------- Vollbild-Moment: Foto über die volle Breite, Unterschrift darauf ---------- */
 .moment { background: var(--nacht); }
 .vollbild { position: relative; }
-.vollbild img { height: clamp(420px, 56vw, 760px); object-fit: cover; object-position: 66% 50%; }
+.vollbild img { height: clamp(600px, 78vh, 900px); object-fit: cover; object-position: 50% 50%; }
+@media (max-width: 699px) { .vollbild img { height: max(500px, 72svh); } }
 .vollbild::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(14, 13, 12, 0.86) 0%, rgba(14, 13, 12, 0) 48%); pointer-events: none; }
 .vollbild figcaption {
   position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; margin: 0 auto; max-width: 1180px;
@@ -256,7 +262,12 @@ b, strong { font-weight: 650; }
 /* Versetzte schmale Spalte: Überschrift groß links, Text ab einem Drittel der Breite */
 .versatz { padding-top: var(--luft-l); }
 .versatz h2 { max-width: 15ch; margin-bottom: 32px; }
-@media (min-width: 900px) { .versatz-text { margin-left: 34%; max-width: 38rem; } }
+/* Kein L-Loch unter der Überschrift: der Merksatz steht links groß, die Einzelheiten rechts daneben. */
+@media (min-width: 900px) {
+  .versatz h2 { max-width: none; font-size: clamp(44px, 5.6vw, 76px); margin-bottom: 48px; }
+  .versatz-raster { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 72px; align-items: start; }
+  .versatz-raster .merksatz { font-size: clamp(26px, 2.6vw, 34px); line-height: 1.35; margin: 0; }
+}
 .verweis { margin: 28px 0 0; padding-top: 16px; border-top: 1px solid var(--linie); display: flex; flex-wrap: wrap; align-items: center; gap: 0 12px; font-size: 17px; }
 .verweis .weiter { margin-top: 0; }
 
@@ -272,8 +283,6 @@ b, strong { font-weight: 650; }
 .strecke-bild { margin: 0 0 22px; }
 .strecke-bild img { aspect-ratio: 3 / 2; object-fit: cover; }
 .strecke-bild figcaption { color: var(--licht-2); padding: 0 var(--rand); }
-.nur-text .schritt-text { max-width: 30rem; }
-.nur-text:last-of-type .schritt-text { margin-left: auto; margin-right: 8%; }
 @media (min-width: 900px) {
   .strecke-schritt.bild-rechts, .strecke-schritt.bild-links { display: grid; align-items: center; }
   .strecke-schritt.bild-rechts { grid-template-columns: minmax(0, 1fr) 62vw; }
@@ -288,6 +297,21 @@ b, strong { font-weight: 650; }
   .bild-rechts .strecke-bild figcaption { padding-right: var(--rand); }
   .bild-links .strecke-bild figcaption { padding-left: max(var(--rand), calc((100vw - 1180px) / 2 + var(--rand))); }
   .bild-links .strecke-bild .bild-marke { right: 12px; }
+}
+/* Ablauf: jeder Schritt ein Vollbild-Moment, der Text auf einer Papierfläche, die über die untere Bildkante greift. */
+.strecke-schritt.text-links, .strecke-schritt.text-rechts { position: relative; margin-bottom: var(--luft-m); }
+.moment-bild { margin: 0; position: relative; }
+.moment-bild img { height: max(500px, 70svh); object-fit: cover; object-position: 50% 50%; }
+.text-links > .wrap, .text-rechts > .wrap { position: relative; z-index: 2; margin-top: -120px; }
+.text-links .schritt-text, .text-rechts .schritt-text { background: var(--papier); color: var(--tinte); padding: 26px 24px 28px; max-width: 34rem; }
+.text-links .schritt-text h3, .text-rechts .schritt-text h3 { color: var(--tinte); font-size: clamp(30px, 3.6vw, 48px); }
+.text-links .schritt-text p, .text-rechts .schritt-text p { color: var(--tinte-2); }
+.text-links .schritt-nr, .text-rechts .schritt-nr { color: var(--glut-tinte); font-size: 19px; }
+@media (min-width: 900px) {
+  .moment-bild img { height: max(600px, 82vh); }
+  .text-links > .wrap, .text-rechts > .wrap { margin-top: -220px; }
+  .text-links .schritt-text, .text-rechts .schritt-text { padding: 40px 44px 44px; }
+  .text-rechts .schritt-text { margin-left: auto; }
 }
 .strecke-fuss { margin-top: var(--luft-m); padding-top: 24px; border-top: 1px solid var(--linie-dunkel); }
 .strecke-fuss p { color: var(--licht-2); }
@@ -308,8 +332,7 @@ b, strong { font-weight: 650; }
 .zahler-fuss { margin-top: 24px; }
 
 /* ---------- Große Aussage über die volle Breite ---------- */
-.aussage { background: var(--nacht); color: var(--licht); padding: var(--luft-l) 0; }
-.aussage-kopf { font-size: 18px; letter-spacing: 0.01em; color: var(--glut-hell); margin-bottom: 22px; }
+.aussage { background: var(--nacht); color: var(--licht); padding: var(--luft-l) 0 var(--luft-m); }
 .aussage-satz { font-family: var(--titel); font-weight: var(--schnitt); font-size: clamp(42px, 8vw, 116px); line-height: 0.98; letter-spacing: -0.035em; color: var(--licht); max-width: 16ch; margin: 0 0 var(--luft-s); text-wrap: balance; }
 .aussage-text p { color: var(--licht-2); }
 @media (min-width: 900px) { .aussage-text { margin-left: 50%; max-width: 34rem; } }
@@ -374,6 +397,7 @@ b, strong { font-weight: 650; }
 /* ---------- Unterseiten ---------- */
 .seitenkopf { background: var(--nacht); color: var(--licht); padding: 48px 0 56px; position: relative; }
 @media (min-width: 900px) { .seitenkopf { padding: 80px 0 88px; } }
+.seitenkopf.buehne-seite { padding: 0; }
 .seitenkopf h1 { font-size: clamp(36px, 6vw, 76px); line-height: 1; letter-spacing: -0.03em; color: var(--licht); margin-bottom: 16px; max-width: 16ch; }
 .seitenkopf p { color: var(--licht-2); font-size: 19px; margin: 0; max-width: 36rem; }
 .seitenkopf .notruf { margin-top: 20px; padding: 12px 14px; border: 1.5px solid var(--glut); border-radius: var(--radius); color: var(--licht); font-size: 17px; }
@@ -406,6 +430,14 @@ b, strong { font-weight: 650; }
 .aussage-kopf-gross { font-size: clamp(32px, 5vw, 64px) !important; line-height: 1.02; max-width: 16ch; margin-bottom: 24px; }
 .kosten-start { padding-bottom: var(--luft-s); }
 .kosten-rest { padding-top: var(--luft-l); }
+.kosten-honorar { padding-top: var(--luft-m); }
+/* „In der Regel zahlen Sie nichts“: Bedingungen links, Erklärung rechts, keine leere Hälfte */
+@media (min-width: 900px) {
+  .nichts-raster { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 72px; align-items: start; margin-bottom: var(--luft-m); }
+  .nichts-liste { font-size: 21px; margin: 0; }
+  .nichts-text p:first-child { margin-top: 0; }
+}
+.zeilen-weit dd { max-width: 46rem; }
 
 /* Ablauf (Nach dem Unfall): nummerierte Reihe mit Linien, keine Kacheln */
 .schritte { list-style: none; margin: 0; padding: 0; counter-reset: schritt; border-top: 1px solid var(--tinte); max-width: none; }
@@ -436,9 +468,6 @@ b, strong { font-weight: 650; }
 .orte-titel { font-family: var(--titel); font-weight: var(--schnitt); margin: 0 0 10px; }
 
 /* Themenblöcke auf „Wer zahlt?“ */
-.themen h3 { margin-top: 30px; }
-.themen h3:first-child { margin-top: 0; }
-@media (min-width: 900px) { .themen { columns: 2; column-gap: 64px; } .themen h3 { break-after: avoid; } .themen p { break-inside: avoid; } }
 main ul:not([class]), main ul.liste-zwei { list-style: square; }
 main ul:not([class]) li::marker, main ul.liste-zwei li::marker { color: var(--glut-tinte); }
 .liste-zwei { max-width: none; }
@@ -457,7 +486,8 @@ main ol:not([class]) li::marker { font-family: var(--titel); font-weight: var(--
 .tabelle thead tr + tr th { text-align: right; }
 .tabelle td:not(:first-child), .tabelle th:not(:first-child) { text-align: right; }
 .tabelle tbody tr:nth-child(even) { background: var(--papier-2); }
-.tabelle-rahmen { overflow-x: auto; max-width: 46rem; }
+.tabelle-rahmen { overflow-x: auto; max-width: none; }
+.tabelle-rahmen .tabelle { width: 100%; }
 .quelle { font-size: 15px; color: var(--tinte-2); }
 
 /* Bild neben den Ortslisten (Einsatzgebiet) */

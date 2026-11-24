@@ -5,8 +5,8 @@
   {{bild_start}}
   <div class="buehne-text">
     <div class="wrap">
-      <h1><span class="dach">Kfz-Gutachter in Mönchengladbach</span>Ihr Unfall.<br>Ihr Gutachter.</h1>
-      <p class="unterzeile">Die Versicherung des Unfallgegners will ihren Gutachter schicken? Sie müssen nicht zustimmen und dürfen jeden qualifizierten Gutachter beauftragen.</p>
+      <p class="frage">Die Versicherung des Unfallgegners will ihren Gutachter schicken?</p>
+      <h1>Sie müssen nicht zustimmen <span class="h1-folge">und dürfen jeden qualifizierten Gutachter beauftragen.</span></h1>
       <div class="knoepfe">
         <a class="knopf" href="tel:+4921616888691" data-messung="phone_click"><svg><use href="#i-tel"/></svg><span>Anrufen: 02161 688 86 91</span></a>
       </div>
@@ -42,29 +42,33 @@
 <section class="abschnitt versatz" id="versicherung">
   <div class="wrap">
     <h2>Die Versicherung vom Gegner hat angerufen</h2>
-    <div class="versatz-text">
+    <div class="versatz-raster">
       <p class="merksatz">Viele Versicherer melden sich schon am Tag nach dem Unfall und bieten an, alles zu regeln: Gutachter, Werkstatt, Mietwagen. Das ist erlaubt, Sie müssen aber nicht zustimmen.</p>
+      <div class="versatz-text">
       <p>Der Gutachter der Versicherung arbeitet in deren Auftrag. Sie dürfen einen qualifizierten Gutachter Ihrer Wahl beauftragen (BGH, VI ZR 225/13); bei unverschuldetem Unfall zahlt ihn in der Regel die gegnerische Versicherung, bei kleinen Schäden oft nicht. Sagen Sie am Telefon nichts zu, bevor Sie wissen, wie groß Ihr Schaden ist.</p>
       <a class="weiter" href="kosten.html#gutachterwahl">Ihr Recht auf einen eigenen Gutachter<svg><use href="#i-pfeil"/></svg></a>
       <p class="verweis"><b>Direkt nach dem Unfall:</b> <a class="weiter" href="ablauf.html">Die fünf Schritte an der Unfallstelle<svg><use href="#i-pfeil"/></svg></a></p>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- Fotostrecke: der Ablauf in vier Bildern und Sätzen, die Fotos laufen abwechselnd an den rechten und linken Rand. -->
+<!-- Fotostrecke: der Ablauf in vier Vollbild-Momenten; der Text steht auf einer Papierfläche, die über die untere
+     Bildkante greift, abwechselnd links und rechts. -->
 <section class="strecke" id="ablauf">
   <div class="wrap strecke-kopf">
     <h2>So läuft es ab</h2>
   </div>
   <ol class="strecke-liste">
-    <li class="strecke-schritt nur-text">
+    <li class="strecke-schritt text-links">
+      {{bild_anruf}}
       <div class="wrap"><div class="schritt-text">
         <span class="schritt-nr" aria-hidden="true">01</span>
         <h3>Anruf</h3>
         <p>Sie schildern, was passiert ist, und vereinbaren den Termin für die Besichtigung. Fotos per WhatsApp helfen bei der ersten Einschätzung.</p>
       </div></div>
     </li>
-    <li class="strecke-schritt bild-rechts">
+    <li class="strecke-schritt text-rechts">
       {{bild_besichtigung}}
       <div class="wrap"><div class="schritt-text">
         <span class="schritt-nr" aria-hidden="true">02</span>
@@ -72,7 +76,7 @@
         <p>Cihan Es besichtigt Ihr Fahrzeug dort, wo es steht, oder auf der Hebebühne an der Karstraße 25. Auf der Hebebühne zeigen sich auch Schäden an Unterboden, Achsen und Fahrwerk.</p>
       </div></div>
     </li>
-    <li class="strecke-schritt bild-links">
+    <li class="strecke-schritt text-links">
       {{bild_gutachten}}
       <div class="wrap"><div class="schritt-text">
         <span class="schritt-nr" aria-hidden="true">03</span>
@@ -80,7 +84,8 @@
         <p>Sie erhalten das Gutachten schriftlich. Darin stehen die Reparaturkosten, die Wertminderung, falls sie anfällt, die Ausfalldauer, bei Totalschaden Wiederbeschaffungswert und Restwert, dazu Fotos aller Schäden. Bei Totalschaden dauert es länger, weil Restwertangebote eingeholt werden.</p>
       </div></div>
     </li>
-    <li class="strecke-schritt nur-text">
+    <li class="strecke-schritt text-rechts">
+      {{bild_versand}}
       <div class="wrap"><div class="schritt-text">
         <span class="schritt-nr" aria-hidden="true">04</span>
         <h3>Versand</h3>
@@ -108,11 +113,10 @@
   </div>
 </section>
 
-<!-- Große Aussage über die volle Breite: ein Satz aus „Über Cihan Es“ als Bild, der Rest in einer schmalen Spalte. -->
+<!-- Große Aussage über die volle Breite: ein Satz aus „Über Cihan Es“ als Überschrift, der Rest in einer schmalen Spalte. -->
 <section class="aussage" id="betrieb">
   <div class="wrap">
-    <h2 class="aussage-kopf">Über Cihan Es</h2>
-    <p class="aussage-satz">Reparieren lassen Sie, wo Sie wollen.</p>
+    <h2 class="aussage-satz">Reparieren lassen Sie, wo Sie wollen.</h2>
     <div class="aussage-text">
       <p>Cihan Es ist Kfz-Sachverständiger für Unfallschäden in Mönchengladbach. Er besichtigt Ihr Fahrzeug und erstellt das Gutachten. Reparaturen führt er nicht aus.</p>
       <p>Das Büro liegt an der Dahlener Straße 286 in Rheydt. Besichtigt wird bei Ihnen vor Ort oder auf der Hebebühne an der Karstraße 25. Die Hebebühne steht in einer eigenständigen Werkstatt.</p>
