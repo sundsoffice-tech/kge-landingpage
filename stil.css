@@ -230,7 +230,7 @@ b, strong { font-weight: 650; }
 .ruf-gross a:hover { color: var(--glut-tinte); }
 @media (max-width: 699px) { .ruf-gross { font-size: 36px; } }
 .ausweich { margin: 0; font-size: 17px; line-height: 1.55; color: var(--tinte); }
-.ausweich a { font-weight: 650; display: inline-block; padding-block: 10px; margin-block: -10px; }
+.ausweich a { font-weight: 650; display: inline-block; padding-block: 10px; } /* ohne negativen Rand: die zwei Trefferflächen überlappen sich nicht */
 .ausweich .am-stueck { white-space: nowrap; }
 .karte-person { padding-top: 6px; }
 .name-zeile { margin: 0 0 12px; font-family: var(--titel); font-weight: var(--schnitt); font-size: 21px; line-height: 1.25; color: var(--tinte); }
