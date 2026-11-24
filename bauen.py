@@ -71,6 +71,9 @@ BILDER = {
                       "unterschrift": "So sieht ein Seitenwandschaden oft aus: Unter gerissenem Lack sitzt häufig mehr "
                                       "Schaden, als man von außen erkennt.",
                       "art": "schaden", "marke": True, "vorrang": True,
+                      # Eigener Ausschnitt für schmale Breiten (unter 900 px): weiter herausgezoomt mit Rücklicht,
+                      # Seitenwand und Radbogen, damit man am Handy ein Auto erkennt (Endkundenlesung 24.11.2026).
+                      "schmal": {"datei": "bilder/schadendetail-lack-schmal.jpg", "breite": 800, "hoehe": 500},
                       "nachweis": "Lackschaden an der Seitenwand: Kenny, Unsplash, Unsplash-Lizenz."},
     # Startseite, Abschnitt Einsatzgebiet, am linken Rand, 3:2. Nicht neben einer Anschrift, nicht unter „Büro“ oder
     # „Anfahrt“ (Rechtsbericht Nr. 4). Seit 24.11.2026 auf der Startseite statt auf der Seite Einsatzgebiet.
@@ -296,6 +299,9 @@ def bild_fehler(platz):
         return f"Bildplatz {platz}: Bildnachweis fehlt"
     if not (BILDWURZEL / datei).is_file():
         return f"Bildplatz {platz}: Datei {datei} fehlt"
+    schmal = b.get("schmal")
+    if schmal and not (BILDWURZEL / schmal["datei"]).is_file():
+        return f"Bildplatz {platz}: Datei {schmal['datei']} fehlt"
     return None
 
 
@@ -308,8 +314,14 @@ def bild_html(platz):
     laden = 'fetchpriority="high"' if b.get("vorrang") else 'loading="lazy"'
     unter = f'<figcaption>{e(b["unterschrift"])}</figcaption>' if b["unterschrift"] else ""
     marke = f'<span class="bild-marke">{BILD_MARKE}</span>' if b.get("marke") else ""
-    return (f'<figure class="bild"><img src="{e(b["datei"])}" alt="{e(b["alt"])}" width="{b["breite"]}" '
-            f'height="{b["hoehe"]}" {laden}>{marke}{unter}</figure>')
+    bild = (f'<img src="{e(b["datei"])}" alt="{e(b["alt"])}" width="{b["breite"]}" '
+            f'height="{b["hoehe"]}" {laden}>')
+    s = b.get("schmal")
+    if s:
+        # Bildwechsel nach Breite (art direction): unter 900 px ein eigener, weiter gefasster Ausschnitt
+        bild = (f'<picture><source media="(max-width: 899px)" srcset="{e(s["datei"])}" width="{s["breite"]}" '
+                f'height="{s["hoehe"]}">{bild}</picture>')
+    return f'<figure class="bild">{bild}{marke}{unter}</figure>'
 
 
 # Kennzeichnung auf dem Bild (Plätze mit marke=True) und Vorsatz der Bildnachweise im Impressum, wörtlich nach dem

@@ -746,3 +746,6 @@ body.auszeichnung-strich .geteilt .aussage mark { color: inherit; padding: 0; ma
   body.auszeichnung-strich .geteilt .aussage mark { animation-name: strich-auf; }
   @keyframes strich-auf { from { background-size: 0% 8px; } to { background-size: 100% 8px; } }
 }
+/* 4 Am Handy ein eigener, weiter gefasster Ausschnitt (picture in bauen.py); das picture-Element bleibt aus dem Raster */
+.geteilt picture { display: contents; }
+@media (max-width: 899px) { .buehne-b .bild img { height: auto; aspect-ratio: 8 / 5; min-height: 200px; object-position: 50% 50%; } }
