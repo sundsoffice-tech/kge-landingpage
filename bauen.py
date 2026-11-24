@@ -82,8 +82,8 @@ BILDER = {
     "schadendetail": {"datei": "bilder/r1-lackriss-1536.webp", "breiten": [768, 1280, 1536],
                       "alt": "Nahaufnahme einer eingedrückten Seitenwand mit gerissenem Klarlack und abgeplatztem Lack",
                       "breite": 1536, "hoehe": 658,
-                      "unterschrift": "So sieht ein Seitenwandschaden oft aus: Unter gerissenem Lack sitzt oft mehr "
-                                      "Schaden, als man von außen erkennt.",
+                      "unterschrift": "Gerissener Lack an der Seitenwand: Darunter sitzt oft mehr Schaden, "
+                                      "als man von außen erkennt.",
                       "marke": KI_MARKE, "ki": True, "klasse": "vollbild",
                       "nachweis": "Startseite, gerissener Lack: " + KI_NACHWEIS},
     # Startseite, Ablauf „Besichtigung“: Taschenlampe auf einer verbogenen Achsstrebe.
