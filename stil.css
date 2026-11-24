@@ -725,3 +725,25 @@ main > .abschnitt:last-child { padding-bottom: var(--luft); }
 .selbst .schwelle-satz a { font-weight: 700; color: var(--navy); display: inline-block; padding-block: 12px; margin-block: -12px; }
 @media (min-width: 900px) { .selbst .schwelle { margin: 0 var(--rand) 0 0; position: sticky; top: 96px; } }
 .selbst-block { padding-top: var(--luft); }
+
+/* ---------- B, Korrekturrunde 24.11.2026 (Abnahme und Endkundenlesung) ---------- */
+/* 1 Erste Ansicht am Rechner: Dachzeile oben verankert, Aussage groß, Vorspann bis Zeiten an der Unterkante;
+   dazwischen die gespannte Fläche. Teilung 60:40, das Bild (Quelle 600 x 810) wird dabei höchstens 3 Prozent
+   vergrößert. Die Aussage richtet sich nach der Breite der Fläche (Containerbreite), damit „nicht zustimmen“
+   in einer Zeile bleibt. */
+.buehne-b .flaeche { container-type: inline-size; }
+.buehne-b .aussage-gross { font-size: clamp(40px, calc(100cqi / 8.5), 96px); }
+@media (min-width: 900px) {
+  .buehne-b { grid-template-columns: minmax(0, 60fr) minmax(0, 40fr); }
+  .buehne-b .flaeche { flex-direction: column; align-items: stretch; padding: 51px 24px 64px var(--rand); }
+  .buehne-b .flaeche-text { flex: 1; display: flex; flex-direction: column; max-width: none; }
+  .buehne-b .dach { margin-bottom: auto; padding-bottom: 32px; }
+  .buehne-b .frage, .buehne-b .unterzeile, .buehne-b .zeiten { max-width: 34rem; }
+}
+/* 2 Auszeichnung umschaltbar: ohne Klasse B1 (Amber-Fläche hinter „nicht zustimmen“), mit body.auszeichnung-strich
+   B2 (Amber-Strich 8 px unter der Zeile, der Anrufknopf ist dann die einzige gelbe Fläche der Ansicht). */
+body.auszeichnung-strich .geteilt .aussage mark { color: inherit; padding: 0; margin: 0; background-size: 100% 8px; background-position: 0 100%; }
+@media (prefers-reduced-motion: no-preference) {
+  body.auszeichnung-strich .geteilt .aussage mark { animation-name: strich-auf; }
+  @keyframes strich-auf { from { background-size: 0% 8px; } to { background-size: 100% 8px; } }
+}
