@@ -58,8 +58,8 @@ BILDER = {
     "streifschaden": {"datei": "bilder/streifschaden-kotfluegel.jpg",
                       "alt": "Weißes Auto mit Schrammen an Kotflügel und Stoßfänger",
                       "breite": 610, "hoehe": 310,
-                      "unterschrift": "Ein Streifschaden am Stoßfänger sieht oft harmlos aus: Dahinter sitzt oft mehr "
-                                      "Schaden, als man von außen erkennt. Beispielfoto, nicht aus einem Gutachten.",
+                      "unterschrift": "Ein Streifschaden am Stoßfänger sieht oft harmlos aus: Dahinter sitzt häufig mehr "
+                                      "Schaden, als man von außen erkennt.",
                       "art": "schaden", "marke": True,
                       "nachweis": "Streifschaden an einem weißen Auto: Volodymyr Dobrovolskyy, Unsplash, Unsplash-Lizenz."},
     # Startseite, rechte Hälfte der Bühne (Richtung B), Hochformat 600 x 810, Duplex vorab gerechnet.
@@ -68,8 +68,8 @@ BILDER = {
     "schadendetail": {"datei": "bilder/schadendetail-lack.jpg",
                       "alt": "Hintere Seitenwand einer Limousine mit gerissenem Lack und eingedrücktem Blech",
                       "breite": 600, "hoehe": 810,
-                      "unterschrift": "So sieht ein Seitenwandschaden oft aus: Unter gerissenem Lack sitzt oft mehr "
-                                      "Schaden, als man von außen erkennt. Beispielfoto, nicht aus einem Gutachten.",
+                      "unterschrift": "So sieht ein Seitenwandschaden oft aus: Unter gerissenem Lack sitzt häufig mehr "
+                                      "Schaden, als man von außen erkennt.",
                       "art": "schaden", "marke": True, "vorrang": True,
                       "nachweis": "Lackschaden an der Seitenwand: Kenny, Unsplash, Unsplash-Lizenz."},
     # Startseite, Abschnitt Einsatzgebiet, am linken Rand, 3:2. Nicht neben einer Anschrift, nicht unter „Büro“ oder
@@ -314,6 +314,8 @@ def bild_html(platz):
 
 # Kennzeichnung auf dem Bild (Plätze mit marke=True) und Vorsatz der Bildnachweise im Impressum, wörtlich nach dem
 # Rechtsbericht Bildunterschrift vom 24.11.2026 (Nr. 2 und 5). Der Vorsatz steht nur, wenn ein Schadenfoto gezeigt wird.
+# Seit der Korrekturrunde B (24.11.2026) kennzeichnet nur noch die Marke auf dem Bild; die Unterschrift wiederholt
+# „Beispielfoto“ nicht (Zeuge S1: Marke ODER Kennzeichnung in der Unterschrift).
 BILD_MARKE = "Beispielfoto"
 NACHWEIS_VORSATZ = "Die Schadenfotos auf dieser Seite sind Beispielfotos und zeigen keine Fälle des Büros."
 

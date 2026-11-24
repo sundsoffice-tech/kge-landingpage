@@ -511,9 +511,10 @@ main > .abschnitt:last-child { padding-bottom: var(--luft); }
   .band .bild figcaption { margin: 14px var(--rand) 0 0; }
   .band-leiste { position: absolute; z-index: 2; top: -40px; left: calc(var(--rand) - 38vw); width: min(560px, 46vw); padding: 18px 22px 20px; border-radius: var(--radius); box-shadow: var(--schatten); --schatten-farbe: var(--amber); }
 }
-/* Kennzeichnung auf dem Bild (bauen.py BILD_MARKE): oben rechts, dunkler Grund, lesbar am Handy */
+/* Kennzeichnung auf dem Bild (bauen.py BILD_MARKE): wie ein Fotonachweis in der Ecke oben rechts, 12 px hell,
+   kein Kasten; ein weicher Verlauf dahinter hält den Kontrast auch auf hellen Bildstellen */
 .bild { position: relative; }
-.bild-marke { position: absolute; top: 12px; right: 12px; background: rgba(13, 27, 39, 0.86); color: #fff; font-size: 13px; font-weight: 700; line-height: 1; padding: 6px 9px; border-radius: 4px; letter-spacing: 0.02em; }
+.bild-marke { position: absolute; top: 0; right: 0; z-index: 1; padding: 10px 12px 26px 56px; font-size: 12px; font-weight: 600; line-height: 1; letter-spacing: 0.02em; color: rgba(255, 255, 255, 0.95); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55); background: radial-gradient(ellipse at 100% 0, rgba(9, 19, 28, 0.7) 0, rgba(9, 19, 28, 0.35) 45%, rgba(9, 19, 28, 0) 72%); pointer-events: none; }
 
 /* ---------- Versicherung: große Aussage über die volle Breite, Begründung versetzt ---------- */
 #versicherung .merksatz.gross { color: var(--navy); }
@@ -660,7 +661,6 @@ main > .abschnitt:last-child { padding-bottom: var(--luft); }
 .geteilt .flaeche { order: 2; padding: 22px var(--rand) 28px; }
 .geteilt .kostenkarte { order: 3; }
 .geteilt .bild figcaption { order: 4; margin: 0; padding: 14px var(--rand) 22px; font-size: 14px; line-height: 1.5; color: var(--hell-2); max-width: 40em; }
-.geteilt .bild-marke { top: 12px; right: 12px; background: rgba(13, 27, 39, 0.9); }
 .geteilt .dach { color: var(--hell-2); margin-bottom: 10px; }
 .geteilt .frage { color: var(--hell-2); font-size: clamp(18px, 1.8vw, 23px); margin: 0 0 12px; }
 .geteilt .aussage-gross { color: var(--hell); font-size: clamp(40px, 5.2vw, 76px); line-height: 0.98; }
@@ -684,7 +684,6 @@ main > .abschnitt:last-child { padding-bottom: var(--luft); }
   .geteilt .bild figcaption { grid-column: 2; grid-row: 2; padding: 14px var(--rand) 28px 0; margin-left: 0; }
   .geteilt .knopf { width: auto; padding-inline: 28px; }
   .geteilt .kostenkarte { grid-column: 2; grid-row: 1; align-self: end; justify-self: start; z-index: 2; width: 330px; margin: 0 0 64px -120px; }
-  .geteilt .bild-marke { right: 16px; top: 16px; }
 }
 
 /* Wer zahlt?: derselbe geteilte Kopf, niedriger; das Bild ist hier der Streifschaden */

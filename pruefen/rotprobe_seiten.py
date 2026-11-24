@@ -104,16 +104,13 @@ MUTATIONEN = [
       '<h1>Nach dem Unfall: was Sie jetzt tun sollten</h1><figure class="bild"><img src="bilder/favicon.svg" '
       'alt="Zeichen" width="10" height="10" loading="lazy"><figcaption>Symbolbild: Zeichen</figcaption></figure>'),
     # Regel 5, Beispielfoto und Namenskarte (Rechtsbericht 24.11.2026)
-    m("S-a Marke weg und Unterschrift ohne „Beispielfoto“ (kosten.html)", "S1", "seite", "kosten.html",
-      r'<span class="bild-marke">Beispielfoto</span>(<figcaption>[^<]*?) Beispielfoto, nicht aus einem Gutachten\.</figcaption>',
-      r"\1</figcaption>", regex=True),
-    m("S-b Unterschrift ohne „Beispielfoto“ und Marke aus, über BILDER in bauen.py, neu gebaut", "S1", "bau", "bauen.py",
-      '"Schaden, als man von außen erkennt. Beispielfoto, nicht aus einem Gutachten.",\n'
-      '                      "art": "schaden", "marke": True, "vorrang": True',
-      '"Schaden, als man von außen erkennt.",\n'
-      '                      "art": "schaden", "marke": False, "vorrang": True'),
-    m("S-c Marke und Unterschrift ganz entfernt (index.html)", "S1", "seite", "index.html",
-      r'<span class="bild-marke">Beispielfoto</span><figcaption>.*?</figcaption>', "", regex=True),
+    m("S-a Marke am Streifschaden entfernt (kosten.html)", "S1", "seite", "kosten.html",
+      '<span class="bild-marke">Beispielfoto</span>', ""),
+    m("S-b Marke am Lackschaden aus, über BILDER in bauen.py, neu gebaut", "S1", "bau", "bauen.py",
+      '"art": "schaden", "marke": True, "vorrang": True',
+      '"art": "schaden", "marke": False, "vorrang": True'),
+    m("S-c Marke am Lackschaden entfernt (index.html)", "S1", "seite", "index.html",
+      '<span class="bild-marke">Beispielfoto</span>', ""),
     m("S-d Namenskarte neben das Schadenfoto gesetzt (index.html)", "S2", "seite", "index.html",
       '<figure class="bild"><img src="bilder/schadendetail-lack.jpg"',
       '<p class="name-zeile">Ihr Sachverständiger: Cihan Es</p><figure class="bild"><img src="bilder/schadendetail-lack.jpg"'),
