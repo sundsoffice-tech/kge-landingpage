@@ -144,8 +144,8 @@ BILDER = {
                    "nachweis": "Seite „Wer zahlt?“, Gutachten im Umschlag: " + KI_NACHWEIS},
 }
 # Satz nach den Nachweiszeilen im Impressum (Rechtsnachtrag 01:55, Wortlaut angepasst an KI-Bilder).
-NACHWEIS_SATZ = ("Die Schadenfotos auf dieser Seite sind KI-erzeugte Beispielbilder und zeigen keine Fälle des Büros. "
-                 "Sie tragen am Bild die Marke „KI-erzeugtes Bild“.")
+NACHWEIS_SATZ = ("Die Bilder mit der Marke „KI-erzeugtes Bild“ sind mit KI erzeugte Beispielbilder. "
+                 "Sie zeigen keine Fälle, Personen oder Räume des Büros.")
 # Ordner, in dem bilder/ liegt; der Zeuge setzt ihn auf einen eigenen Ordner.
 BILDWURZEL = HIER
 
