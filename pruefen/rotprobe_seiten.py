@@ -255,6 +255,16 @@ MUTATIONEN = [
     m("E-l Kostenabsatz in inhalte/umland.html als eigenes Literal, neu gebaut", "E7", "bau", "inhalte/umland.html",
       '<p class="kostensatz">{{kosten_satz}}</p>',
       '<p class="kostensatz">Der andere war schuld? Dann zahlt das Gutachten seine Versicherung.</p>'),
+    # Runde 6, Punkte 12 und 6: Telefonzeiten aus einer Quelle, voller Wortlaut in der Bühne.
+    m("E-m Uhrzeit als Literal in inhalte/nachts-wochenende.html", "E8", "quelle", "inhalte/nachts-wochenende.html",
+      "<span>{{telefonzeiten}}.</span>", "<span>Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr.</span>"),
+    m("E-n Telefonzeiten in der Bühne ohne Uhrzeiten („Mo bis Fr Uhr“)", "E3", "seite", "index.html",
+      "<b>Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr.</b>", "<b>Mo bis Fr Uhr</b>"),
+    # Runde 6, Punkt 13: Freihalteliste gegen das Markup.
+    m("K2-a FREI_HALTEN mit einem Wähler, den es nicht mehr gibt (.hero .stern)", "K2", "seite", "einwilligung.js",
+      'var FREI_HALTEN = ".hero .knoepfe .knopf, ', 'var FREI_HALTEN = ".hero .stern, .hero .knoepfe .knopf, '),
+    m("K2-b Telefonzeiten der Bühne unter anderer Klasse (Wähler trifft nichts)", "K2", "seite", "index.html",
+      '<p class="buehne-zeiten">', '<p class="zeiten">'),
     # Runde 6, Punkt 4: ein Umschaltpunkt.
     m("C-a zwei Queries für die Textfassungen wie bis Runde 5 (Lücke 699,98 bis 700 px)", "C1", "seite", "stil.css",
       ".nur-gross { display: none; }\n@media (min-width: 700px) { .nur-gross { display: revert; } .nur-klein { display: none; } }",

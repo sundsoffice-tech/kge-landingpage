@@ -10,8 +10,8 @@
   <div class="wrap">
     <h2>So erreichen Sie das Büro</h2>
     <ul class="kontaktliste">
-      <li><svg><use href="#i-tel"/></svg><div><b>Telefon</b><a href="tel:+4921616888691" data-messung="phone_click">02161 688 86 91</a> <span data-echte-nummer>(international +49 2161 6888691)</span><span>Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr</span></div></li>
-      <li><svg><use href="#i-wa"/></svg><div><b>WhatsApp</b><a href="{{wa_link}}" rel="noopener" data-messung="whatsapp_click">{{wa_anzeige}}</a><span>Fotos zur ersten Einschätzung, auch außerhalb der Telefonzeiten. Antwort Mo bis Fr ab 8&nbsp;Uhr, Sa ab 9&nbsp;Uhr. Bitte nur Ihr eigenes Fahrzeug fotografieren.</span></div></li>
+      <li><svg><use href="#i-tel"/></svg><div><b>Telefon</b><a href="tel:+4921616888691" data-messung="phone_click">02161 688 86 91</a> <span data-echte-nummer>(international +49 2161 6888691)</span><span>{{telefonzeiten}}</span></div></li>
+      <li><svg><use href="#i-wa"/></svg><div><b>WhatsApp</b><a href="{{wa_link}}" rel="noopener" data-messung="whatsapp_click">{{wa_anzeige}}</a><span>Fotos zur ersten Einschätzung, auch außerhalb der Telefonzeiten. Antwort {{zeiten_ab}}. Bitte nur Ihr eigenes Fahrzeug fotografieren.</span></div></li>
       <li><svg><use href="#i-mail"/></svg><div><b>E-Mail</b><a href="mailto:info@kfz-gutachten-es.de">info@kfz-gutachten-es.de</a></div></li>
       <li><svg><use href="#i-uhr"/></svg><div><b>Rückruf</b><a href="#rueckruf">Nummer hinterlassen</a><span>Wenn Sie gerade nicht telefonieren können.</span></div></li>
     </ul>
@@ -42,7 +42,7 @@
   <div class="wrap zweispaltig">
     <div>
       <h2>Rückruf anfordern</h2>
-      <p class="vorspann">Sie können gerade nicht telefonieren? Hinterlassen Sie Ihre Nummer. Der Rückruf kommt Mo bis Fr ab 8&nbsp;Uhr, Sa ab 9&nbsp;Uhr.</p>
+      <p class="vorspann">Sie können gerade nicht telefonieren? Hinterlassen Sie Ihre Nummer. Der Rückruf kommt {{zeiten_ab}}.</p>
     </div>
     <form class="formular" id="rueckruf-formular" method="post" novalidate aria-label="Rückruf anfordern" data-erfolg="Danke. Ihre Nummer ist angekommen. Der Rückruf kommt {{telefonzeiten}}.">
       <p class="hinweis">Drei Felder, nur die Telefonnummer ist Pflicht.</p>

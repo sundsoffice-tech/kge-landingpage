@@ -663,9 +663,68 @@ def e3():
         return ["index.html: Bühnenblock nicht genau einmal"]
     zeiten = einmal(r'<p class="buehne-zeiten">(.*?)</p>', buehne)
     fett = einmal(r"<b>(.*?)</b>", zeiten or "")
-    if not fett or "Mo bis Fr" not in fett or "Uhr" not in fett:
-        return [f"index.html: keine Telefonzeiten im Bühnenblock: {zeiten!r}"]
+    # Runde 6 (Codex 3): der volle Wortlaut aus der Konstante, nicht nur „Mo bis Fr“ und „Uhr“.
+    if not fett or klartext(fett) != bauen.TELEFONZEITEN + ".":
+        return [f"index.html: Telefonzeiten im Bühnenblock nicht wörtlich {bauen.TELEFONZEITEN!r}: {zeiten!r}"]
     return []
+
+
+def e8():
+    """Runde 6, Punkt 12: Die Telefonzeiten stehen nur in bauen.py (ZEITEN); keine Inhaltsquelle und keine Vorlage
+    trägt eine Uhrzeit als Literal."""
+    v = []
+    for pfad in sorted((WURZEL / "inhalte").glob("*.html")) + [WURZEL / "vorlagen" / "schale.html"]:
+        roh = pfad.read_text(encoding="utf-8")
+        treffer = re.findall(r"\d{1,2}(?:&nbsp;|&#160;|\s)*Uhr", roh)
+        if treffer:
+            v.append(f"{pfad.relative_to(WURZEL).as_posix()}: Uhrzeit als Literal: {treffer[:3]}")
+    return v
+
+
+class Treffer(HTMLParser):
+    """Zählt, wie oft ein Wähler aus Klassen mit Nachfahren-Leerzeichen (.a .b .c) trifft."""
+    LEER = {"img", "br", "input", "meta", "link", "source", "hr", "wbr", "area", "base", "col", "embed", "track"}
+
+    def __init__(self, teile):
+        super().__init__(convert_charrefs=True)
+        self.teile, self.stapel, self.zahl = teile, [], 0
+
+    def handle_starttag(self, tag, attrs):
+        klassen = set((dict(attrs).get("class") or "").split())
+        if self.teile[-1] <= klassen:
+            rest, vorfahren = list(self.teile[:-1]), [k for _, k in self.stapel]
+            for k in vorfahren:
+                if rest and rest[0] <= k:
+                    rest.pop(0)
+            self.zahl += 0 if rest else 1
+        if tag not in self.LEER:
+            self.stapel.append((tag, klassen))
+
+    def handle_endtag(self, tag):
+        for i in range(len(self.stapel) - 1, -1, -1):
+            if self.stapel[i][0] == tag:
+                del self.stapel[i:]
+                return
+
+
+def k2():
+    """Runde 6, Punkt 13: Jeder Wähler in FREI_HALTEN (einwilligung.js) trifft im gebauten index.html ein Element;
+    der Bewertungswähler darf fehlen, solange BEWERTUNG_ZEIGEN = False."""
+    js = (WURZEL / "einwilligung.js").read_text(encoding="utf-8")
+    liste = re.findall(r'var FREI_HALTEN = "([^"]*)";', js)
+    if len(liste) != 1:
+        return [f"einwilligung.js: FREI_HALTEN {len(liste)}-mal statt einmal"]
+    v = []
+    for waehler in [w.strip() for w in liste[0].split(",")]:
+        if not re.fullmatch(r"(?:\.[\w-]+)+(?: (?:\.[\w-]+)+)*", waehler):
+            v.append(f"FREI_HALTEN: Wähler {waehler!r} ist kein reiner Klassenwähler, der Zeuge kann ihn nicht prüfen")
+            continue
+        teile = [set(re.findall(r"\.([\w-]+)", t)) for t in waehler.split(" ")]
+        leser = Treffer(teile)
+        leser.feed(SEITEN["index.html"].roh)
+        if leser.zahl == 0 and not (".bewertung" in waehler and not bauen.BEWERTUNG_ZEIGEN):
+            v.append(f"index.html: FREI_HALTEN-Wähler {waehler!r} trifft kein Element")
+    return v
 
 
 def e4():
@@ -848,6 +907,8 @@ FAELLE = [
     ("Q1", "stil.css und alle gebauten Seiten laden über url() nur Dateien aus schriften/", q1),
     ("Q2", "Bildnachweis im Impressum sichtbar, kein verborgener Vorfahre", q2),
     ("Q3", "kein Bildelement außerhalb der Bildplätze", q3),
+    ("E8", "Telefonzeiten nur in bauen.py, keine Uhrzeit als Literal in inhalte/ und vorlagen/", e8),
+    ("K2", "jeder Wähler in FREI_HALTEN trifft im gebauten index.html ein Element", k2),
     ("C1", "ein Umschaltpunkt: .nur-klein/.nur-gross in genau einer Query (min-width: 700px)", c1),
     ("P7", "Formular-ID und Feld-IDs aus formular.js stehen in jedem Formular genau einmal", p7),
     ("F1", "Formular: method=post, Absendeknopf gesperrt, noscript mit Rufnummer, formular.js schaltet frei", f1),

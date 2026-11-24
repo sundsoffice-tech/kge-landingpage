@@ -5,7 +5,7 @@
  *  - Honigtopf ist eine Checkbox und wird über .checked gelesen, nie über .value (Lektion E2).
  *  - Erfolg wird erst gemeldet, wenn der Endpunkt mit ok:true antwortet; sonst Fehlertext mit tippbarer
  *    Telefonnummer (tel:-Link). Der Erfolgstext steht im Attribut data-erfolg am Formular, gesetzt von
- *    bauen.py aus der einen Rückrufzusage (RUECKRUF_WERKTAGS, RUECKRUF_SONST).
+ *    bauen.py aus den Telefonzeiten (TELEFONZEITEN, Runde 6, Punkt 12).
  *  - Conversion form_submit erst nach ok:true über window.kgeMessung (einwilligung.js). Wirft die Messung, bleibt
  *    die Erfolgsmeldung stehen (eigener try, Runde 6, Punkt 7).
  *  - Zeitgrenze: Antwortet der Endpunkt nicht binnen ZEITGRENZE_MS, bricht der Versand ab und der Fehlertext mit

@@ -152,7 +152,13 @@ TELEFON_ANZEIGE = "02161 688 86 91"
 TELEFON_LINK = "tel:+4921616888691"
 # Telefonzeiten: stehen nur hier (Runde 6, Punkt 12; vorher an fünf Stellen getrennt gepflegt). In inhalte/ und in
 # der Schale steht {{telefonzeiten}}; der Zeuge E3 verlangt den Wortlaut, E8 verbietet das Literal in den Quellen.
-TELEFONZEITEN = "Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr"
+# Je Tag (Anzeige, ab, bis); daraus alle drei Schreibweisen der Seite.
+ZEITEN = (("Mo bis Fr", 8, 18), ("Sa", 9, 14))
+TELEFONZEITEN = ", ".join(f"{tage} {ab} bis {bis} Uhr" for tage, ab, bis in ZEITEN)
+# Rückruf und WhatsApp-Antwort: „Mo bis Fr ab 8 Uhr, Sa ab 9 Uhr“, mit festem Leerzeichen vor „Uhr“.
+ZEITEN_AB = ", ".join(f"{tage} ab {ab}&nbsp;Uhr" for tage, ab, _ in ZEITEN)
+# Fuß: je Tag eine Zeile.
+ZEITEN_ZEILEN = "\n      ".join(f"{tage} {ab} bis {bis} Uhr<br>" for tage, ab, bis in ZEITEN)
 # Kostensatz der Startseite, wortgleich unter der Überschrift von umland.html (Runde 6, Punkt 15, Vorschlag der
 # Rechtsrolle zu den Anzeigentexten v10); Zeuge E7.
 KOSTEN_SATZ = ("Der andere war schuld? Dann zahlt das Gutachten in der Regel seine Versicherung. Bei kleinen Schäden "
@@ -189,6 +195,8 @@ GLOBAL = {
     "rueckruf_werktags": RUECKRUF_WERKTAGS,
     "rueckruf_sonst": RUECKRUF_SONST,
     "telefonzeiten": TELEFONZEITEN,
+    "zeiten_ab": ZEITEN_AB,
+    "zeiten_zeilen": ZEITEN_ZEILEN,
     "kosten_satz": KOSTEN_SATZ,
     "ohne_skript": OHNE_SKRIPT,
 }
@@ -606,7 +614,7 @@ SEITEN = {
     },
     "kontakt.html": {
         "titel": "Kontakt und Anfahrt | Kfz Gutachter Es, Mönchengladbach",
-        "beschreibung": "Telefon 02161 688 86 91, WhatsApp und Rückruf. Besichtigung mit Hebebühne an der Karstraße 25 in Mönchengladbach, Büro an der Dahlener Straße 286 in Rheydt. Telefonzeiten Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr.",
+        "beschreibung": "Telefon 02161 688 86 91, WhatsApp und Rückruf. Besichtigung mit Hebebühne an der Karstraße 25 in Mönchengladbach, Büro an der Dahlener Straße 286 in Rheydt. Telefonzeiten " + TELEFONZEITEN + ".",
         "kanonisch": "kontakt.html",
         "skripte": '<script src="formular.js" defer></script>',
     },
