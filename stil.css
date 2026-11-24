@@ -460,16 +460,23 @@ main > .abschnitt:last-child { padding-bottom: var(--luft); }
 .themenzeile { font-size: 15px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tinte-2); margin: 0 0 18px; line-height: 1.4; }
 .dunkel .themenzeile { color: var(--hell-2); }
 .titel-gross { font-size: clamp(34px, 5vw, 64px); font-weight: 900; line-height: 1.02; letter-spacing: -0.03em; margin: 0 0 28px; }
-.merksatz.gross { font-size: clamp(27px, 4.1vw, 52px); font-weight: 800; line-height: 1.12; letter-spacing: -0.025em; max-width: 21em; margin: 0; }
+.merksatz.gross { font-size: clamp(27px, 4.1vw, 52px); font-weight: 800; line-height: 1.18; letter-spacing: -0.025em; max-width: 21em; margin: 0; }
 .versetzt { max-width: 34rem; margin-top: 36px; }
 @media (min-width: 900px) { .versetzt { margin-left: 50%; margin-top: 56px; } }
 
 /* ---------- Bühne (erste Ansicht der Startseite) ---------- */
 .buehne { padding: 28px 0 0; position: relative; }
-.buehne-raster { display: grid; gap: 26px; }
+.buehne-raster { display: grid; gap: 0; }
+.buehne-kopf .frage { margin-bottom: 14px; }
+.buehne-spalte { margin-top: 24px; }
+/* Am Rechner: Kopfzeilen über die ganze Breite, darunter Aussage und Spalte auf derselben Oberkante;
+   die Spalte beginnt auf der Höhe der Großbuchstaben von „Sie müssen“ (gemessen per Sonde, Bericht) */
 @media (min-width: 900px) {
-  .buehne { padding-top: 64px; }
-  .buehne-raster { grid-template-columns: minmax(0, 1fr) minmax(0, 300px); column-gap: 64px; align-items: end; }
+  .buehne { padding-top: 48px; }
+  .buehne-raster { grid-template-columns: minmax(0, 1fr) minmax(0, 300px); grid-template-areas: "kopf ." "aussage spalte"; column-gap: 64px; align-items: start; }
+  .buehne-kopf { grid-area: kopf; }
+  .buehne-raster > .aussage { grid-area: aussage; }
+  .buehne-spalte { grid-area: spalte; margin-top: 0; padding-top: 10px; }
 }
 .dach { font-size: 15px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tinte-2); line-height: 1.4; margin: 0 0 14px; }
 .frage { font-size: clamp(20px, 2.3vw, 29px); font-weight: 500; line-height: 1.3; color: var(--tinte-2); max-width: 22em; margin: 0 0 14px; letter-spacing: -0.01em; }
@@ -487,7 +494,9 @@ main > .abschnitt:last-child { padding-bottom: var(--luft); }
 
 /* Bildband: am Rechner randabfallend vom 38-Prozent-Punkt bis zum rechten Fensterrand, oben links eine große Rundung;
    die Zeitenleiste liegt über der linken Bildkante. Am Handy über die volle Breite. */
-.band { position: relative; margin-top: 40px; }
+.band { position: relative; margin-top: 28px; display: flex; flex-direction: column; }
+.band .bild { order: 1; }
+.band-leiste { order: 2; }
 .band .bild { margin: 0; max-width: none; position: relative; }
 .band .bild img { width: 100%; height: auto; border: 0; border-radius: 0; }
 .band .bild figcaption { font-size: 15px; color: var(--tinte-2); margin: 12px var(--rand) 0; max-width: 40em; }
@@ -497,10 +506,10 @@ main > .abschnitt:last-child { padding-bottom: var(--luft); }
 .band-leiste .zeiten a { color: var(--hell); font-weight: 700; display: inline-block; padding-block: 12px; margin-block: -12px; }
 .band-leiste .zeiten a:hover { color: var(--amber-hell); }
 @media (min-width: 900px) {
-  .band { margin: 104px 0 0 38%; }
-  .band .bild img { border-radius: var(--bild-rund) 0 0 var(--bild-rund); max-height: 560px; object-fit: cover; }
+  .band { margin: 80px 0 0 38vw; }
+  .band .bild img { border-radius: var(--bild-rund) 0 0 var(--bild-rund); max-height: 600px; object-fit: cover; }
   .band .bild figcaption { margin: 14px var(--rand) 0 0; }
-  .band-leiste { position: absolute; z-index: 2; top: -44px; left: calc(-1 * min(26vw, 340px)); width: min(430px, 40vw); padding: 18px 22px 20px; border-radius: var(--radius); box-shadow: var(--schatten); --schatten-farbe: var(--amber); }
+  .band-leiste { position: absolute; z-index: 2; top: -40px; left: calc(var(--rand) - 38vw); width: min(560px, 46vw); padding: 18px 22px 20px; border-radius: var(--radius); box-shadow: var(--schatten); --schatten-farbe: var(--amber); }
 }
 /* Kennzeichnung auf dem Bild (bauen.py BILD_MARKE): oben rechts, dunkler Grund, lesbar am Handy */
 .bild { position: relative; }
@@ -532,18 +541,18 @@ main > .abschnitt:last-child { padding-bottom: var(--luft); }
 
 /* ---------- Ablauf: vier Schritte als Zeitleiste mit großen Ziffern ---------- */
 .lauf { list-style: none; margin: 0 0 32px; padding: 0; counter-reset: lauf; display: grid; gap: 28px; max-width: none; }
-.lauf li { counter-increment: lauf; margin: 0; display: grid; grid-template-columns: 56px minmax(0, 1fr); column-gap: 16px; }
+.lauf li { counter-increment: lauf; margin: 0; display: grid; align-content: start; grid-template-columns: 56px minmax(0, 1fr); column-gap: 16px; }
 .lauf li::before { content: counter(lauf); grid-row: 1 / span 2; font-size: 56px; font-weight: 900; line-height: 0.9; color: var(--navy); letter-spacing: -0.04em; }
 .lauf b { font-size: 20px; font-weight: 800; align-self: end; }
 .lauf p { margin: 6px 0 0; color: var(--tinte-2); }
 .lauf-schluss { max-width: 40rem; }
 @media (min-width: 900px) {
-  .lauf { grid-template-columns: 0.85fr 1.15fr 1.55fr 0.85fr; column-gap: 40px; border-top: 2px solid var(--navy); padding-top: 0; margin-bottom: 48px; }
+  .lauf { grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 40px; border-top: 2px solid var(--navy); padding-top: 0; margin-bottom: 48px; }
   .lauf li { grid-template-columns: 1fr; }
   .lauf li { padding-top: 22px; }
   .lauf li::before { grid-row: auto; font-size: 88px; margin: 0 0 14px; }
   .lauf b { align-self: start; }
-  .lauf-schluss { margin-left: 33%; }
+  .lauf-schluss { margin-left: calc(50% + 20px); }
 }
 
 /* ---------- Über Cihan Es: dunkle Fläche, Name groß, zwei Anschriften groß; kein Schadenfoto in diesem Block ---------- */
@@ -627,3 +636,12 @@ main > .abschnitt:last-child { padding-bottom: var(--luft); }
 
 /* Wer zahlt?: die Bedingungen sind der zweite Blickfang, ihre Überschrift tritt hinter den Seitentitel zurück */
 .inhalt .bedingung .titel-gross { font-size: clamp(28px, 3.4vw, 44px); margin-bottom: 22px; }
+
+/* Wer zahlt?: rechts im Kopf die Schwelle aus „Kleiner Schaden“ als Zahl, gebunden an die Unterkante der Rufzeile */
+.kopf-raster { display: grid; gap: 32px; }
+.seitenkopf .schwelle { border-top: 2px solid var(--navy); padding-top: 16px; max-width: 26rem; }
+.seitenkopf .schwelle-zahl { font-size: clamp(48px, 5.4vw, 72px); font-weight: 900; line-height: 1; letter-spacing: -0.035em; color: var(--navy); margin: 0 0 14px; max-width: none; }
+.seitenkopf .schwelle-vor { display: block; font-size: 15px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tinte-2); line-height: 1.4; margin-bottom: 6px; }
+.seitenkopf .schwelle-satz { font-size: 17px; line-height: 1.5; color: var(--tinte); margin: 0; }
+.seitenkopf .schwelle-satz a { font-weight: 700; color: var(--navy); display: inline-block; padding-block: 12px; margin-block: -12px; }
+@media (min-width: 900px) { .kopf-raster { grid-template-columns: minmax(0, 1fr) minmax(0, 320px); column-gap: 64px; align-items: end; } .seitenkopf .schwelle { margin-bottom: 6px; } }

@@ -66,8 +66,8 @@ BILDER = {
     # weil daneben Text mit Bezug zu Cihan Es steht (Rechtsbericht 24.11.2026, Nr. 2). Die Unterschrift steht unter
     # dem Band, außerhalb der ersten Ansicht; Wortlaut geprüft (Rechtsbericht Nr. 3), steht nur hier.
     "schadendetail": {"datei": "bilder/schadendetail-lack.jpg",
-                      "alt": "Graue Limousine, hintere Seitenwand mit gerissenem Lack und eingedrücktem Blech",
-                      "breite": 800, "hoehe": 440,
+                      "alt": "Hintere Seitenwand einer Limousine mit gerissenem Lack und eingedrücktem Blech",
+                      "breite": 800, "hoehe": 588,
                       "unterschrift": "So sieht ein Seitenwandschaden oft aus: Unter gerissenem Lack sitzt oft mehr "
                                       "Schaden, als man von außen erkennt. Beispielfoto, nicht aus einem Gutachten.",
                       "art": "schaden", "marke": True, "vorrang": True,
