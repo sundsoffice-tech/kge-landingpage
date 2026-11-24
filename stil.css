@@ -193,12 +193,16 @@ b, strong { font-weight: 650; }
 .buehne .frage { font-size: 18px; line-height: 1.45; color: var(--licht); max-width: 26rem; margin: 0 0 14px; }
 @media (min-width: 900px) { .buehne .frage { font-size: 21px; max-width: 32rem; margin-bottom: 20px; } }
 .buehne h1 .h1-vor { display: block; margin-bottom: 12px; font-size: clamp(21px, 2.2vw, 28px); line-height: 1.25; letter-spacing: -0.01em; color: var(--licht); }
+/* Worum-Zeile (Runde 3): am Rechner zwischen großer Zeile und Vorspann in der Größe der Vorzeile; am Handy steht sie
+   als erste Zeile der Kontaktfläche (.worum-karte), damit die Bühne unter Hand und Messkopf bleibt. */
+.buehne .worum { margin: -8px 0 20px; font-family: var(--titel); font-weight: var(--schnitt); font-size: clamp(21px, 2.2vw, 28px); line-height: 1.25; letter-spacing: -0.01em; color: var(--licht); max-width: 44rem; } /* 44rem: am Rechner zwei Zeilen, damit die Zeiten in der ersten Ansicht bleiben */
+.worum-karte { margin: 0 0 10px; font-family: var(--titel); font-weight: var(--schnitt); font-size: 21px; line-height: 1.25; color: var(--tinte); }
 .buehne-zeiten { margin: 16px 0 0; font-size: 17px; line-height: 1.55; color: var(--licht); max-width: 32rem; }
 .buehne-zeiten b { color: var(--licht); }
 .buehne-zeiten a { color: var(--licht); display: inline-block; padding-block: 12px; margin-block: -12px; }
 .buehne-zeiten a:hover { color: var(--glut-hell); }
 .buehne-zeiten .am-stueck { white-space: nowrap; } /* kein allein stehender Schlusspunkt */
-@media (min-width: 900px) { .buehne-zeiten { font-size: 18px; margin-top: 20px; } }
+@media (min-width: 900px) { .buehne-zeiten { font-size: 18px; margin-top: 20px; max-width: 42rem; } }
 .hero.buehne h1 { font-size: clamp(46px, 6.4vw, 84px); margin-bottom: 26px; max-width: 15ch; text-wrap: balance; }
 @media (max-width: 699px) { .hero.buehne h1 { font-size: 42px; letter-spacing: -0.04em; max-width: none; } }
 /* Handy: Bühne nur unterhalb von Hand und Messkopf. Die Dachzeile entfällt dort (der Name steht in der Kontaktfläche),
@@ -210,7 +214,9 @@ b, strong { font-weight: 650; }
 .buehne .knoepfe { display: flex; }
 .buehne .knopf { min-height: 58px; }
 @media (max-width: 539px) { .buehne .knoepfe .knopf { width: 100%; } }
-@media (max-width: 379px) { .buehne h1 { font-size: 40px; } .buehne .unterzeile, .buehne .frage { font-size: 17px; margin-bottom: 12px; } }
+/* Schmale Handys (360): nächstkleinere Stufe der großen Zeile und knappere Abstände, damit der Textblock unter Hand und Messkopf beginnt (Runde 3) */
+@media (max-width: 379px) { .hero.buehne h1 { margin-bottom: 18px; } .buehne-text { padding-bottom: 20px; } }
+@media (max-width: 379px) { .buehne h1, .hero.buehne h1 { font-size: 40px; } .buehne .unterzeile, .buehne .frage { font-size: 17px; margin-bottom: 12px; } }
 /* Die eine inszenierte Bewegung: das Bühnenfoto setzt sich beim Laden langsam (nur transform) */
 @media (prefers-reduced-motion: no-preference) {
   .hero .buehne-bild img { animation: setzen 1600ms cubic-bezier(0.16, 1, 0.3, 1) both; }
