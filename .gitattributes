@@ -10,3 +10,5 @@ DEPLOY.md export-ignore
 .gitignore export-ignore
 .gitattributes export-ignore
 belege export-ignore
+# Runde 5 (24.11.2026): Bilder, die keine Seite lädt, liegen hier und gehen nicht mit aus (zeuge_seiten B4).
+bilder-archiv export-ignore

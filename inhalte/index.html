@@ -1,153 +1,116 @@
 <main>
-<section class="hero dunkel">
-  <div class="wrap">
-    <div>
-      <h1>Kfz-Gutachter in <mark>Mönchengladbach</mark></h1>
-      {{vertrauen}}
-      <p class="unterzeile">Die Versicherung des Unfallgegners will ihren eigenen Gutachter schicken? Sie müssen nicht zustimmen und dürfen jeden qualifizierten Gutachter beauftragen. Cihan Es begutachtet Ihr Fahrzeug in Ihrem Auftrag, dort, wo es steht, oder auf der Hebebühne an der Karstraße 25.</p>
+<!-- R1 schlank (24.11.2026): die erste Ansicht setzt die Anzeige fort. Die Klasse hero bleibt, weil leiste.js und
+     einwilligung.js den Anrufknopf über .hero .knoepfe .knopf finden.
+     BÜHNENTEXTE (Runde 3, Fabrice 24.11. und Recht 14): Dachzeile, Vorzeile, große Zeile, Worum-Zeile, Vorspann,
+     Zeitenzeile und die zwei Zeilen der Kontaktfläche am Handy (Worum-Zeile, Ausweichwege) stehen nur in diesem
+     Block. Nach der Rechtsprüfung wird nur dieser Block getauscht; Titel und Beschreibung in bauen.py SEITEN sind
+     davon getrennt. Worum-Zeile und Ausweichwege stehen je zweimal: nur-gross in der Bühne, nur-klein in der Karte. -->
+<section class="hero buehne">
+  {{bild_start}}
+  <div class="buehne-text">
+    <div class="wrap">
+      <p class="frage">Cihan Es, Kfz-Sachverständiger für Unfallschäden</p>
+      <h1><span class="h1-vor">Kfz-Gutachter in Mönchengladbach</span> Ums Gutachten kümmern wir uns.</h1>
+      <p class="worum nur-gross">Termin am Telefon, Besichtigung dort, wo Ihr Auto steht, Versand an die Versicherung.</p>
+      <p class="unterzeile">{{kosten_satz}}</p>
       <div class="knoepfe">
         <a class="knopf" href="tel:+4921616888691" data-messung="phone_click"><svg><use href="#i-tel"/></svg><span>Anrufen: 02161 688 86 91</span></a>
       </div>
-      <p class="zeiten"><b>Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr.</b> Außerhalb dieser Zeiten: <a href="{{wa_link}}" rel="noopener" data-messung="whatsapp_click">Fotos per WhatsApp</a> oder <a href="#rueckruf">Rückruf anfordern</a>.</p>
-      <p class="kostenzeile">Unverschuldeter Unfall, Schaden über etwa 750 Euro: Das Gutachten zahlt in der Regel die gegnerische Versicherung. <a href="kosten.html">Wer zahlt in welchem Fall?</a></p>
+      <p class="buehne-zeiten"><b>{{telefonzeiten}}.</b><span class="nur-gross"> Sonst per <a href="{{wa_link}}" rel="noopener" data-messung="whatsapp_click">WhatsApp</a> <span class="am-stueck">oder <a href="#rueckruf">Rückruf</a>.</span></span></p>
     </div>
-    <div class="hero-bild">
-      {{bild_start}}
-      <ul class="hero-fakten">
-        <li><svg><use href="#i-pin"/></svg><span><small>Besichtigung mit Hebebühne</small>Karstraße 25<br>41068 Mönchengladbach</span></li>
-        <li><svg><use href="#i-pin"/></svg><span><small>Büro und Post, Rheydt</small>Dahlener Straße 286<br>41239 Mönchengladbach</span></li>
-        <li><a href="kontakt.html#anfahrt">Anfahrt zu beiden Adressen<svg><use href="#i-pfeil"/></svg></a></li>
+  </div>
+</section>
+
+<!-- Kontaktfläche auf Papier-2: Name, zwei Adressen, Einsatzgebiet. Die Namenszeile steht mit Abstand zum
+     Schadenfoto auf eigener Fläche (Richtungsvertrag, Nachtrag 01:55). -->
+<section class="karte" id="erreichbar">
+  <div class="wrap karte-raster">
+    <div>
+      <p class="worum-karte nur-klein">Termin am Telefon, Besichtigung dort, wo Ihr Auto steht, Versand an die Versicherung.</p>
+      <p class="ruf-gross"><a href="tel:+4921616888691" data-messung="phone_click">02161 688 86 91</a></p>
+      <p class="ausweich nur-klein">Sonst per <a href="{{wa_link}}" rel="noopener" data-messung="whatsapp_click">WhatsApp</a> <span class="am-stueck">oder <a href="#rueckruf">Rückruf</a>.</span></p>
+    </div>
+<!-- ENDE BÜHNENTEXTE -->
+    <div class="karte-person">
+      {{vertrauen}}
+      <ul class="adressen">
+        <li><small>Besichtigung mit Hebebühne</small>Karstraße 25, 41068 Mönchengladbach</li>
+        <li><small>Büro und Post, Rheydt</small>Dahlener Straße 286, 41239 Mönchengladbach</li>
       </ul>
+      <a class="weiter" href="kontakt.html#anfahrt">Anfahrt<svg><use href="#i-pfeil"/></svg></a>
     </div>
+    <p class="gebietzeile">Besichtigung in Mönchengladbach, Viersen, Willich, Korschenbroich, Neuss, Kaarst und Grevenbroich. <a href="umland.html">Einsatzgebiet</a></p>
   </div>
 </section>
 
-<section class="abschnitt" id="versicherung">
-  <div class="wrap spalten">
-    <h2>Die Versicherung vom Gegner hat angerufen</h2>
-    <div>
-      <p class="merksatz">Viele Versicherer melden sich schon am Tag nach dem Unfall und bieten an, alles zu regeln: Gutachter, Werkstatt, Mietwagen. Das ist erlaubt, Sie müssen aber nicht zustimmen.</p>
-      <p>Der Gutachter der Versicherung arbeitet in deren Auftrag. Sie dürfen einen qualifizierten Gutachter Ihrer Wahl beauftragen (BGH, VI ZR 225/13); bei unverschuldetem Unfall zahlt ihn in der Regel die gegnerische Versicherung, bei kleinen Schäden oft nicht. Sagen Sie am Telefon nichts zu, bevor Sie wissen, wie groß Ihr Schaden ist.</p>
-      <a class="weiter" href="kosten.html#gutachterwahl">Ihr Recht auf einen eigenen Gutachter<svg><use href="#i-pfeil"/></svg></a>
-    </div>
-  </div>
-</section>
-
-<section class="abschnitt grau schmal" id="erste-schritte">
+<section class="abschnitt zahler" id="wer-zahlt">
   <div class="wrap">
-    <p class="verweis"><b>Direkt nach dem Unfall:</b> <a class="weiter" href="ablauf.html">Die fünf Schritte an der Unfallstelle<svg><use href="#i-pfeil"/></svg></a></p>
-  </div>
-</section>
-
-<section class="abschnitt" id="wer-zahlt">
-  <div class="wrap spalten">
     <h2>Wer zahlt das Gutachten?</h2>
-    <div>
-      <dl class="zeilen">
-        <div><dt>Der Gegner ist allein schuld</dt><dd>In der Regel zahlt seine Haftpflichtversicherung das Gutachten als Teil des Schadens.</dd></div>
-        <div><dt>Teilschuld</dt><dd>Die gegnerische Versicherung zahlt anteilig, den Rest tragen Sie.</dd></div>
-        <div><dt>Selbst verschuldet, Hagel, Wild</dt><dd>Das ist ein Fall für Ihre Kasko. Ein Gutachten, das Sie selbst beauftragen, zahlt sie nur mit ihrer vorherigen Zustimmung. Fragen Sie dort zuerst.</dd></div>
-        <div><dt>Kleiner Schaden</dt><dd>Bei Bagatellschäden erstattet die Versicherung die Gutachterkosten meist nicht. Dann reicht oft ein Kostenvoranschlag.</dd></div>
-      </dl>
-      <p>Ob sich ein Gutachten in Ihrem Fall lohnt, klären Sie am Telefon, bevor Kosten entstehen.</p>
-      <a class="weiter" href="kosten.html">Kosten und Honorar im Einzelnen<svg><use href="#i-pfeil"/></svg></a>
+    <div class="haftpflicht">
+      <p class="frage-kopf">Die Versicherung des Unfallgegners will ihren Gutachter schicken?</p>
+      <h3 class="merksatz">Sie müssen nicht zustimmen und dürfen jeden qualifizierten Gutachter beauftragen.</h3>
+    </div>
+    <dl class="zeilen">
+      <div><dt>Der Gegner ist allein schuld</dt><dd>In der Regel zahlt seine Versicherung das Gutachten.</dd></div>
+      <div><dt>Teilschuld</dt><dd>Seine Versicherung zahlt anteilig, den Rest tragen Sie.</dd></div>
+      <div><dt>Selbst verschuldet, Hagel, Wild</dt><dd>Fall für Ihre Kasko. Fragen Sie dort vorher: Ein eigenes Gutachten zahlt sie nur mit Zustimmung.</dd></div>
+      <div><dt>Kleiner Schaden</dt><dd>Die Versicherung zahlt das Gutachten meist nicht. Oft reicht ein Kostenvoranschlag.</dd></div>
+    </dl>
+    <p class="zahler-fuss">Ob sich ein Gutachten lohnt, klären Sie am Telefon, bevor Kosten entstehen.</p>
+    <a class="weiter" href="kosten.html">Kosten und Honorar<svg><use href="#i-pfeil"/></svg></a>
+  </div>
+</section>
+
+<!-- Ablauf ohne Bilder: vier Zeilen mit Glut-Ziffern auf Nacht (Flächenplan Art-Direktor, Wortlaut Werbetexter). -->
+<section class="abschnitt ablauf-kurz" id="ablauf">
+  <div class="wrap">
+    <h2>So läuft es ab</h2>
+    <ol class="ziffern">
+      <li><span class="ziffer" aria-hidden="true">01</span><h3>Anruf</h3><p>Sie schildern den Unfall und vereinbaren den Termin. Fotos per WhatsApp helfen.</p></li>
+      <li><span class="ziffer" aria-hidden="true">02</span><h3>Besichtigung</h3><p>Dort, wo Ihr Auto steht, oder auf der Hebebühne an der Karstraße 25. Auf der Hebebühne sieht man auch den Unterboden. Sie steht in einer eigenständigen Werkstatt.</p></li>
+      <li><span class="ziffer" aria-hidden="true">03</span><h3>Gutachten</h3><p>Schriftlich, mit Fotos: Reparaturkosten, Wertminderung (falls sie anfällt) und Ausfalldauer.</p></li>
+      <li><span class="ziffer" aria-hidden="true">04</span><h3>Versand</h3><p>Auf Wunsch direkt an die gegnerische Versicherung.</p></li>
+    </ol>
+    <div class="ablauf-fuss">
+      <a class="weiter" href="ablauf.html#weg">Ablauf im Einzelnen<svg><use href="#i-pfeil"/></svg></a>
     </div>
   </div>
 </section>
 
-<section class="abschnitt grau" id="ablauf">
-  <div class="wrap spalten">
-    <div>
-      <h2>So läuft es ab</h2>
-      {{bild_schadendetail}}
-    </div>
-    <div>
-      <dl class="zeilen">
-        <div><dt>Anruf</dt><dd>Sie schildern, was passiert ist, und vereinbaren den Termin für die Besichtigung. Fotos per WhatsApp helfen bei der ersten Einschätzung.</dd></div>
-        <div><dt>Besichtigung</dt><dd>Cihan Es besichtigt Ihr Fahrzeug dort, wo es steht, oder auf der Hebebühne an der Karstraße 25. Auf der Hebebühne zeigen sich auch Schäden an Unterboden, Achsen und Fahrwerk.</dd></div>
-        <div><dt>Gutachten</dt><dd>Sie erhalten das Gutachten schriftlich. Darin stehen die Reparaturkosten, die Wertminderung, falls sie anfällt, die Ausfalldauer, bei Totalschaden Wiederbeschaffungswert und Restwert, dazu Fotos aller Schäden. Bei Totalschaden dauert es länger, weil Restwertangebote eingeholt werden.</dd></div>
-        <div><dt>Versand</dt><dd>Auf Wunsch geht das Gutachten direkt an die gegnerische Versicherung.</dd></div>
-      </dl>
-      <p>Wie lange es dauert, erfahren Sie beim ersten Gespräch. Ein Kostenvoranschlag enthält weder Wertminderung noch Ausfalldauer; ein Gutachten prüft beides.</p>
-      <a class="weiter" href="ablauf.html#mitbringen">Besichtigung und Gutachten im Einzelnen<svg><use href="#i-pfeil"/></svg></a>
-    </div>
-  </div>
-</section>
-
-<section class="abschnitt" id="betrieb">
-  <div class="wrap spalten">
-    <h2>Über Cihan Es</h2>
-    <div>
-      <p>Cihan Es ist Kfz-Sachverständiger für Unfallschäden in Mönchengladbach. Er besichtigt Ihr Fahrzeug und erstellt das Gutachten. Reparaturen führt er nicht aus.</p>
-      <p>Das Büro liegt an der Dahlener Straße 286 in Rheydt. Besichtigt wird bei Ihnen vor Ort oder auf der Hebebühne an der Karstraße 25. Die Hebebühne steht in einer eigenständigen Werkstatt. Reparieren lassen Sie, wo Sie wollen.</p>
-      <a class="weiter" href="kontakt.html">Kontakt und Anfahrt<svg><use href="#i-pfeil"/></svg></a>
-    </div>
-  </div>
-</section>
-
-<section class="abschnitt grau" id="gebiet">
-  <div class="wrap spalten">
-    <h2>Einsatzgebiet</h2>
-    <div>
-      <p>Cihan Es besichtigt in Mönchengladbach mit allen Stadtteilen, dort, wo Ihr Fahrzeug steht. Ebenso in Viersen, Willich, Korschenbroich, Neuss, Kaarst und Grevenbroich.</p>
-      <a class="weiter" href="umland.html">Einsatzgebiet im Einzelnen<svg><use href="#i-pfeil"/></svg></a>
-    </div>
-  </div>
-</section>
-
-<section class="abschnitt" id="fragen">
-  <div class="wrap spalten">
-    <h2>Häufige Fragen nach einem Unfall</h2>
+<section class="abschnitt fragen" id="fragen">
+  <div class="wrap">
+    <h2>Häufige Fragen</h2>
     <div class="faq">
       <details>
-        <summary>Muss ich den Gutachter der Versicherung nehmen?</summary>
-        <div class="antwort"><p>Nein. Sie dürfen einen qualifizierten Gutachter Ihrer Wahl beauftragen (BGH, VI ZR 225/13). Der Gutachter der Versicherung arbeitet in deren Auftrag. Ein Gutachten hält den Schaden vollständig und nachprüfbar fest: Reparatur, Wertminderung, Ausfalldauer.</p></div>
-      </details>
-      <details>
-        <summary>Gutachten oder Kostenvoranschlag?</summary>
-        <div class="antwort"><p>Bei kleinen Schäden erstattet die Versicherung die Gutachterkosten meist nicht; dann reicht oft ein Kostenvoranschlag. Entscheidend ist, wie groß der Schaden aussah, als Sie den Gutachter beauftragt haben, nicht die spätere Endsumme. Verdeckte Schäden hinter der Stoßstange sieht man von außen nicht. <a href="kosten.html#kleiner-schaden">Wo die Grenze liegt</a>.</p></div>
-      </details>
-      <details>
-        <summary>Wie schnell bekomme ich einen Termin und das Gutachten?</summary>
-        <div class="antwort"><p>Den Termin vereinbaren Sie am Telefon. Wie lange es bis zum fertigen Gutachten dauert, hängt vom Schaden ab und wird beim ersten Gespräch besprochen. Bei Totalschaden dauert es länger, weil Restwertangebote eingeholt werden.</p></div>
-      </details>
-      <details>
-        <summary>Ist das Büro auch abends und am Wochenende erreichbar?</summary>
-        <div class="antwort"><p>Telefonisch Mo bis Fr 8 bis 18 Uhr und Sa 9 bis 14 Uhr. Außerhalb dieser Zeiten schicken Sie Fotos per WhatsApp oder hinterlassen Ihre Nummer im Formular; die Antwort kommt Mo bis Fr ab 8 Uhr, Sa ab 9 Uhr. <a href="nachts-wochenende.html">Was Sie abends und am Wochenende tun können</a>.</p></div>
+        <summary>Wie schnell geht es?</summary>
+        <div class="antwort"><p>Das hängt vom Schaden ab. Sie erfahren es im ersten Gespräch. Bei Totalschaden dauert es länger, weil Restwertangebote eingeholt werden.</p></div>
       </details>
       <details>
         <summary>Mein Auto fährt nicht mehr. Was nun?</summary>
-        <div class="antwort"><p>Besichtigt wird dort, wo das Fahrzeug steht: zu Hause, beim Arbeitgeber oder in der Werkstatt Ihrer Wahl. Steht es beim Abschleppdienst, kostet jeder Tag Standgeld. Lassen Sie es zügig besichtigen oder umstellen; angemessene Abschlepp- und Standkosten gehören bei unverschuldetem Unfall in der Regel zum Schaden.</p></div>
-      </details>
-      <details>
-        <summary>Was ist bei Teilschuld oder Kaskoschaden?</summary>
-        <div class="antwort"><p>Bei Teilschuld zahlt die gegnerische Versicherung die Gutachterkosten anteilig, den Rest tragen Sie. Bei Kaskoschäden (Hagel, Wild, selbst verschuldet) zahlt Ihre Kasko ein Gutachten, das Sie selbst beauftragen, nur mit ihrer vorherigen Zustimmung. Fragen Sie dort zuerst. Zahlt die Kasko nicht, erfahren Sie das Honorar vor der Besichtigung.</p></div>
+        <div class="antwort"><p>Wir besichtigen dort, wo es steht: zu Hause, bei der Arbeit, in der Werkstatt. Beim Abschleppdienst kostet jeder Tag Standgeld: Rufen Sie schnell an. Angemessene Abschlepp- und Standkosten gehören bei unverschuldetem Unfall in der Regel zum Schaden.</p></div>
       </details>
     </div>
   </div>
 </section>
 
-<section class="abschnitt dunkel" id="rueckruf">
+<section class="abschnitt dunkel rueckruf" id="rueckruf">
   <div class="wrap zweispaltig">
     <div>
-      <h2>Kontakt und Rückruf</h2>
-      <p class="vorspann">Sie können gerade nicht telefonieren? Hinterlassen Sie Ihre Nummer. Der Rückruf kommt Mo bis Fr ab 8&nbsp;Uhr, Sa ab 9&nbsp;Uhr.</p>
-      <ul class="kontaktliste">
-        <li><svg><use href="#i-tel"/></svg><div><b>Telefon</b><a href="tel:+4921616888691" data-messung="phone_click">02161 688 86 91</a><span>Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr</span></div></li>
-        <li><svg><use href="#i-wa"/></svg><div><b>WhatsApp</b><a href="{{wa_link}}" rel="noopener" data-messung="whatsapp_click">{{wa_anzeige}}</a><span>Fotos zur ersten Einschätzung. Die erste Einschätzung kostet nichts. Bitte nur Ihr eigenes Fahrzeug fotografieren.</span></div></li>
-        <li><svg><use href="#i-mail"/></svg><div><b>E-Mail</b><a href="mailto:info@kfz-gutachten-es.de">info@kfz-gutachten-es.de</a></div></li>
-      </ul>
+      <h2>Gerade nicht telefonieren?</h2>
+      <p class="vorspann">Hinterlassen Sie Ihre Nummer. Der Rückruf kommt {{zeiten_ab}}.</p>
+      <p class="ruf-gross ruf-rueckruf"><a href="tel:+4921616888691" data-messung="phone_click">02161 688 86 91</a></p>
     </div>
-    <form class="formular" id="rueckruf-formular" novalidate aria-label="Rückruf anfordern" data-erfolg="Danke. Ihre Nummer ist angekommen. Der Rückruf kommt Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr.">
-      <p class="hinweis">Drei Felder, nur die Telefonnummer ist Pflicht.</p>
+    <form class="formular" id="rueckruf-formular" method="post" novalidate aria-label="Rückruf anfordern" data-erfolg="Danke. Ihre Nummer ist angekommen. Der Rückruf kommt {{telefonzeiten}}.">
+      <p class="hinweis">Nur die Telefonnummer ist Pflicht.</p>
       <label for="f-tel">Ihre Telefonnummer</label>
       <input id="f-tel" name="telefon" type="tel" autocomplete="tel" inputmode="tel" required aria-describedby="f-status" placeholder="z. B. 0177 1234567">
       <label for="f-name">Ihr Name <span class="frei">(freiwillig)</span></label>
       <input id="f-name" name="name" type="text" autocomplete="name">
       <label for="f-text">Was ist passiert? <span class="frei">(freiwillig)</span></label>
-      <textarea id="f-text" name="nachricht" rows="3" placeholder="z. B. Auffahrunfall gestern in Rheydt, Heck beschädigt, Gegner hat Schuld eingeräumt"></textarea>
+      <textarea id="f-text" name="nachricht" rows="3" placeholder="z. B. Auffahrunfall gestern, Heck beschädigt"></textarea>
       <div class="honig" aria-hidden="true"><label for="f-website">Website</label><input id="f-website" name="website" type="checkbox" tabindex="-1" autocomplete="off"></div>
-      <button class="knopf" type="submit">Rückruf anfordern</button>
+      <button class="knopf" type="submit" disabled>Rückruf anfordern</button>
+      {{ohne_skript}}
       <p class="status" id="f-status" role="status" aria-live="polite"></p>
       <p class="datenschutz">Ihre Angaben werden nur für den Rückruf genutzt. Die Anfrage geht an einen Server in Deutschland. Mehr dazu im <a class="ziel" href="datenschutz.html#formular">Datenschutz</a>.</p>
     </form>
@@ -167,10 +130,8 @@
   "founder": { "@type": "Person", "name": "Cihan Es" },
   "address": { "@type": "PostalAddress", "streetAddress": "Dahlener Straße 286", "postalCode": "41239", "addressLocality": "Mönchengladbach", "addressCountry": "DE" },
   "openingHoursSpecification": [
-    { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"], "opens": "08:00", "closes": "18:00" },
-    { "@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "09:00", "closes": "14:00" }
+    {{oeffnungszeiten_ld}}
   ],
   "areaServed": ["Mönchengladbach","Rheydt","Viersen","Willich","Korschenbroich","Neuss","Kaarst","Grevenbroich"]
 }
 </script>
-{{faq_jsonld}}

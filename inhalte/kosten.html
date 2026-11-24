@@ -1,13 +1,14 @@
 <main>
-<section class="seitenkopf dunkel">
+<!-- Kopf ohne Bild (R1 schlank 24.11.2026): die Antwort groß unter der Frage. -->
+<section class="seitenkopf dunkel kosten-kopf">
   <div class="wrap">
     <h1>Wer zahlt das Unfallgutachten?</h1>
-    <p>Wer zahlt, was bei Teilschuld und Kasko gilt und wie Sachverständige abrechnen.</p>
+    <p class="antwort">Der andere war schuld? Dann zahlt das Gutachten in der Regel seine Versicherung. Bei kleinen Schäden oft nicht.</p>
     {{ruf}}
   </div>
 </section>
 
-<section class="inhalt">
+<section class="inhalt kosten-start">
   <div class="wrap">
     <ul class="sprung" aria-label="Auf dieser Seite">
       <li><a href="#nichts">Wann Sie nichts zahlen</a></li>
@@ -17,45 +18,67 @@
       <li><a href="#honorar">Honorar</a></li>
     </ul>
 
-    {{bild_unterlagen}}
-    <h2 id="nichts">In der Regel zahlen Sie nichts, wenn</h2>
-    <ul>
-      <li>der Unfallgegner allein schuld ist,</li>
-      <li>der Schaden kein Bagatellschaden ist und</li>
-      <li>es ein Haftpflichtschaden ist, kein Kaskoschaden.</li>
+    <h2 id="nichts" class="aussage-kopf-gross">In der Regel zahlen Sie nichts, wenn</h2>
+    <div class="nichts-raster">
+    <ul class="nichts-liste">
+      <li>der Gegner allein schuld ist,</li>
+      <li>der Schaden nicht klein ist und</li>
+      <li>es kein Kaskoschaden ist.</li>
     </ul>
-    <p>Dann gehören die erforderlichen Kosten des Gutachtens zum Schadensersatz, den die Haftpflichtversicherung des Unfallverursachers trägt (§ 249 BGB). Wo die Grenze zum Bagatellschaden liegt, steht unter <a href="#kleiner-schaden">Kleiner Schaden</a>.</p>
-    <p>Wie abgerechnet wird, erfahren Sie vor der Besichtigung. Rechnet ein Sachverständiger direkt mit der gegnerischen Versicherung ab, treten Sie ihm dafür Ihren Anspruch auf die Gutachterkosten ab. Fragen Sie vorher, was bei Teilschuld oder Streit um die Schuld auf Sie zukommen kann.</p>
+    <div class="nichts-text">
+    <p>Dann sind die erforderlichen Gutachterkosten Teil des Schadensersatzes (§ 249 BGB). Ihn trägt die Versicherung des Unfallverursachers. Wo die Grenze liegt, steht unter <a href="#kleiner-schaden">Kleiner Schaden</a>.</p>
+    <p>Wie abgerechnet wird, erfahren Sie vor der Besichtigung. Rechnet ein Gutachter direkt ab, treten Sie ihm den Anspruch auf die Gutachterkosten ab. Fragen Sie vorher, was bei Teilschuld oder Streit auf Sie zukommt.</p>
+    </div>
+    </div>
 
     <h2 id="selbst">Wann Sie selbst etwas zahlen</h2>
     <dl class="zeilen">
       <div><dt>Teilschuld</dt><dd>Die gegnerische Versicherung zahlt nur den Anteil, den der Unfallgegner verschuldet hat, zum Beispiel 50 oder 70 Prozent. Den Rest tragen Sie. Mit Vollkasko hilft das Quotenvorrecht (die Zahlung des Gegners deckt zuerst Selbstbeteiligung, Gutachten und Wertminderung); ob sich das trotz höherem Beitrag lohnt, rechnet ein Anwalt für Verkehrsrecht für Sie aus.</dd></div>
-      <div id="kleiner-schaden"><dt>Kleiner Schaden</dt><dd>Unter etwa 750 Euro Schaden werden Gutachterkosten meist nicht erstattet; dann reicht oft ein Kostenvoranschlag. Bis 1.000 Euro kommt es auf den Fall an. Entscheidend ist, wie groß der Schaden aussah, als Sie den Gutachter beauftragt haben, nicht die spätere Endsumme. Verdeckte Schäden hinter der Stoßstange sieht man von außen nicht.
-        {{bild_streifschaden}}
-      </dd></div>
+      <div id="kleiner-schaden"><dt>Kleiner Schaden</dt><dd>Unter etwa 750 Euro Schaden werden Gutachterkosten meist nicht erstattet; dann reicht oft ein Kostenvoranschlag. Bis 1.000 Euro kommt es auf den Fall an. <a href="#verdeckt">Was man von außen nicht sieht</a>.</dd></div>
       <div><dt>Kaskoschaden</dt><dd>Hagel, Wild, Vandalismus oder selbst verschuldet: Ein Gutachten, das Sie selbst beauftragen, zahlt Ihre Kasko nur mit ihrer vorherigen Zustimmung. Fragen Sie dort zuerst. Zahlt die Kasko nicht, erfahren Sie das Honorar vor der Besichtigung.</dd></div>
       <div><dt>Unfallflucht oder Gegner ohne Versicherung</dt><dd>Wird der Verursacher gefunden, zahlt seine Versicherung. Sonst hilft bei reinem Blechschaden meist nur Ihre Vollkasko, bei unversichertem Gegner auch die Verkehrsopferhilfe (Notfonds der Kfz-Versicherer).</dd></div>
     </dl>
     <p>Ob sich ein Gutachten lohnt, klären Sie am Telefon, bevor Kosten entstehen.</p>
+  </div>
+</section>
 
-    <h2 id="gutachterwahl">Sie wählen den Gutachter selbst</h2>
-    <p>Bei unverschuldetem Unfall dürfen Sie einen qualifizierten Gutachter Ihrer Wahl beauftragen (BGH, VI ZR 225/13). Sie müssen nicht den nehmen, den die gegnerische Versicherung schickt; er arbeitet in deren Auftrag. Das ist Ihr Recht als Geschädigter. Dieses Recht haben Sie bei jedem Sachverständigen, nicht nur bei diesem Büro.</p>
-    <p>Bei einem Kaskoschaden gilt das nicht: Dort regelt Ihr Vertrag, wer begutachtet und wo repariert wird.</p>
+<!-- Fotostrecke: verdeckter Schaden, das Bild läuft an den rechten Rand. -->
+<section class="strecke strecke-einzeln" id="verdeckt" aria-labelledby="verdeckt-titel">
+  <div class="strecke-schritt bild-rechts">
+    {{bild_streifschaden}}
+    <div class="wrap"><div class="schritt-text">
+      <h3 id="verdeckt-titel">Was man von außen nicht sieht</h3>
+      <p>Verdeckte Schäden hinter der Stoßstange sieht man von außen nicht. Entscheidend ist, wie groß der Schaden aussah, als Sie den Gutachter beauftragt haben, nicht die spätere Endsumme.</p>
+    </div></div>
+  </div>
+</section>
 
-    <h2 id="zusteht">Was Ihnen bei unverschuldetem Unfall außerdem zusteht</h2>
-    <div class="themen">
-      <h3>Wertminderung</h3>
-      <p>Ein Auto mit repariertem Unfallschaden bringt beim Verkauf weniger. Diese Wertminderung zahlt bei unverschuldetem Unfall der Gegner, auch wenn Sie das Auto behalten. Sie fällt nicht bei jedem Schaden an, bei kleinen Schäden oder sehr hoher Laufleistung oft nicht. Ob und wie viel, berechnet das Gutachten; ein Kostenvoranschlag enthält sie nicht. Ihre Kasko zahlt keine Wertminderung.</p>
-      <h3>Mietwagen oder Nutzungsausfall</h3>
-      <p>Für die Tage ohne Auto steht Ihnen entweder ein Mietwagen oder Nutzungsausfall zu, nicht beides. Nutzungsausfall ist ein fester Tagessatz je Fahrzeugklasse nach einer Tabelle, die Gerichte verwenden. Voraussetzung: Sie hätten das Auto in dieser Zeit gefahren. Wie viele Tage angemessen sind, steht im Gutachten: Reparaturdauer oder Zeit für die Ersatzbeschaffung. Beim Mietwagen gilt: nicht länger und keine höhere Klasse als nötig, sonst kürzt die Versicherung.</p>
-      <h3>Totalschaden</h3>
-      <p>Kostet die Reparatur mehr, als Ihr Auto vor dem Unfall wert war, zahlt der Gegner den Wiederbeschaffungswert abzüglich Restwert. Den Restwert ermittelt das Gutachten mit drei Angeboten aus dem regionalen Markt; zu diesem Preis dürfen Sie Ihr Auto verkaufen. Verkaufen Sie nicht, bevor das Gutachten vorliegt. Liegt die Reparatur höchstens 30 Prozent über dem Wiederbeschaffungswert, dürfen Sie trotzdem reparieren lassen, wenn fachgerecht repariert wird und Sie das Auto weiterfahren.</p>
-      <h3>Leasing, Finanzierung, Firmenwagen</h3>
-      <p>Leasing: Melden Sie den Unfall auch dem Leasinggeber; er bekommt das Gutachten, meist muss repariert werden. Firmenwagen mit Vorsteuerabzug: Der Schaden wird netto abgerechnet; statt Nutzungsausfall zählen Ihre tatsächlichen Ausfallkosten.</p>
-      <h3>Anwalt</h3>
-      <p>Für die Durchsetzung Ihrer Ansprüche kann ein Fachanwalt für Verkehrsrecht helfen. Seine Kosten trägt der Gegner, wenn er allein schuld ist; bei Teilschuld anteilig.</p>
+<section class="aussage" aria-labelledby="gutachterwahl">
+  <div class="wrap">
+    <h2 class="aussage-satz" id="gutachterwahl">Sie müssen nicht den nehmen, den die gegnerische Versicherung schickt.</h2>
+    <div class="aussage-text">
+      <p>Bei unverschuldetem Unfall dürfen Sie einen qualifizierten Gutachter Ihrer Wahl beauftragen. Der Gutachter der Versicherung arbeitet in deren Auftrag. Dieses Recht haben Sie bei jedem Sachverständigen, nicht nur bei diesem Büro.</p>
+      <p>Bei einem Kaskoschaden gilt das nicht: Dort regelt Ihr Vertrag, wer begutachtet und wo repariert wird.</p>
     </div>
+  </div>
+</section>
+
+<section class="inhalt kosten-rest">
+  <div class="wrap">
+    <h2 id="zusteht">Was Ihnen bei unverschuldetem Unfall außerdem zusteht</h2>
+    <dl class="zeilen zeilen-weit">
+      <div><dt>Wertminderung</dt><dd>Ein Auto mit repariertem Unfallschaden bringt beim Verkauf weniger. Diese Wertminderung zahlt bei unverschuldetem Unfall der Gegner, auch wenn Sie das Auto behalten. Sie fällt nicht bei jedem Schaden an, bei kleinen Schäden oder sehr hoher Laufleistung oft nicht. Ob und wie viel, berechnet das Gutachten; ein Kostenvoranschlag enthält sie nicht. Ihre Kasko zahlt keine Wertminderung.</dd></div>
+      <div><dt>Mietwagen oder Nutzungsausfall</dt><dd>Für die Tage ohne Auto steht Ihnen entweder ein Mietwagen oder Nutzungsausfall zu, nicht beides. Nutzungsausfall ist ein fester Tagessatz je Fahrzeugklasse nach einer Tabelle, die Gerichte verwenden. Voraussetzung: Sie hätten das Auto in dieser Zeit gefahren. Wie viele Tage angemessen sind, steht im Gutachten: Reparaturdauer oder Zeit für die Ersatzbeschaffung. Beim Mietwagen gilt: nicht länger und keine höhere Klasse als nötig, sonst kürzt die Versicherung.</dd></div>
+      <div><dt>Totalschaden</dt><dd>Kostet die Reparatur mehr, als Ihr Auto vor dem Unfall wert war, zahlt der Gegner den Wiederbeschaffungswert abzüglich Restwert. Den Restwert ermittelt das Gutachten mit drei Angeboten aus dem regionalen Markt; zu diesem Preis dürfen Sie Ihr Auto verkaufen. Verkaufen Sie nicht, bevor das Gutachten vorliegt. Liegt die Reparatur höchstens 30 Prozent über dem Wiederbeschaffungswert, dürfen Sie trotzdem reparieren lassen, wenn fachgerecht repariert wird und Sie das Auto weiterfahren.</dd></div>
+      <div><dt>Leasing, Finanzierung, Firmenwagen</dt><dd>Leasing: Melden Sie den Unfall auch dem Leasinggeber; er bekommt das Gutachten, meist muss repariert werden. Firmenwagen mit Vorsteuerabzug: Der Schaden wird netto abgerechnet; statt Nutzungsausfall zählen Ihre tatsächlichen Ausfallkosten.</dd></div>
+      <div><dt>Anwalt</dt><dd>Für die Durchsetzung Ihrer Ansprüche kann ein Fachanwalt für Verkehrsrecht helfen. Seine Kosten trägt der Gegner, wenn er allein schuld ist; bei Teilschuld anteilig.</dd></div>
+    </dl>
     <p class="fussnote">Welche Positionen in Ihrem Fall erstattet werden, hängt von Haftung, Schadenhöhe und Versicherung ab.</p>
+  </div>
+</section>
+
+<section class="inhalt kosten-honorar">
+  <div class="wrap">
 
     <h2 class="mit-unterzeile" id="honorar">So rechnen Gutachter ab</h2>
     <p class="h2-unterzeile">Nach der <span>BVSK-Honorarbefragung 2024</span></p>

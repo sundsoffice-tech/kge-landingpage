@@ -108,12 +108,13 @@ const MUTATIONEN = [
   ["M32 default ohne wait_for_update",
     "      wait_for_update: 500",
     "      wait_for_update: 0"],
+  /* Runde 5: FREI_HALTEN ist Anrufknopf, Telefonzeiten, Bewertungskasten in der Kontaktfläche. */
   ["M33 Banner hält den Bewertungskasten nicht mehr frei",
-    ', .hero .bewertung, .hero .name-zeile";',
-    ', .hero .name-zeile";'],
-  ["M34 Banner hält die Namenszeile nicht mehr frei",
-    ', .hero .bewertung, .hero .name-zeile";',
-    ', .hero .bewertung";']
+    ', .hero .buehne-zeiten, .karte-person .bewertung";',
+    ', .hero .buehne-zeiten";'],
+  ["M34 Banner hält die Telefonzeiten nicht mehr frei",
+    ', .hero .buehne-zeiten, .karte-person .bewertung";',
+    ', .karte-person .bewertung";']
 ];
 
 function zeuge(datei) {

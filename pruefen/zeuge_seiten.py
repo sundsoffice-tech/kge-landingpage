@@ -26,7 +26,20 @@ Fälle:
   B1  Zahl der figure = Zahl der img = Zahl der gezeigten Bildplätze = Zahl der Nachweiszeilen im Impressum
   B2  jedes img gehört zu einem gezeigten Platz, steht auf dessen Seite genau einmal, sein Nachweis steht im Impressum
   B3  Quellen: je Platz aus BILDER (auch leer) {{bild_<platz>}} genau einmal in inhalte/, {{bildnachweise}} im Impressum
-  S1  Bildunterschrift beginnt mit „Symbolbild“, außer bei Plätzen, die Betrieb oder Ort zeigen (BETRIEB_ODER_ORT)
+  S1  kein „Symbolbild“-Etikett; „KI-erzeugtes Bild“ und das Wort „KI“ (auch klein, auch „künstliche Intelligenz“)
+      stehen auf keiner gebauten Seite außer dem
+      Impressum (Fabrice 24.11.2026: „ki erzeugtes bild nicht schreiben mein wort“, kein Schild am Bild); jedes
+      gezeigte KI-Bild (BILDER[...]["ki"]) hat seine Nachweiszeile mit „mit KI erzeugt“ im Impressum; jedes andere
+      Schadenfoto trägt „Beispielfoto“, außer bei Plätzen, die Betrieb oder Ort zeigen (BETRIEB_ODER_ORT)
+  E1  kein Eurobetrag und keine „750“ auf der Startseite (Runde 5, Programmierer S3, Codex 5)
+  E2  „225/13“ auf keiner gebauten Seite
+  E3  die Telefonzeiten stehen im Bühnenblock der Startseite
+  E4  keine Klasse bild-marke und kein Element neben Bild und Unterschrift in einer figure, auf keiner Seite
+  E5  Worum-Zeile und Ausweichzeile sind in Bühne und Kontaktfläche wortgleich (Text und Linkziele)
+  E6  genau zwei Fragen auf der Startseite, kein FAQPage auf irgendeiner Seite
+  B4  jede Datei in bilder/ wird von mindestens einer Seite oder einem ausgelieferten Stil geladen
+  S2  die Namenskarte („Ihr Sachverständiger“) steht nicht im selben Bildblock (Elternelement der figure) wie ein
+      Schadenfoto (Nachtrag 01:55, erster Punkt)
   P1  noindex genau einmal je Seite, solange NOINDEX = True (sonst keins)
   P2  genau eine h1 je Seite
   P3  Canonical genau einmal, gleich SEITEN[...]["kanonisch"], und er zeigt auf die Seite selbst
@@ -53,10 +66,8 @@ import bauen  # noqa: E402
 ALTE_NUMMER = re.compile(r"622[^0-9]{0,6}57[^0-9]{0,6}68|6225768")
 # Plätze, deren Bild den Betrieb oder den Ort zeigt: Dort ist keine „Symbolbild“-Unterschrift verlangt. Ein neuer
 # Platz steht nicht hier und braucht damit „Symbolbild“, bis jemand ihn bewusst einträgt (Wissenschaftler S1, 5).
-BETRIEB_ODER_ORT = {
-    "start": "echtes Foto des Betriebs (Begutachtung am Fahrzeug), Unterschrift leer (bauen.py, Kommentar zu BILDER)",
-    "ort": "zeigt den Ort: Münster St. Vitus, Mönchengladbach",
-}
+# Der Münster-Platz („ort“) ist seit R1 schlank entfernt (Runde 5, Codex „Was wegfallen kann“).
+BETRIEB_ODER_ORT = {}
 # Ausgelieferte Skripte und Stile (DEPLOY.md, git archive): alle *.js und *.css der Wurzel, nicht eine feste
 # Liste, damit eine neue Datei mitgeprüft wird (Programmierer KANN 8). Dort darf weder die alte Nummer noch
 # „Umland“ stehen: Skripte blenden Text ein (Programmierer SOLL 4).
@@ -169,6 +180,8 @@ class Seite(HTMLParser):
             self._link["text"].append(data)
         if self._unterschrift and self._figur is not None:
             self._figur["unterschrift"].append(data)
+        if self._figur is not None:
+            self._figur.setdefault("text", []).append(data)
 
     @property
     def sichtbar(self):
@@ -349,7 +362,9 @@ def nachweiszeilen():
     if imp is None:
         return None
     roh = re.sub(r"<!--.*?-->", "", imp.roh, flags=re.S)  # ein auskommentierter Block ist nicht veröffentlicht
-    m = re.findall(r"<h2>\s*Bildnachweise\s*</h2>\s*<p>(.*?)</p>", roh, re.S | re.I)
+    # Seit Runde 4 (24.11.2026) steht der Satz zu den KI-Bildern vor den Zeilen; er ist keine Nachweiszeile.
+    satz = re.escape(html.escape(bauen.NACHWEIS_SATZ, quote=False))
+    m = re.findall(r"<h2>\s*Bildnachweise\s*</h2>\s*(?:<p>" + satz + r"</p>\s*)?<p>(.*?)</p>", roh, re.S | re.I)
     if len(m) > 1:
         return ["DOPPELT"] * 99
     zeilen = re.split(r"<br\s*/?>", m[0], flags=re.I) if m else []
@@ -423,13 +438,92 @@ def s1():
     nach_datei = {bauen.BILDER[p]["datei"]: p for p in bauen.BILDER if bauen.BILDER[p]["datei"]}
     for n, s in SEITEN.items():
         for f in s.figuren:
+            unter = norm("".join(f["unterschrift"]))
+            if unter.startswith("Symbolbild"):
+                v.append(f"{n}: Unterschrift mit Etikett „Symbolbild“ vorn: {unter!r}")
             for b in f["imgs"]:
                 platz = nach_datei.get(b["src"], "?")
                 if platz in BETRIEB_ODER_ORT:
                     continue
-                unter = norm("".join(f["unterschrift"]))
-                if not unter.startswith("Symbolbild"):
-                    v.append(f"{n}: Bild {b['src']} (Platz {platz}) mit Unterschrift {unter!r}, ohne „Symbolbild“")
+                text = norm("".join(f.get("text", [])))
+                ki = platz in bauen.BILDER and bauen.BILDER[platz].get("ki")
+                if ki:
+                    # Gezielt auf das Kennwort (Programmierer K2): die Impressumszeile mit dem Etikett des Platzes
+                    # (Text vor dem ersten Doppelpunkt) muss „mit KI erzeugt“ tragen.
+                    etikett = bauen.BILDER[platz]["nachweis"].split(":", 1)[0]
+                    zeilen = [z for z in (nachweiszeilen() or []) if z.startswith(etikett)]
+                    if not any(bauen.KI_KENNWORT in z for z in zeilen):
+                        v.append(f"{n}: KI-Bild {b['src']} (Platz {platz}) ohne Nachweiszeile „{bauen.KI_KENNWORT}“ im Impressum")
+                elif "Beispielfoto" not in text:
+                    v.append(f"{n}: Bild {b['src']} (Platz {platz}) ohne „Beispielfoto“ in der Unterschrift: {text!r}")
+    for n in SEITEN:
+        if n == "impressum.html":
+            continue
+        roh = (WURZEL / n).read_text(encoding="utf-8")
+        if "KI-erzeugtes Bild" in roh:
+            v.append(f"{n}: „KI-erzeugtes Bild“ steht auf der Seite")
+        treffer = re.findall(r"(?<![\w-])ki(?!\w)|künstlich\w*\s+intelligenz", roh, re.I)
+        if treffer:
+            v.append(f"{n}: „KI“ oder „künstliche Intelligenz“ steht {len(treffer)}-mal auf der Seite: {treffer[:3]}")
+    return v
+
+
+class Bildblock(HTMLParser):
+    """Merkt sich je offenem Element, ob darin die Namenskarte steht und ob ein Kind eine figure mit Schadenfoto ist
+    (img oder source in einem picture; Treffer über jeden Dateinamen in src oder srcset)."""
+    LEER = {"img", "br", "input", "meta", "link", "source", "hr", "wbr", "area", "base", "col", "embed", "track"}
+
+    def __init__(self, schaden):
+        super().__init__(convert_charrefs=True)
+        self.schaden, self.stapel, self.funde = schaden, [], []
+
+    def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
+        if tag in ("img", "source"):
+            namen = {a.get("src") or ""} | {t.split()[0] for t in (a.get("srcset") or "").split(",") if t.strip()}
+            treffer = sorted(namen & self.schaden)
+            if treffer:
+                i = len(self.stapel) - 1
+                if i >= 0 and self.stapel[i]["tag"] == "picture":
+                    i -= 1
+                if i >= 1 and self.stapel[i]["tag"] == "figure":
+                    self.stapel[i - 1]["foto"] = treffer[0]
+        if tag not in self.LEER:
+            self.stapel.append({"tag": tag, "name": False, "foto": None})
+
+    def handle_endtag(self, tag):
+        while self.stapel:
+            e = self.stapel.pop()
+            if e["name"] and e["foto"]:
+                self.funde.append(f"<{e['tag']}> mit Namenskarte und Schadenfoto {e['foto']}")
+            if e["tag"] == tag:
+                break
+
+    def handle_data(self, data):
+        if "Ihr Sachverständiger" in data:
+            for e in self.stapel:
+                e["name"] = True
+
+
+def schadendateien():
+    """Alle Dateien der gezeigten Schadenfotos (alle Breiten und der schmale Anschnitt)."""
+    dateien = set()
+    for p in gezeigt():
+        if p in BETRIEB_ODER_ORT:
+            continue
+        b = bauen.BILDER[p]
+        dateien |= {b["datei"], *bauen.varianten(b)} if hasattr(bauen, "varianten") else {b["datei"]}
+    return dateien
+
+
+def s2():
+    v = []
+    schaden = schadendateien()
+    for n, s in SEITEN.items():
+        b = Bildblock(schaden)
+        b.feed(s.roh)
+        b.close()
+        v += [f"{n}: {f}" for f in b.funde]
     return v
 
 
@@ -543,6 +637,271 @@ def p6():
     return v
 
 
+def klartext(roh):
+    return norm(html.unescape(re.sub(r"<[^>]+>", "", roh)))
+
+
+def einmal(muster, roh):
+    m = re.findall(muster, roh, re.S)
+    return m[0] if len(m) == 1 else None
+
+
+def e1():
+    roh = SEITEN["index.html"].roh
+    treffer = re.findall(r"(?<!\d)750(?!\d)|€|(?<![\w-])euro(?!\w)", roh, re.I)
+    return [f"index.html: Eurobetrag oder „750“ steht auf der Startseite: {treffer}"] if treffer else []
+
+
+def e2():
+    return [f"{n}: „225/13“ steht auf der Seite" for n, s in SEITEN.items() if "225/13" in s.roh]
+
+
+def e3():
+    roh = SEITEN["index.html"].roh
+    buehne = einmal(r'<section class="hero buehne">(.*?)</section>', roh)
+    if buehne is None:
+        return ["index.html: Bühnenblock nicht genau einmal"]
+    zeiten = einmal(r'<p class="buehne-zeiten">(.*?)</p>', buehne)
+    fett = einmal(r"<b>(.*?)</b>", zeiten or "")
+    # Runde 6 (Codex 3): der volle Wortlaut aus der Konstante, nicht nur „Mo bis Fr“ und „Uhr“.
+    if not fett or klartext(fett) != bauen.TELEFONZEITEN + ".":
+        return [f"index.html: Telefonzeiten im Bühnenblock nicht wörtlich {bauen.TELEFONZEITEN!r}: {zeiten!r}"]
+    return []
+
+
+def e8():
+    """Runde 6, Punkt 12: Die Telefonzeiten stehen nur in bauen.py (ZEITEN); keine Inhaltsquelle und keine Vorlage
+    trägt eine Uhrzeit als Literal."""
+    v = []
+    for pfad in sorted((WURZEL / "inhalte").glob("*.html")) + [WURZEL / "vorlagen" / "schale.html"]:
+        roh = pfad.read_text(encoding="utf-8")
+        # Runde 7, Punkt 4: auch „08:00“ (JSON-LD). HTML-Kommentare zählen nicht, sie erscheinen nirgends.
+        roh = re.sub(r"<!--.*?-->", "", roh, flags=re.S)
+        treffer = re.findall(r"\d{1,2}(?:&nbsp;|&#160;|\s)*Uhr|\b\d{2}:\d{2}\b", roh)
+        if treffer:
+            v.append(f"{pfad.relative_to(WURZEL).as_posix()}: Uhrzeit als Literal: {treffer[:3]}")
+    return v
+
+
+class Treffer(HTMLParser):
+    """Zählt, wie oft ein Wähler aus Klassen mit Nachfahren-Leerzeichen (.a .b .c) trifft."""
+    LEER = {"img", "br", "input", "meta", "link", "source", "hr", "wbr", "area", "base", "col", "embed", "track"}
+
+    def __init__(self, teile):
+        super().__init__(convert_charrefs=True)
+        self.teile, self.stapel, self.zahl = teile, [], 0
+
+    def handle_starttag(self, tag, attrs):
+        klassen = set((dict(attrs).get("class") or "").split())
+        if self.teile[-1] <= klassen:
+            rest, vorfahren = list(self.teile[:-1]), [k for _, k in self.stapel]
+            for k in vorfahren:
+                if rest and rest[0] <= k:
+                    rest.pop(0)
+            self.zahl += 0 if rest else 1
+        if tag not in self.LEER:
+            self.stapel.append((tag, klassen))
+
+    def handle_endtag(self, tag):
+        for i in range(len(self.stapel) - 1, -1, -1):
+            if self.stapel[i][0] == tag:
+                del self.stapel[i:]
+                return
+
+
+def k2():
+    """Runde 6, Punkt 13: Jeder Wähler in FREI_HALTEN (einwilligung.js) trifft im gebauten index.html ein Element;
+    der Bewertungswähler darf fehlen, solange BEWERTUNG_ZEIGEN = False."""
+    js = (WURZEL / "einwilligung.js").read_text(encoding="utf-8")
+    liste = re.findall(r'var FREI_HALTEN = "([^"]*)";', js)
+    if len(liste) != 1:
+        return [f"einwilligung.js: FREI_HALTEN {len(liste)}-mal statt einmal"]
+    v = []
+    for waehler in [w.strip() for w in liste[0].split(",")]:
+        if not re.fullmatch(r"(?:\.[\w-]+)+(?: (?:\.[\w-]+)+)*", waehler):
+            v.append(f"FREI_HALTEN: Wähler {waehler!r} ist kein reiner Klassenwähler, der Zeuge kann ihn nicht prüfen")
+            continue
+        teile = [set(re.findall(r"\.([\w-]+)", t)) for t in waehler.split(" ")]
+        leser = Treffer(teile)
+        leser.feed(SEITEN["index.html"].roh)
+        if leser.zahl == 0 and not (".bewertung" in waehler and not bauen.BEWERTUNG_ZEIGEN):
+            v.append(f"index.html: FREI_HALTEN-Wähler {waehler!r} trifft kein Element")
+    return v
+
+
+def e4():
+    v = []
+    for n, s in SEITEN.items():
+        if "bild-marke" in s.roh:
+            v.append(f"{n}: Klasse bild-marke steht auf der Seite")
+        for inneres in re.findall(r"<figure\b[^>]*>(.*?)</figure>", s.roh, re.S):
+            rest = re.sub(r"<picture\b.*?</picture>|<img\b[^>]*>|<figcaption\b.*?</figcaption>", "", inneres, flags=re.S)
+            if rest.strip():
+                v.append(f"{n}: in einer figure steht neben Bild und Unterschrift noch: {rest.strip()[:80]!r}")
+    for name in SKRIPTE:
+        if "bild-marke" in (WURZEL / name).read_text(encoding="utf-8"):
+            v.append(f"{name}: Klasse bild-marke steht im Skript oder Stil")
+    return v
+
+
+def e5():
+    roh = SEITEN["index.html"].roh
+    v = []
+    gross = einmal(r'<p class="worum nur-gross">(.*?)</p>', roh)
+    klein = einmal(r'<p class="worum-karte nur-klein">(.*?)</p>', roh)
+    if gross is None or klein is None:
+        v.append("index.html: Worum-Zeile nicht je genau einmal in Bühne und Kontaktfläche")
+    elif klartext(gross) != klartext(klein):
+        v.append(f"index.html: Worum-Zeile weicht ab: {klartext(gross)!r} gegen {klartext(klein)!r}")
+    zeiten = einmal(r'<p class="buehne-zeiten">(.*?)</p>', roh)
+    aus = einmal(r'<p class="ausweich nur-klein">(.*?)</p>', roh)
+    if zeiten is None or aus is None:
+        v.append("index.html: Ausweichzeile nicht je genau einmal in Bühne und Kontaktfläche")
+    else:
+        rest = re.sub(r"<b>.*?</b>", "", zeiten, flags=re.S)
+        ziele = [re.findall(r'href="([^"]+)"', x) for x in (rest, aus)]
+        if klartext(rest) != klartext(aus) or ziele[0] != ziele[1]:
+            v.append(f"index.html: Ausweichzeile weicht ab: {klartext(rest)!r} gegen {klartext(aus)!r}")
+    return v
+
+
+def e6():
+    v = []
+    fragen = einmal(r'<section class="abschnitt fragen" id="fragen">(.*?)</section>', SEITEN["index.html"].roh)
+    anzahl = len(re.findall(r"<details>", fragen or ""))
+    if anzahl != 2:
+        v.append(f"index.html: {anzahl} Fragen statt zwei")
+    v += [f"{n}: FAQPage steht auf der Seite" for n, s in SEITEN.items() if "FAQPage" in s.roh]
+    return v
+
+
+def roh_seiten():
+    return {n: s.roh for n, s in SEITEN.items()}
+
+
+def q1():
+    """Runde 6, A1a: url() in stil.css und allen gebauten Seiten nur auf schriften/ (Prüfung aus bauen.py)."""
+    meldung = bauen.url_fehler(roh_seiten(), {n: (WURZEL / n).read_text(encoding="utf-8")
+                                              for n in SKRIPTE if n.endswith(".css")})
+    return [meldung] if meldung else []
+
+
+def q2():
+    """Runde 6, A1b: Bildnachweis des gebauten Impressums im sichtbaren Text (kein verborgener Vorfahre)."""
+    meldung = bauen.nachweis_sichtbar_fehler(SEITEN["impressum.html"].roh, {
+        n: (WURZEL / n).read_text(encoding="utf-8") for n in SKRIPTE if n.endswith(".css")})
+    return [meldung] if meldung else []
+
+
+def q3():
+    """Runde 6, Punkt 10: kein Bildelement außerhalb des Markups der Bildplätze."""
+    meldung = bauen.bild_fehler_seiten(roh_seiten())
+    return [meldung] if meldung else []
+
+
+def f1():
+    """Runde 6, A2, und Runde 7, Punkt 2: ohne JavaScript geht nichts per GET in die Adresse, und wer ohne Skript
+    kommt, sieht den Anrufsatz. Jedes Formular hat method="post", jeder Absendeknopf steht im Markup gesperrt, im
+    Formular steht genau einmal der sichtbare Anrufsatz (OHNE_SKRIPT, data-ohne-skript, nicht in noscript). formular.js
+    schaltet den Knopf erst nach der Registrierung des Absende-Handlers frei und blendet im selben Schritt den Satz aus
+    (beides als Anweisung der obersten Ebene, hinter form.addEventListener("submit"))."""
+    v = []
+    for n, s in SEITEN.items():
+        for form in re.findall(r"<form\b[^>]*>.*?</form>", s.roh, re.S):
+            kopf = re.match(r"<form\b[^>]*>", form).group(0)
+            if not re.search(r'\smethod="post"', kopf):
+                v.append(f"{n}: Formular ohne method=\"post\": {kopf[:80]}")
+            for knopf in re.findall(r"<button\b[^>]*>", form):
+                if 'type="submit"' in knopf and not re.search(r"\sdisabled[\s>]", knopf):
+                    v.append(f"{n}: Absendeknopf ohne disabled im Markup: {knopf}")
+            if form.count(bauen.OHNE_SKRIPT) != 1:
+                v.append(f"{n}: Anrufsatz OHNE_SKRIPT steht {form.count(bauen.OHNE_SKRIPT)}-mal im Formular statt einmal")
+            if "<noscript" in form:
+                v.append(f"{n}: noscript im Formular; der Anrufsatz soll auch sichtbar sein, wenn formular.js nicht lädt")
+    if not re.fullmatch(r'<p class="status fehler" data-ohne-skript>Bitte rufen Sie an: '
+                        r'<a class="ziel" href="tel:\+4921616888691">02161 688 86 91</a></p>', bauen.OHNE_SKRIPT):
+        v.append(f"bauen.OHNE_SKRIPT: nicht der sichtbare Anrufsatz mit tel-Link: {bauen.OHNE_SKRIPT!r}")
+    js = (WURZEL / "formular.js").read_text(encoding="utf-8")
+    handler = js.find('\n  form.addEventListener("submit"')
+    for muster, was in ((r"^  knopf\.disabled = false;$", "Freischaltung des Knopfs"),
+                        (r"^  if \(ohneSkript\) ohneSkript\.hidden = true;$", "Ausblenden des Anrufsatzes")):
+        stellen = [m.start() for m in re.finditer(muster, js, re.M)]
+        if len(stellen) != 1 or handler < 0 or stellen[0] < handler:
+            v.append(f"formular.js: {was} nicht genau einmal auf oberster Ebene nach dem Absende-Handler "
+                     f"(Stellen {stellen}, Handler {handler})")
+    if not re.search(r'form\.querySelector\("\[data-ohne-skript\]"\)', js):
+        v.append("formular.js: sucht den Anrufsatz nicht über [data-ohne-skript] im Formular")
+    return v
+
+
+def c1():
+    """Runde 6, Punkt 4: ein Umschaltpunkt. In stil.css nennt genau eine Media Query .nur-klein oder .nur-gross, und
+    zwar (min-width: 700px) mit beiden; die Grunddarstellung blendet .nur-gross ohne Query aus."""
+    css = re.sub(r"/\*.*?\*/", "", (WURZEL / "stil.css").read_text(encoding="utf-8"), flags=re.S)
+    v = []
+    queries = [(kopf.strip(), rumpf) for kopf, rumpf in re.findall(r"@media([^{]*)\{((?:[^{}]*\{[^{}]*\})*[^{}]*)\}", css)
+               if re.search(r"\.nur-(?:klein|gross)\b", rumpf)]
+    if len(queries) != 1 or queries[0][0] != "(min-width: 700px)" \
+            or not all(re.search(rf"\.nur-{k}\b", queries[0][1]) for k in ("klein", "gross")):
+        v.append(f"stil.css: .nur-klein/.nur-gross in {len(queries)} Media Queries {[q[0] for q in queries]}, "
+                 "verlangt genau eine (min-width: 700px) mit beiden")
+    aussen = re.sub(r"@media[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}", "", css)
+    if not re.search(r"(?:^|\})\s*\.nur-gross\s*\{\s*display:\s*none;?\s*\}", aussen):
+        v.append("stil.css: Grunddarstellung ohne .nur-gross { display: none; } außerhalb einer Media Query")
+    return v
+
+
+def p7():
+    """Runde 6, Punkt 7, und Runde 7, Punkt 2: Formular-ID und jede ID, die formular.js anspricht, stehen je Seite
+    genau einmal, und zwar IM Formular; das Formular trägt genau einen Absendeknopf (button type=submit)."""
+    js = (WURZEL / "formular.js").read_text(encoding="utf-8")
+    ids = set(re.findall(r'getElementById\("([^"]+)"\)', js)) | set(re.findall(r'querySelector\("#([\w-]+)"\)', js))
+    v = [] if {"rueckruf-formular", "f-tel", "f-status"} <= ids else [f"formular.js: Wähler unvollständig gelesen: {sorted(ids)}"]
+    if 'form.querySelector("button[type=submit]")' not in js:
+        v.append("formular.js: sucht den Absendeknopf nicht als button[type=submit] im Formular")
+    for n, s in SEITEN.items():
+        if not s.formulare:
+            continue
+        formen = re.findall(r'<form\b[^>]*\bid="rueckruf-formular"[^>]*>.*?</form>', s.roh, re.S)
+        if len(formen) != 1:
+            v.append(f"{n}: {len(formen)} Formulare mit id rueckruf-formular statt einem")
+            continue
+        innen = re.findall(r'\bid="([^"]+)"', formen[0])
+        for i in sorted(ids - {"rueckruf-formular"}):
+            if s.ids.count(i) != 1 or innen.count(i) != 1:
+                v.append(f"{n}: id {i} aus formular.js steht {s.ids.count(i)}-mal auf der Seite, {innen.count(i)}-mal im Formular")
+        knoepfe = re.findall(r'<button\b[^>]*\btype="submit"[^>]*>', formen[0])
+        if len(knoepfe) != 1:
+            v.append(f"{n}: {len(knoepfe)} Absendeknöpfe im Formular statt einem")
+    return v
+
+
+def e7():
+    """Runde 6, Punkt 15: der Kostenabsatz steht wortgleich (Text und Absatz) auf index.html und umland.html."""
+    v = []
+    for n, klasse in (("index.html", "unterzeile"), ("umland.html", "kostensatz")):
+        absatz = einmal(rf'<p class="{klasse}">(.*?)</p>', SEITEN[n].roh)
+        if absatz is None or klartext(absatz) != bauen.KOSTEN_SATZ:
+            v.append(f"{n}: Kostenabsatz fehlt oder weicht ab: {klartext(absatz or '')!r}")
+    return v
+
+
+def b4():
+    """Jede Datei in bilder/ wird von mindestens einer Seite oder einem ausgelieferten Stil geladen (Runde 5, Punkt 10:
+    nicht geladene Dateien liegen in bilder-archiv/, das per export-ignore nicht ausgeliefert wird)."""
+    # Runde 6 (Codex 3, A1a): nur src, srcset und href der Seiten zählen. Eine Erwähnung in einem Stil (url() sperrt
+    # Q1) oder in einem Skriptkommentar ist keine Nutzung.
+    genutzt = set()
+    for s in SEITEN.values():
+        for wert in re.findall(r'(?:src|srcset|href)="([^"]+)"', s.roh):
+            for teil in wert.split(","):
+                pfad = teil.strip().split(" ")[0]
+                if pfad.startswith("bilder/"):
+                    genutzt.add(pfad)
+    da = {"bilder/" + d.relative_to(WURZEL / "bilder").as_posix() for d in (WURZEL / "bilder").rglob("*") if d.is_file()}
+    return [f"{d} liegt in bilder/, keine Seite lädt sie" for d in sorted(da - genutzt)]
+
+
 FAELLE = [
     ("P0", "die acht Seiten aus SEITEN liegen gebaut im Repo", p0),
     ("M1", "je Seite genau ein Handy-Menü und genau eine Kopfnavigation", m1),
@@ -557,8 +916,26 @@ FAELLE = [
     ("B1", "figure = img = gezeigte Bildplätze = Nachweiszeilen im Impressum", b1),
     ("B2", "jedes Bild gehört zu einem Platz, steht auf dessen Seite und hat seinen Nachweis", b2),
     ("B3", "Platzhalter der gezeigten Plätze und {{bildnachweise}} stehen je genau einmal in den Quellen", b3),
-    ("S1", "Bildunterschrift beginnt mit „Symbolbild“, außer bei Betrieb oder Ort", s1),
-    ("P1", "noindex genau einmal je Seite, solange NOINDEX = True", p1),
+    ("S1", "kein „Symbolbild“-Etikett; „KI“ nur im Impressum; jedes KI-Bild mit Nachweiszeile im Impressum", s1),
+    ("S2", "Namenskarte nicht im selben Bildblock wie ein Schadenfoto", s2),
+    ("E1", "kein Eurobetrag und keine „750“ auf der Startseite", e1),
+    ("E2", "„225/13“ auf keiner gebauten Seite", e2),
+    ("E3", "Telefonzeiten im Bühnenblock der Startseite", e3),
+    ("E4", "keine bild-marke und kein Element an ihrer Stelle in einer figure", e4),
+    ("E5", "Worum- und Ausweichzeile an beiden Stellen wortgleich", e5),
+    ("E6", "genau zwei Fragen, kein FAQPage", e6),
+    ("E7", "Kostenabsatz wortgleich auf index.html und umland.html (KOSTEN_SATZ)", e7),
+    ("B4", "jede Datei in bilder/ wird von einer Seite geladen (src, srcset, href)", b4),
+    ("Q1", "stil.css und alle gebauten Seiten laden über url() nur Dateien aus schriften/", q1),
+    ("Q2", "Bildnachweis im Impressum sichtbar, kein verborgener Vorfahre", q2),
+    ("Q3", "kein Bildelement außerhalb der Bildplätze", q3),
+    ("E8", "Telefonzeiten nur in bauen.py, keine Uhrzeit als Literal in inhalte/ und vorlagen/", e8),
+    ("K2", "jeder Wähler in FREI_HALTEN trifft im gebauten index.html ein Element", k2),
+    ("C1", "ein Umschaltpunkt: .nur-klein/.nur-gross in genau einer Query (min-width: 700px)", c1),
+    ("P7", "IDs aus formular.js je genau einmal im Formular, genau ein Absendeknopf", p7),
+    ("F1", "Formular: method=post, Knopf gesperrt, Anrufsatz sichtbar, Freischaltung erst nach dem Handler", f1),
+    ("P1", "noindex genau einmal je Seite (NOINDEX = True)" if bauen.NOINDEX
+     else "kein noindex auf einer Seite (NOINDEX = False)", p1),
     ("P2", "genau eine h1 je Seite", p2),
     ("P3", "Canonical genau einmal, aus SEITEN, zeigt auf die Seite selbst", p3),
     ("P4", "interne Links, Quellen und Anker lösen auf", p4),

@@ -1,6 +1,6 @@
 # Landingpage Kfz Gutachter Es: Aufbau, Bauen, Ausrollen
 
-Stand 09.11.2026 (Neuaufbau auf Zweig `neu-2026-11-09`). Zielseite der Google-Ads-Kampagne ab 16.11.2026. Umbau zur Website mit Seitenmenü am 23.11.2026 (Zweig `kge/website-umbau-2026-11-23`), siehe Abschnitt „Seiten, Menü und Bildplätze“.
+Stand 09.11.2026 (Neuaufbau auf Zweig `neu-2026-11-09`). Zielseite der Google-Ads-Kampagne ab 16.11.2026. Umbau zur Website mit Seitenmenü am 23.11.2026 (Zweig `kge/website-umbau-2026-11-23`), siehe Abschnitt „Seiten, Menü und Bildplätze“. Nachgezogen auf R1 schlank, Runde 6 (24.11.2026, Zweig `kge/r1-schlank-2026-11-24`): Bildplätze, Sperren, Zeugenlauf.
 
 ## Dateien
 
@@ -9,43 +9,88 @@ Stand 09.11.2026 (Neuaufbau auf Zweig `neu-2026-11-09`). Zielseite der Google-Ad
 | `vorlagen/schale.html` | Kopf, Fuß, Sticky-Callbar, Icon-Sprite, Skripte: steht genau einmal |
 | `inhalte/<seite>.html` | Inhalt je Seite (`<main>` plus JSON-LD) |
 | `bauen.py` | schreibt aus Schale und Inhalt die fertigen Seiten; `--pruefen` meldet Abweichungen (Exit 1) |
-| `index.html` | Startseite (Kopf mit Name, Adressen und Anrufknopf, Versicherung des Gegners, Verweis auf die ersten Schritte, wer zahlt, Ablauf mit Gutachteninhalt, Über Cihan Es, Einsatzgebiet in zwei Sätzen, Fragen, Kontakt und Rückruf-Formular) |
-| `umland.html` | Seite „Einsatzgebiet“ für Viersen, Willich, Korschenbroich, Neuss, Kaarst, Grevenbroich. Die Adresse bleibt, weil Anzeigen darauf zeigen; das Wort aus dem Dateinamen steht nirgends sichtbar |
+| `index.html` | Startseite (Bühne mit Bild, Überschrift, Kostensatz, Anrufknopf und Telefonzeiten; Kontaktfläche mit Name, Adressen und Ausweichwegen; zwei Fragen; Kontakt und Rückruf-Formular). Kein Eurobetrag und keine „750“ (Zeuge E1) |
+| `umland.html` | Seite „Einsatzgebiet“ für Viersen, Willich, Korschenbroich, Neuss, Kaarst, Grevenbroich. Die Adresse bleibt, weil Anzeigen darauf zeigen; das Wort aus dem Dateinamen steht nirgends sichtbar. Unter der h1 steht der Kostensatz der Startseite wortgleich (`KOSTEN_SATZ` in `bauen.py`, Zeuge E7) |
 | `kontakt.html` | „Kontakt und Anfahrt“: beide Adressen, Telefonzeiten, Rückruf-Formular |
 | `ablauf.html` („Nach dem Unfall“), `kosten.html` („Wer zahlt?“), `nachts-wochenende.html` („Abends und am Wochenende“, nur im Fuß) | Fachseiten und Sitelink-Ziele (Google lehnt Sitelinks auf Anker derselben Seite ab) |
 | `impressum.html`, `datenschutz.html` | Pflichtseiten |
 | `stil.css` | gemeinsames Stylesheet, Signaletik-Look (Skill `dossier`) |
 | `konfig.js` | AW-ID, Conversion-Labels, Telefonanzeige, Lead-Endpunkt; Platzhalter bis zur Kontoanlage |
 | `einwilligung.js` | Consent-Banner, Consent Mode v2 (default denied, update beim Klick), Google-Tag, Conversion-Aktionen |
-| `formular.js` | Rückruf-Formular an `https://leads.sundsconnect.de/lead`, Erfolg erst nach `ok:true` |
+| `formular.js` | Rückruf-Formular an `https://leads.sundsconnect.de/lead`, Erfolg erst nach `ok:true`; schaltet nach der Registrierung des Absende-Handlers den im Markup gesperrten Knopf frei und blendet den Anrufsatz aus; drei Ausgänge: Erfolg (2xx, JSON mit `ok: true`); sicher gescheitert nur bei Status unter 500 mit lesbarem JSON ohne `ok: true` (Knopf wieder frei); sonst unklar (jeder Status ab 500, jede Antwort ohne lesbares JSON, Netzfehler, Zeitgrenze 15 s: Hinweis mit Nummer, Knopf bleibt gesperrt, kein zweiter Versand). Die Zeitgrenze bricht nicht ab; eine späte Erfolgsantwort stellt noch auf Erfolg und zählt als `form_submit` |
 | `leiste.js` | blendet die Anrufleiste aus, solange der Anrufknopf im Hero zu sehen ist |
-| `pruefen/` | Zeugen ohne Browser: `zeuge-einwilligung.js`, `rotprobe-einwilligung.js`, `zeuge_bauen.py`, `rotprobe_bauen.py`, `zeuge_seiten.py` (Regeln der acht gebauten Seiten), `rotprobe_seiten.py`; werden nicht ausgeliefert |
+| `pruefen/` | Zeugen ohne Browser: `zeuge-einwilligung.js`, `rotprobe-einwilligung.js`, `zeuge-formular.js`, `rotprobe-formular.js`, `zeuge_bauen.py`, `rotprobe_bauen.py`, `zeuge_seiten.py` (Regeln der acht gebauten Seiten), `rotprobe_seiten.py`; werden nicht ausgeliefert |
 | `.gitattributes` | nimmt Bauquellen und Zeugen aus `git archive` aus (`export-ignore`) |
-| `schriften/` | Archivo (variable, woff2, latin und latin-ext), selbst gehostet |
-| `bilder/` | Favicon und die Bilder der Bildplätze (in den Inhalten steht je Platz `{{bild_<name>}}`, die Tabelle `BILDER` in `bauen.py` schaltet jeden Platz einzeln) |
+| `schriften/` | Archivo (variable, woff2, latin und latin-ext) und Source Serif 4 (latin), selbst gehostet; `url()` in `stil.css` darf nur hierher zeigen (Bausperre) |
+| `bilder/` | Favicon und nur die Bilder, die eine Seite lädt (9 Dateien; Zeuge B4). In den Inhalten steht je Platz `{{bild_<name>}}`, die Tabelle `BILDER` in `bauen.py` schaltet jeden Platz einzeln |
+| `bilder-archiv/` | 58 nicht geladene Bilder früherer Fassungen (mit KI erzeugt, ohne Impressumszeile). `export-ignore`, geht nicht mit `git archive` aus, liegt aber im öffentlichen Repo und unter GitHub Pages (Abschnitt „Staging und Live“) |
 
 Die fertigen HTML-Dateien liegen im Repo, weil sie ohne Bauschritt ausgeliefert werden (sunds-hub, `ausrollen.sh`). Geändert wird in `inhalte/`,
 `vorlagen/` oder `stil.css`, danach `python bauen.py`. Ein direkter Edit an `index.html` geht beim nächsten Bau verloren.
 
 Ausgeliefert wird der Inhalt von `git archive`. `.gitattributes` nimmt `pruefen/`, `inhalte/`, `vorlagen/`, `bauen.py`,
-`DEPLOY.md`, `belege/`, `.gitignore`, `.github` und sich selbst davon aus; ein Archiv ist deshalb die Auslieferung, kein
+`DEPLOY.md`, `belege/`, `bilder-archiv/`, `.gitignore`, `.github` und sich selbst davon aus; ein Archiv ist deshalb die Auslieferung, kein
 Arbeitsbaum. Zum Bauen und Prüfen einen Klon oder `git worktree add` nehmen. Probe nach jeder Änderung an
 `.gitattributes` (git liest die Attribute aus dem archivierten Commit, also nach dem Commit messen):
 `git archive HEAD | tar -t` zeigt die acht Seiten, `konfig.js`, `einwilligung.js`, `leiste.js`, `formular.js`,
 `stil.css`, `bilder/`, `schriften/` und nichts aus der Liste oben.
 
-## Vor jedem Push prüfen
+## Zeugenlauf: Pflichtschritt vor jedem Push und vor jedem Ausrollen
 
-1. `python bauen.py --pruefen` (Exit 0).
+Ohne diesen Lauf mit Exit 0 an genau dem Commit, der ausgerollt wird, wird nicht ausgerollt. Kein Server und keine CI
+fährt ihn für dieses Repo (es gibt kein `.github`); er ist ein Handschritt, und `ausrollen.sh` prüft ihn nicht. Die
+Rotproben sind langsam (zusammen rund 3 Minuten) und laufen nacheinander, nicht parallel.
+
+1. `python bauen.py --pruefen` (Exit 0). `bauen.py` bricht vor dem Schreiben ab, wenn `einwilligungsModus` nicht genau
+   `"einfach"` ist (immer, auch mit Platzhaltern), ohne noindex Platzhalter oder ein `googleTag` ohne die Form `AW-`
+   plus Ziffern in `konfig.js` stehen, ein Bildplatz unvollständig ist oder kein boolesches `ki` trägt, ein KI-Bild
+   ohne seine Nachweiszeile im gebauten Impressum steht, der Bildnachweis unter einem verborgenen Vorfahren steht
+   (`hidden`, `aria-hidden`, `inert`, verbergender `style`, verbergende Klasse aus `stil.css`, `template`, `noscript`,
+   geschlossenes `details`), eine Seite ein Bildelement außerhalb der Bildplätze trägt (`img`, `picture`, `source`,
+   `srcset`, `video`, `object`, `embed`, `iframe`, `input type=image`) oder `url()` in `stil.css` oder einer Seite auf
+   etwas anderes als `schriften/` zeigt (`@import` und `image-set` ebenso). Grenze: Die Sperren sitzen in `main()`;
+   wer `bauen()` direkt aufruft, bekommt die Seite ohne sie.
+   **Was Bau und Zeugen NICHT fangen** (Programmierer und Codex an d255384, je mit Bau-Exit 0 und grünen Zeugen
+   gemessen oder aus dem Code abgeleitet): ein CSS-Escape im Funktionsnamen (`u\72l(`); Verbergen des
+   Bildnachweises über einen ID- oder Elementwähler (`#bn { display: none; }`, `.bn-huelle div { display: none; }`);
+   das Attribut `background=` an einem Element; `url("schriften/../bilder/…")`; eine zweite Zuweisung des
+   Einwilligungsmodus nach dem Objekt in `konfig.js`; einen zweiten Knopf ohne `type` im Formular; das Feld `ki`
+   falsch gesetzt (siehe „Grenze des Felds `ki`“ unten). Die Sperren fangen Versehen, keine Absicht.
 2. Wörtersperre: `python <lm>/kunden/kfz-gutachter-es/kampagnen-vorbereitung/pruefen/woertersperre.py --ausnahme "Ismet Es Kfz Meisterbetrieb e.K." *.html` muss 0 Funde liefern. Die Ausnahme ist der Firmenname im Transparenzsatz des Impressums (Wettbewerbsrechtler 09.11.2026). Mit `BEWERTUNG_ZEIGEN = True` kommt genau eine zweite Ausnahme dazu, nach Abschnitt „Bewertung und Name“, Schritt 6.
-3. `impeccable detect index.html umland.html ablauf.html kosten.html kontakt.html nachts-wochenende.html impressum.html datenschutz.html` (Ziel 0 Funde).
+3. `impeccable detect .` (am Stand 24.11.2026: 10 Stilfunde, cream-palette 8 und tight-leading 2 auf kosten.html und index.html; der zweite kommt aus `.nur-gross { display: revert }`, die Seite ist pixelgleich; cream-palette und tight-leading, von Fabrice zu entscheiden; neue Funde sind ein Befund).
 4. Screenshots 390 und 1280 ansehen (Skill `hinsehen`, `schirmfoto.mjs` mit Geräteemulation; ein reines `--window-size=390` schneidet rechts ab).
-5. Zeugen, jeder mit Exit 0: `node pruefen/zeuge-einwilligung.js` (Einwilligung, Nummerntausch, Widerruf), `node pruefen/rotprobe-einwilligung.js` (jede Mutation an `einwilligung.js` muss den Zeugen rot machen), `python pruefen/zeuge_bauen.py` (Sperren in `bauen.py`: Konfiguration, Bewertungskasten mit fester Uhr, Kommentare, Fotoschalter, Bildsperre vor dem Schreiben), `python pruefen/rotprobe_bauen.py` (jede herausgenommene Regel in `bauen.py` muss diesen Zeugen rot machen), `python pruefen/zeuge_seiten.py` (die acht gebauten Seiten: Menü mit `aria-current`, kein „Umland“ in Text und Metadaten, Rufnummer aus `konfig.js` als Text und `tel:`-Link, alte Nummer in keiner Schreibweise, je gezeigtem Bild ein Nachweis im Impressum, „Symbolbild“, noindex, eine h1, Canonical, Links und Anker, Formular nur mit `formular.js`), `python pruefen/rotprobe_seiten.py` (jede Mutation an einer Kopie der Seiten oder Quellen muss diesen Zeugen im genannten Fall rot machen, auch nach einem Neubau). Die Zeugen rechnen ohne Browser; Bild, Umbruch, Anrufleiste und das Ausweichen des Einwilligungsbalkens sehen sie nicht.
+5. Zeugen, jeder mit Exit 0, in einem Lauf:
+   `node pruefen/zeuge-formular.js` (Pflichtlauf seit Runde 7: `formular.js` in nachgebautem DOM, je Fall Status,
+   Knopf und ob ein zweiter Versand möglich ist: Erfolg, 500 mit JSON, 502 als HTML, 400 und 200 ohne `ok:true`,
+   2xx mit unlesbarem JSON, Netzfehler, Zeitgrenze mit später Erfolgs- oder Fehlantwort, ohne `AbortController`,
+   Messfunktion wirft, Ladefehler vor dem Handler, Rufnummer keine Zeichenkette);
+   `node pruefen/zeuge-einwilligung.js` (Einwilligung, Nummerntausch, Widerruf, Freihalteliste);
+   `python pruefen/zeuge_bauen.py` (Sperren in `bauen.py`: Konfiguration samt Form des `googleTag`, Einwilligungsmodus,
+   Bewertungskasten mit fester Uhr, Kommentare, Fotoschalter, Bildsperre und Impressumssperre vor dem Schreiben,
+   Sichtbarkeit des Nachweises, `url()`, Bildelemente außerhalb der Plätze);
+   `python pruefen/zeuge_seiten.py` (die acht gebauten Seiten: Menü mit `aria-current`, kein „Umland“, Rufnummer aus
+   `konfig.js` als Text und `tel:`-Link, alte Nummer in keiner Schreibweise, je gezeigtem Bild ein Nachweis im
+   Impressum, „KI“ nur im Impressum, kein Eurobetrag und keine „750“ auf der Startseite, kein „225/13“,
+   Telefonzeiten in der Bühne, kein Schild an einem Bild, Worum- und Ausweichzeile wortgleich, zwei Fragen ohne
+   FAQPage, Kostensatz wortgleich auf Start und Umland, jede Datei in `bilder/` geladen, `url()` nur auf `schriften/`,
+   Nachweis sichtbar, keine Bildelemente außerhalb der Plätze, ein Umschaltpunkt für die Textfassungen, Formular mit
+   `method="post"`, gesperrtem Knopf und sichtbarem Anrufsatz, Freischaltung erst nach dem Handler, Formular-ID,
+   Felder und Absendeknopf aus `formular.js` im Formular, noindex, eine h1, Canonical,
+   Links und Anker, Formular nur mit `formular.js`).
+6. Rotproben, nacheinander, jede mit Exit 0: `node pruefen/rotprobe-einwilligung.js`, `node pruefen/rotprobe-formular.js`
+   (jede Mutation im benannten Fall rot), `python pruefen/rotprobe_bauen.py`
+   (jede Mutation muss im benannten Fall rot werden, Tabelle `ERWARTET`), `python pruefen/rotprobe_seiten.py` (jede
+   Mutation an einer Kopie der Seiten oder Quellen im genannten Fall, auch nach einem Neubau). `rotprobe_seiten.py`
+   liest `NOINDEX` aus `bauen.py` und läuft in beiden Betriebsarten: mit `NOINDEX = True` entfernen oder verschreiben
+   P-a und P-r das noindex-Tag, am Live-Stand fügen sie eines ein. Belegt am 24.11.2026 an einer Kopie mit
+   `NOINDEX = False` und Testkennungen: alle Zeugen grün, alle Rotproben rot.
+
+Die Zeugen rechnen ohne Browser; Bild, Umbruch, Anrufleiste und das Ausweichen des Einwilligungsbalkens sehen sie nicht.
 
 ## Staging und Live
 
 - Auslieferung seit 10.11.2026: sunds-hub (Caddy, Snippet `kge_landingpage`), Zwischenadresse https://leads.sundsconnect.de/kge-vorschau/ mit `X-Robots-Tag: noindex`. Ausrollen nur mit `leadmaschine/kunden/kfz-gutachter-es/server/ausrollen.sh <archiv.tar> <commit>` (Archiv aus `git -c core.autocrlf=false archive --format=tar <commit>`); jeder Commit bekommt einen Ordner unter `/opt/kge-landingpage/`, `www` ist ein Symlink, Rückweg `ausrollen.sh zurueck <alter-commit>`.
-- GitHub Pages (https://sundsoffice-tech.github.io/kge-landingpage/, Zweig `main`) ist nur noch der alte Staging-Stand. **Push nach `main` ist dort weiter ein Deploy**, deshalb nur über PR und nach Freigabe. Die Datenschutzerklärung nennt sunds-hub als Hosting; über GitHub Pages darf die Kampagne nicht laufen.
+- GitHub Pages (https://sundsoffice-tech.github.io/kge-landingpage/, Zweig `main`, Pfad `/`) ist nur noch der alte Staging-Stand. **Push nach `main` ist dort weiter ein Deploy, und zwar des ganzen Baums**: `export-ignore` wirkt dort nicht, unter github.io stehen dann auch `bilder-archiv/` (58 mit KI erzeugte Bilder ohne Impressumszeile), `pruefen/`, `bauen.py`, `inhalte/` und diese Datei. Deshalb nur über PR und nach Freigabe, und Pages vor dem Merge abschalten (Settings, Pages, Source „None“). Die Datenschutzerklärung nennt sunds-hub als Hosting; über GitHub Pages darf die Kampagne nicht laufen.
 - Live-Domain: `unfall-mg.de` (Inhaber laut Vertrag Ziffer 6 Cihan Es, Kfz Gutachter Es). Canonical und alle Links sind relativ, die Seite läuft unter beiden Adressen ohne Änderung.
 
 ## Go-Live-Liste
@@ -59,7 +104,7 @@ Am Tag der Kontoanlage sind die Schritte 1, 2, 6 und 7 dran. Schritt 5 (DNS) ist
    - Dieselben Werte am selben Tag in die Leadmaschine (`kunden/kfz-gutachter-es/go-live.json` und `ads/wache.json`; Feldnamen im Kommentar von `konfig.js`). Zum leeren `website_call` gehört dort ebenfalls ein leerer Wert.
 2. Lead-Endpunkt: Origin `https://unfall-mg.de` in der CORS-Liste eintragen (gemessen 09.11.2026 00:47: OPTIONS mit diesem Origin antwortet 204 ohne `Access-Control-Allow-Origin`). Der Testlead landet im Postfach des Kunden, deshalb vorher ein Wort an ihn über den Inhaber von S&S (Nachzug v8 der Leadmaschine, Abschnitt 10). Testlead mit Marker TEST, danach die Testdatei auf dem Server löschen (60-LEKTIONEN E4).
 3. Erst wenn die Freigabe des Kunden mit Beleg vorliegt und der Inhaber von S&S das Scharfschalten umlegt: `bauen.py`: `NOINDEX = False`, neu bauen. GitHub Pages für dieses Repo ist dann schon abgeschaltet (Settings, Pages, Source „None“; am besten lange vorher, spätestens vor diesem Schritt, nichts braucht die Kopie mehr, alle Ziel-URLs der Kampagne zeigen auf `unfall-mg.de`): Die alte Staging-Kopie baut aus `main`, verweist mit ihrem Canonical auf sich selbst und wäre ohne `noindex` eine zweite, auffindbare Fassung der Seite.
-4. Bilder: Dateien nach `bilder/` legen (Namen und Maße im Abschnitt „Seiten, Menü und Bildplätze“), in `bauen.py` den Platz in der Tabelle `BILDER` ausfüllen (Datei, alt-Text, Maße, Unterschrift, Bildnachweis) und neu bauen. Ein ausgefüllter, aber unvollständiger Platz bricht den Bau ab.
+4. Bilder: Dateien nach `bilder/` legen (Namen und Maße im Abschnitt „Seiten, Menü und Bildplätze“), in `bauen.py` den Platz in der Tabelle `BILDER` ausfüllen (Datei, alt-Text, Maße, Unterschrift, Bildnachweis und das Pflichtfeld `ki`: `True` für ein mit KI erzeugtes Bild, `False` für ein echtes Foto) und neu bauen. Ein ausgefüllter, aber unvollständiger Platz oder ein Platz ohne boolesches `ki` bricht den Bau ab. Ein echtes Foto des Betriebs braucht vorher eine Rechtsfrage: Der Sammelsatz im Impressum sagt, alle Bilder seien mit KI erzeugt.
 5. DNS: A-Record `@` und `www` auf sunds-hub (169.58.211.51, gemessen 10.11.2026 über leads.sundsconnect.de), kein AAAA auf fremde Ziele; danach auf sunds-hub `domain_scharf.sh` (Trockenlauf), dann `--echt` (Caddy-Block, Zertifikat). GitHub Pages bekommt keine Custom Domain. Die früheren GitHub-Pages-A-Records gelten nicht mehr; HTTPS und Zertifikat stellt Caddy.
 6. Prüfung vor dem ersten Klick: Tag Assistant zeigt `consent default denied`, nach „Erlauben“ `update granted`; Ablehnen-Pfad lädt nichts von googletagmanager.com; nach „Erlauben“ steht genau ein `config` im dataLayer, und alle Telefon-Links zeigen und wählen 02161 688 86 91; über den Fußlink „Einwilligung zur Messung ändern“ ablehnen lädt die Seite neu, danach lädt nichts mehr von Google; Testlead kommt beim Kunden an. Ein Testanruf über eine getauschte Nummer gehört nicht hierher: Er braucht einen echten Anzeigenklick und einen gesetzten Schalter und steht im Verfahren „Schalter setzen“.
 7. Messung mit echtem Tag, sobald echte IDs in `konfig.js` stehen und bevor der erste Klick kommt. Sie ist bis dahin offen: Die Zeugen sehen nur, was die Seite in den dataLayer legt, und die Browserläufe liefen mit einem leeren Stub statt gtag.js. Ablauf: Netzwerk-Protokoll des Browsers öffnen, „Erlauben“ wählen, dann über den Fußlink „Ablehnen“. Danach geht keine Anfrage mehr an Google (googletagmanager.com, googleadservices.com, google.com, doubleclick.net), und es bleibt weder ein Cookie `_gcl_*`, `_gac_*` oder `gwcc` noch der localStorage-Schlüssel `_gcl_ls`. Bleibt etwas stehen, die Löschung in `einwilligung.js` (`loescheGoogleCookies`) nachziehen, bevor Klicks kommen.
@@ -81,7 +126,7 @@ Zurück, als ein Zug in derselben Stunde. Erstens, in Sekunden: auf sunds-hub `b
 
 ## Bewertung und Name (`BEWERTUNG_ZEIGEN`, `NAME_ZEIGEN` in `bauen.py`)
 
-Beide stehen im Hero der Startseite. Im HTML steht `{{vertrauen}}` zwischen h1 und Anrufknopf, der Bewertungskasten vor der Namenszeile, also über dem Knopf; `stil.css` ordnet den Kasten per `order` hinter den Knopf. Mit eingeschaltetem Kasten ist das nicht angesehen. Die Sternchenerklärung gibt es seit dem Umbau vom 23.11.2026 nicht mehr; die Lage des Kastens vor dem Einschalten neu mit dem Wettbewerbsrecht abstimmen (Vorgabe vom 20.11.2026 bezog sich auf das Sternchen). Jeder Schalter wirkt allein; sind beide aus, fällt die Zeile `{{vertrauen}}` ganz weg.
+Beide stehen seit R1 schlank (24.11.2026) nicht mehr im Hero, sondern in der Kontaktfläche der Startseite: `{{vertrauen}}` steht in `.karte-person` (`inhalte/index.html`), der Bewertungskasten vor der Namenszeile. Mit eingeschaltetem Kasten ist das nicht angesehen. Die Sternchenerklärung gibt es seit dem Umbau vom 23.11.2026 nicht mehr; die Lage des Kastens vor dem Einschalten neu mit dem Wettbewerbsrecht abstimmen (Vorgabe vom 20.11.2026 bezog sich auf das Sternchen). Jeder Schalter wirkt allein; sind beide aus, fällt die Zeile `{{vertrauen}}` ganz weg.
 
 `NAME_ZEIGEN = True` seit 20.11.2026: „Ihr Sachverständiger: Cihan Es“. Der Satz „Sie sprechen direkt mit Cihan Es“ kommt erst nach Bestätigung des Kunden.
 
@@ -101,7 +146,7 @@ Die 14-Tage-Regel greift nur beim Bauen. `ausrollen.sh` baut nicht, und die ausg
 
 **Offen, entscheidet die Rechtsprüfung vor dem Einschalten:** Die Frist trifft die beiden Werte ungleich. Bei rund 48 Bewertungen ist die Anzahl nach 14 Tagen mit 31 bis 60 % Wahrscheinlichkeit überholt, die Note 4,9 nur mit 2 bis 5 % (Rechnung im Bericht des Wissenschaftlers, Prüfziel kge-cta-r3). Ob die Zeile stattdessen „über 45 Bewertungen“ mit 30 Tagen Gültigkeit sagen darf, entscheidet die Rechtsprüfung. Bis dahin gilt die Regel wie gebaut: genaue Anzahl, 14 Tage.
 
-**Messung über den Umbau hinweg:** `phone_click` zählt Tipps auf Anruf-Links, keine Anrufe. Seit diesem Umbau tragen Start- und Umlandseite je 10 statt 6 Anruf-Links (die übrigen Seiten unverändert 3 bis 5; gezählt am Bau vom 20.11.2026), die Zahl steigt also auch ohne einen einzigen Anruf mehr. Über den Umbau vergleichbar sind nur die Anrufliste (eingegangene Anrufe) und abgeschickte Formulare. Seit dem Umbau vom 23.11.2026 trägt die Startseite 5 Anruf-Links statt 10, die übrigen Seiten 3 oder 4 (gezählt am Bau vom 23.11.2026); `phone_click` sinkt also auch ohne einen Anruf weniger.
+**Messung über den Umbau hinweg:** `phone_click` zählt Tipps auf Anruf-Links, keine Anrufe. Seit diesem Umbau tragen Start- und Umlandseite je 10 statt 6 Anruf-Links (die übrigen Seiten unverändert 3 bis 5; gezählt am Bau vom 20.11.2026), die Zahl steigt also auch ohne einen einzigen Anruf mehr. Über den Umbau vergleichbar sind nur die Anrufliste (eingegangene Anrufe) und abgeschickte Formulare. Seit dem Umbau vom 23.11.2026 trägt die Startseite 5 Anruf-Links statt 10, die übrigen Seiten 3 oder 4 (gezählt am Bau vom 23.11.2026); `phone_click` sinkt also auch ohne einen Anruf weniger. Am Stand R1 schlank, Runde 6 (gezählt 24.11.2026): Startseite 6 Links mit `data-messung="phone_click"` (einer davon am Handy ausgeblendet) und ein siebter `tel:`-Link im noscript-Satz ohne Messung, der nur ohne JavaScript erscheint; `kontakt.html` 5 `tel:`-Links (einer im noscript-Satz), die übrigen Seiten 3 oder 4.
 
 ## Messung ohne Konfiguration
 
@@ -113,27 +158,27 @@ Die Seite ist seit dem 23.11.2026 eine Website mit Seitenmenü, keine Landingpag
 
 - **Menü:** Die Liste `MENUE` in `bauen.py` füllt die Kopfzeile (ab 1024 px) und das Menü darunter (`<details class="menue">`, ohne JavaScript). Die Punkte führen auf Seiten: Start, Nach dem Unfall, Wer zahlt?, Einsatzgebiet, Kontakt und Anfahrt. „Abends und am Wochenende“, Impressum und Datenschutz stehen im Fuß.
 - **Anrufstellen:** Kopf (am Handy als Symbol, ab 600 px mit Nummer), ein Knopf im Hero der Startseite, auf den Unterseiten die Zeile `{{ruf}}` im Seitenkopf (Nummer als Text und Link, `RUF_ZEILE` in `bauen.py`), die Anrufleiste am Handy und der Kontaktabschnitt (Startseite unten, `kontakt.html`). Große Anrufknöpfe am Ende der Abschnitte gibt es nicht mehr; dort steht ein Textlink zum nächsten Schritt. Auf jeder Seite steht 02161 688 86 91 als Text und als `tel:+4921616888691`.
-- **Sprache:** kein „wir“ (Einzelunternehmen) und keine Ich-Form (nicht bestätigt), sondern dritte Person und direkte Anrede. Zeitzusagen (Termin am selben Tag, 24 Stunden, Dauer der Besichtigung) und „Sie strecken nichts vor“ stehen nicht auf der Seite, bis der Kunde sie bestätigt.
-- **Bagatellgrenze:** steht je Seite einmal: Startseite im Hero, `kosten.html` unter „Kleiner Schaden“ (dazu die Tabellenzeile 750 der BVSK-Übersicht). Sternchen und Fußnoten gibt es nicht mehr.
+- **Sprache:** dritte Person und direkte Anrede, keine Ich-Form (nicht bestätigt). „wir“ steht seit R1 schlank (Runde 3, Werbetexter 13 und Recht 14) in der Überschrift der Startseite („Ums Gutachten kümmern wir uns.“) und im Kostensatz („Das klären wir vorab am Telefon.“); weitere Stellen mit „wir“ nur nach Rechtsprüfung. Zeitzusagen (Termin am selben Tag, 24 Stunden, Dauer der Besichtigung) und „Sie strecken nichts vor“ stehen nicht auf der Seite, bis der Kunde sie bestätigt.
+- **Bagatellgrenze:** steht nur auf `kosten.html`. Die Startseite trägt keinen Eurobetrag und keine „750“ (Zeuge E1); der Kostensatz sagt nur „Bei kleinen Schäden oft nicht“. Sternchen und Fußnoten gibt es nicht mehr.
+- **Formular ohne JavaScript:** Beide Rückrufformulare haben `method="post"` und einen im Markup gesperrten Absendeknopf, den `formular.js` erst nach der Registrierung des Absende-Handlers freischaltet. Darunter steht im Markup sichtbar „Bitte rufen Sie an:“ mit der Nummer als `tel:`-Link (`OHNE_SKRIPT` in `bauen.py`, `data-ohne-skript`); `formular.js` blendet ihn im selben Schritt aus. Lädt das Skript nicht oder scheitert es vorher, bleiben Knopf gesperrt und Satz sichtbar. So gehen Telefon, Name und Unfallbeschreibung nie per GET in die Adresse der Seite (Zeuge F1).
+- **Telefonzeiten:** stehen nur in `bauen.py` (`ZEITEN`, daraus `TELEFONZEITEN`, `ZEITEN_AB`, `ZEITEN_ZEILEN`, `OEFFNUNGSZEITEN_LD`) und kommen als `{{telefonzeiten}}`, `{{zeiten_ab}}`, `{{zeiten_zeilen}}` und `{{oeffnungszeiten_ld}}` in Seiten, Fuß, den Erfolgstext der Formulare und das JSON-LD der Startseite (Zeuge E8).
 
-Bildplätze: jeder Platz ist einzeln schaltbar über die Tabelle `BILDER` in `bauen.py`. Ein Platz erscheint genau dann, wenn dort Datei, alt-Text, Maße und Bildnachweis eingetragen sind und die Datei unter `bilder/` liegt. Sonst fehlt seine Zeile ganz (kein Kasten, kein „Foto folgt“). `FOTOS_ZEIGEN` ist der Hauptschalter (Vorgabe an; aus blendet alle Bilder und die Bildnachweise aus). Ist ein Platz eingetragen, aber unvollständig, bricht `python bauen.py` ab (Zeuge G12).
+Bildplätze: jeder Platz ist einzeln schaltbar über die Tabelle `BILDER` in `bauen.py`. Ein Platz erscheint genau dann, wenn dort Datei, alt-Text, Maße und Bildnachweis eingetragen sind und die Datei unter `bilder/` liegt. Sonst fehlt seine Zeile ganz (kein Kasten, kein „Foto folgt“). `FOTOS_ZEIGEN` ist der Hauptschalter (Vorgabe an; aus blendet alle Bilder und die Bildnachweise aus, die Bilddateien bleiben dann aber in `bilder/` und gehen mit aus). Ist ein Platz eingetragen, aber unvollständig, oder fehlt das boolesche Feld `ki`, bricht `python bauen.py` ab (Zeugen G12, G6c, G6d). Die Plätze `schadendetail`, `ort` und `unterlagen` gibt es seit R1 schlank nicht mehr.
 
-| Platz in `BILDER` | Stelle | Seitenverhältnis | Stand 23.11.2026 |
-|---|---|---|---|
-| `start` | Startseite oben, über den Adressen (`{{bild_start}}`), lädt bevorzugt | 4:3, 1600 px breit | leer, wartet auf das Foto des Kunden (Begutachtung am Fahrzeug) |
-| `schadendetail` | Startseite, „So läuft es ab“, unter der Überschrift | 4:3 | `bilder/schadendetail-lack.jpg`, 800 x 600, 49 KB, Symbolbild |
-| `streifschaden` | `kosten.html`, Zeile „Kleiner Schaden“ | 4:3 | `bilder/streifschaden-kotfluegel.jpg`, 560 x 420, Symbolbild; der Ausschnitt lässt das Markenzeichen auf der Felge weg |
-| `ort` | `umland.html`, neben den Ortslisten | 3:2 | `bilder/moenchengladbach-muenster.jpg`, 960 x 640, 154 KB, Unterschrift nennt den Ort |
-| `unfall` | `ablauf.html`, vor „An der Unfallstelle“ | 16:9, 1600 px breit | leer |
-| `hebebuehne` | `umland.html`, Abschnitt Hebebühne | 16:9, 1600 px breit | leer, kein freies Bild |
-| `unterlagen` | `kosten.html`, vor „In der Regel zahlen Sie nichts“ | 16:9, 1600 px breit | leer, kein freigegebenes Bild |
+| Platz in `BILDER` | Stelle | Stand 24.11.2026 |
+|---|---|---|
+| `start` | Startseite, Bühne über die ganze erste Ansicht, lädt bevorzugt | `bilder/r2-messung-*.webp` (768, 1280, 1536) und am Handy `bilder/r2-messung-hoch-*.webp` (432, 864), `ki: True` |
+| `streifschaden` | `kosten.html`, Zeile „Kleiner Schaden“ | `bilder/r1-verdeckt-*.webp` (768, 1280, 1536), `ki: True` |
+| `unfall` | `ablauf.html`, vor „An der Unfallstelle“ | leer, `ki: False` |
+| `hebebuehne` | `umland.html`, Abschnitt Hebebühne | leer, `ki: False` |
 
-Die drei Bilder sind Ausschnitte aus den geprüften Vorschauen (560 bis 960 px breit), ohne EXIF, als JPEG, jedes unter 200 KB. Die Originale ließen sich am 23.11.2026 nicht automatisch laden (Unsplash antwortet einem Abrufwerkzeug mit einer Browserprüfung, Wikimedia mit „Too many requests“). Wer die Originale von Hand lädt: auf dasselbe Seitenverhältnis zuschneiden, höchstens 1600 px breit, unter etwa 200 KB, EXIF entfernen, Datei ersetzen und `breite` und `hoehe` in `BILDER` anpassen. Beim Bild `streifschaden` bleibt das Markenzeichen auf der Felge außerhalb des Ausschnitts.
+Jedes `<img>` trägt `width`, `height`, `alt` und `loading="lazy"` (oben `fetchpriority="high"`). „Symbolbild“ als Etikett ist gesperrt (Zeuge S1). Ein mit KI erzeugtes Bild trägt kein Schild am Bild und keinen Hinweis im alt-Text (Fabrices Wort vom 24.11.2026); gekennzeichnet ist es nur im Impressum: der Sammelsatz „Die Bilder auf unfall-mg.de sind mit KI erzeugte Beispielbilder. Sie zeigen keine Fälle, Personen oder Räume des Büros.“ und je Bild eine Zeile mit „mit KI erzeugt“. Der Bau prüft, dass diese Zeilen im gebauten Impressum sichtbar stehen. Ein Bild außerhalb der Plätze (direktes `<img>`, `picture`, `srcset`) oder als `url()` in `stil.css` bricht den Bau ab. Die Bilder liegen lokal in `bilder/`, nichts wird von fremden Servern geladen.
 
-Jedes `<img>` trägt `width`, `height`, `alt` und `loading="lazy"` (oben `fetchpriority="high"`). Die Unterschrift beginnt mit „Symbolbild“ bei Bildern, die nicht den Betrieb zeigen; bei einem echten Foto des Betriebs bleibt `unterschrift` leer. Bildnachweise der gezeigten Plätze erscheinen als Abschnitt im Impressum. Die Bilder liegen lokal in `bilder/`, nichts wird von fremden Servern geladen.
+**Grenze des Felds `ki`, wörtlich so auch im PR-Text:** Die Sperre vertraut dem Feld `ki`. Ein mit KI erzeugtes Bild mit `ki: False`, einer Unterschrift „Beispielfoto: …“ und dem Nachweis „eigenes Foto des Büros“ geht durch Bau und alle Zeugen. Maschinell ist nicht entscheidbar, ob ein Bild erzeugt ist; ein falsch ausgefülltes Feld fängt niemand.
 
-Offen (Stand 23.11.2026):
+Offen (Stand 24.11.2026):
 
-- `einwilligung.js`, `FREI_HALTEN` nennt noch `.hero .stern`. Den Sternchentext gibt es nicht mehr, der Wähler trifft auf keiner Seite etwas. Der Zeuge S2 prüft nur den Wortlaut der Konstante und bleibt grün. Die Datei blieb beim Umbau bis auf den Fragesatz des Balkens unverändert; beim nächsten Eingriff den Wähler entfernen und Zeuge und Rotprobe mitziehen.
-- Die Lage des Bewertungskastens (siehe „Bewertung und Name“) ist am neuen Hero nicht angesehen und nicht mit der Rechtsprüfung abgestimmt.
-- Der Leuchtstift (Marker) steht nur noch in der h1 der Startseite, die Ortszeile über den Überschriften der Unterseiten gibt es nicht mehr.
+- `einwilligung.js`, `FREI_HALTEN` nennt seit Runde 5 Anrufknopf, Telefonzeiten und Bewertungskasten (`.hero .knoepfe .knopf, .hero .buehne-zeiten, .karte-person .bewertung`); `.hero .stern` ist entfernt. Der Bewertungswähler trifft erst mit eingeschaltetem Kasten etwas.
+- Die Lage des Bewertungskastens in der Kontaktfläche (siehe „Bewertung und Name“) ist nicht angesehen und nicht mit der Rechtsprüfung abgestimmt.
+- `einwilligung.js` lädt im Modus `erweitert` das Google-Skript vor der Wahl des Besuchers; der Bau lässt nur `einfach` zu. Wer den Modus je ändern will, ändert zuerst die Datenschutzseite und die Bausperre (`modus_fehler` in `bauen.py`), nicht nur `konfig.js`.
+- Die früheren Sprungmarken der Startseite (`#versicherung`, `#erste-schritte`, `#betrieb`, `#gebiet`) gibt es nicht mehr; ob eine Anzeige sie benutzt, prüft das Fenster des Ads-Kontos.

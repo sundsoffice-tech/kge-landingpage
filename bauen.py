@@ -11,12 +11,17 @@ Aufruf: python bauen.py            schreibt alle Seiten
 NOINDEX: True bis zum Go-Live auf unfall-mg.de (DEPLOY.md), danach False setzen und neu bauen. Der Bau bricht ab,
 solange NOINDEX aus ist und konfig.js noch Platzhalter trägt (sonst ginge die Seite ohne Messung in den Index).
 
-Werte, die auf mehreren Seiten stehen, stehen genau einmal hier (WhatsApp, Rückrufzusage, Fotoschalter).
-Die FAQPage-Daten (JSON-LD) erzeugt der Bau aus den sichtbaren <details>-Fragen, damit sie wortgleich bleiben.
+Werte, die auf mehreren Seiten stehen, stehen genau einmal hier (WhatsApp, Rückrufzusage, Telefonzeiten, Kostensatz,
+Fotoschalter).
+
+Sperren vor dem Schreiben (Runde 6): Einwilligungsmodus (immer), Konfiguration (ohne noindex), Bildplätze, Nachweis
+im gebauten Impressum und sichtbar, Bilder nur aus Bildplätzen, url() nur auf schriften/. Grenze: Die Sperren sitzen
+in main(). Wer bauen() direkt aufruft (Zeugen, eigene Skripte), bekommt die Seite ohne diese Sperren; ausgeliefert
+wird nur, was python bauen.py schreibt (Programmierer r2, K1c).
 """
 import datetime
 import html
-import json
+from html.parser import HTMLParser
 import pathlib
 import re
 import sys
@@ -46,40 +51,59 @@ RUECKRUF_SONST = "sobald das Telefon wieder besetzt ist"
 # Foto des Betriebs bleibt die Unterschrift leer. vorrang=True (nur das Bild oben auf der Startseite) lädt das Bild
 # bevorzugt, alle anderen laden erst beim Heranscrollen.
 FOTOS_ZEIGEN = True
+# Richtung R1 „Nah dran“ (24.11.2026): die Schadenfotos sind KI-erzeugte Bilder (ChatGPT über Codex), alle im selben
+# Bildlook (Werkzeug _bildroh/bildlook.py im Arbeitsbaum, nicht ausgeliefert). Jedes KI-Bild steht im Bildnachweis des
+# Impressums. Ein Schild am Bild gibt es seit Fabrices Wort vom 24.11.2026 nicht mehr („ki erzeugtes bild nicht schreiben
+# mein wort“, gegen die Auflage der Rechtsrolle, Nachtrag 01:55).
+# Zusätzliche, freiwillige Felder je Platz:
+#   breiten  Liste der Breiten in Pixeln; neben datei (…-<breite>.webp) liegen die schmaleren Dateien, daraus srcset
+#   sizes    sizes-Angabe zum srcset (Vorgabe 100vw)
+#   schmal   eigener Anschnitt für schmale Fenster: datei, breiten, breite, hoehe, medien (picture/source)
+#   ki       Pflicht an jedem Platz, True oder False (ein fehlendes Feld bricht den Bau ab, Runde 5); True: mit KI
+#            erzeugt, der Nachweis muss „mit KI erzeugt“ nennen, und die Zeile muss in der gebauten impressum.html
+#            stehen (impressum_sperre in main, vor dem Schreiben)
+#   klasse   zusätzliche Klasse der figure (buehne-bild, strecke-bild)
+KI_KENNWORT = "mit KI erzeugt"
+KI_NACHWEIS = ("mit KI erzeugt (ChatGPT, OpenAI) am 24.11.2026 für diese Seite, im Bildlook der Seite "
+               "nachbearbeitet")
 BILDER = {
-    # Startseite oben, über den Adressen: wartet auf das echte Foto des Kunden (Begutachtung am Fahrzeug), 4:3.
-    "start": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": "", "vorrang": True},
-    # Nach dem Unfall, vor „An der Unfallstelle“: leer seit der Nachbesserung vom 23.11.2026, 16:9.
-    "unfall": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": ""},
-    # Wer zahlt?, in der Zeile „Kleiner Schaden“ (verdeckte Schäden hinter dem Stoßfänger), 4:3. Der Ausschnitt lässt
-    # das Markenzeichen auf der Felge weg.
-    "streifschaden": {"datei": "bilder/streifschaden-kotfluegel.jpg",
-                      "alt": "Weißes Auto auf einem Parkplatz mit Streifschaden an Kotflügel und Stoßfänger",
-                      "breite": 560, "hoehe": 420,
-                      "unterschrift": "Symbolbild: Streifschaden an Kotflügel und Stoßfänger",
-                      "nachweis": "Seite „Wer zahlt?“, Auto mit Streifschaden: Foto von Volodymyr Dobrovolskyy, "
-                                  "Unsplash (Unsplash-Lizenz), Ausschnitt"},
-    # Startseite, Abschnitt „So läuft es ab“, unter der Überschrift, 4:3.
-    "schadendetail": {"datei": "bilder/schadendetail-lack.jpg",
-                      "alt": "Eingedrückte hintere Seitenwand mit gerissenem Lack",
-                      "breite": 800, "hoehe": 600, "unterschrift": "Symbolbild: eingedrückte Seitenwand mit gerissenem Lack",
-                      "nachweis": "Startseite, Lackschaden: Foto von Kenny, Unsplash (Unsplash-Lizenz), Ausschnitt"},
-    # Einsatzgebiet, neben den Ortslisten, 3:2.
-    "ort": {"datei": "bilder/moenchengladbach-muenster.jpg",
-            "alt": "Das Münster St. Vitus in Mönchengladbach, vom Park aus gesehen",
-            "breite": 960, "hoehe": 640, "unterschrift": "Mönchengladbach, Münster St. Vitus",
-            "nachweis": "Seite „Einsatzgebiet“, Münster St. Vitus: Foto von BjøRe, Wikimedia Commons (CC0), Ausschnitt"},
-    # Einsatzgebiet, Abschnitt Hebebühne: kein freies Bild gefunden, 16:9.
-    "hebebuehne": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": ""},
-    # Wer zahlt?, vor „In der Regel zahlen Sie nichts“: kein freigegebenes Bild, 16:9.
-    "unterlagen": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": ""},
+    # Startseite, Bühne über die ganze erste Ansicht: Messung an einer Delle im Abendlicht.
+    "start": {"datei": "bilder/r2-messung-1536.webp", "breiten": [768, 1280, 1536],
+              "schmal": {"datei": "bilder/r2-messung-hoch-864.webp", "breiten": [432, 864], "breite": 864,
+                         "hoehe": 1536, "medien": "(max-width: 699.98px)"},
+              "alt": "Eine Hand setzt ein Lackschichtdickenmessgerät an der hinteren Seitenwand auf, die Spiegelung "
+                     "knickt an der Delle ab",
+              "breite": 1536, "hoehe": 864, "unterschrift": "", "ki": True,
+              "klasse": "buehne-bild", "nachweis": "Startseite, Messung an einer Delle: " + KI_NACHWEIS,
+              "vorrang": True},
+    # Nach dem Unfall, vor „An der Unfallstelle“: leer, 16:9.
+    "unfall": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": "", "ki": False},
+    # Wer zahlt?, Zeile „Kleiner Schaden“: verdeckter Schaden hinter der abgenommenen Stoßstange.
+    "streifschaden": {"datei": "bilder/r1-verdeckt-1536.webp", "breiten": [768, 1280, 1536],
+                      "sizes": "(min-width: 900px) 60vw, 100vw",
+                      "alt": "Abgenommene Stoßstange, dahinter ein zerdrückter Pralldämpfer und ein gebrochener Halter",
+                      "breite": 1536, "hoehe": 1024,
+                      "unterschrift": "Von außen kaum ein Kratzer, dahinter ein zerdrückter Pralldämpfer.",
+                      "ki": True, "klasse": "strecke-bild",
+                      "nachweis": "Seite „Wer zahlt?“, verdeckter Schaden hinter der Stoßstange: " + KI_NACHWEIS},
+    # R1 schlank (24.11.2026): Lackriss, die vier Ablaufbilder (Anruf, Werkstatt, Gutachten, Versand), das
+    # Unterboden-Vollbild der Kostenseite und das Münster-Foto (Einsatzgebiet) sind aus der Erzeugung genommen. Die
+    # Dateien (r3-lackriss, r2-anruf, r2-werkstatt, r3-gutachten, r2-versand, r1-unterboden,
+    # r1-muenster), werden nicht mehr geladen und stehen nicht im Bildnachweis. Seit Runde 5 liegen sie mit allen anderen
+    # ungeladenen Dateien in bilder-archiv/ (export-ignore, nicht ausgeliefert; zeuge_seiten B4).
+    # Einsatzgebiet, Abschnitt Hebebühne: leer, 16:9.
+    "hebebuehne": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": "", "ki": False},
+    # Wer zahlt?: Kopf ohne Bild seit R1 schlank; r1-umschlag wird nicht mehr geladen.
 }
+# Satz vor den Nachweiszeilen im Impressum (Rechtsnachtrag 01:55; seit 24.11.2026 ohne Bezug auf ein Schild am Bild).
+NACHWEIS_SATZ = ("Die Bilder auf unfall-mg.de sind mit KI erzeugte Beispielbilder. "
+                 "Sie zeigen keine Fälle, Personen oder Räume des Büros.")
 # Ordner, in dem bilder/ liegt; der Zeuge setzt ihn auf einen eigenen Ordner.
 BILDWURZEL = HIER
 
 # Bewertung im Hero (Conversion-Prüfung 19.11.2026, O1; Wortlaut nach Wettbewerbsrecht vorab 20.11.2026, Nr. 1):
-# ein Kasten im Hero der Startseite. Im HTML steht er vor der Namenszeile zwischen h1 und Anrufknopf (Platzhalter
-# vertrauen), stil.css ordnet ihn per order hinter den Knopf. Die Sternchenerklärung, auf die sich die Vorgabe vom
+# ein Kasten in der Kontaktfläche der Startseite (.karte-person, Platzhalter vertrauen in inhalte/index.html), vor der
+# Namenszeile; seit R1 schlank (24.11.2026) nicht mehr im Hero. Die Sternchenerklärung, auf die sich die Vorgabe vom
 # 20.11.2026 bezog, gibt es seit dem 23.11.2026 nicht mehr: Lage vor dem Einschalten ansehen und neu abstimmen.
 # Die Zeile ist ganz ein Link aufs Google-Profil, der Hinweis nach § 5b Abs. 3 UWG steht direkt darunter, ohne Klick
 # und in 16 px. Keine Sternegrafik.
@@ -107,7 +131,7 @@ BELEGE = HIER / "belege"
 PNG_KOPF = b"\x89PNG\r\n\x1a\n"
 BEWERTUNG_PROFIL_FORM = r"https://(?:g\.page/|maps\.app\.goo\.gl/|www\.google\.com/maps/place/)[^\s\"'<>]+"
 
-# Name im Hero, eigener Schalter, an derselben Stelle, außerhalb des Bewertungskastens. Vorgabe AN seit 20.11.2026:
+# Name in der Kontaktfläche der Startseite (.karte-person), eigener Schalter, an derselben Stelle wie der Bewertungskasten. Vorgabe AN seit 20.11.2026:
 # „Ihr Sachverständiger: Cihan Es“ ist ohne Bestätigung zulässig (Wettbewerbsrecht vorab Nr. 2), die Marketingrolle
 # verlangt den Namen im ersten Bildschirm. „Sie sprechen direkt mit Cihan Es“ erst nach Bestätigung des Kunden.
 NAME_ZEIGEN = True
@@ -124,8 +148,33 @@ def whatsapp_nummer():
 # Anrufzeile im Kopf der Unterseiten: Nummer als Text und als Link, steht nur hier. Auf der Startseite trägt der
 # Knopf im Hero die Nummer. Große Anrufknöpfe am Ende der Abschnitte gibt es seit dem Umbau vom 23.11.2026 nicht mehr:
 # Anrufstellen sind Kopf, ein Knopf oder diese Zeile oben, die Anrufleiste am Handy und der Kontaktabschnitt.
-RUF_ZEILE = ('<p class="ruf"><a href="tel:+4921616888691" data-messung="phone_click"><svg><use href="#i-tel"/></svg>'
-             '02161 688 86 91</a><span>Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr</span></p>')
+TELEFON_ANZEIGE = "02161 688 86 91"
+TELEFON_LINK = "tel:+4921616888691"
+# Telefonzeiten: stehen nur hier (Runde 6, Punkt 12; vorher an fünf Stellen getrennt gepflegt). In inhalte/ und in
+# der Schale stehen {{telefonzeiten}}, {{zeiten_ab}}, {{zeiten_zeilen}} und im JSON-LD der Startseite
+# {{oeffnungszeiten_ld}} (Runde 7, Punkt 4); der Zeuge E3 verlangt den Wortlaut, E8 verbietet das Literal
+# („8 Uhr“ wie „08:00“) in den Quellen.
+# Je Tag (Anzeige, ab, bis); daraus alle drei Schreibweisen der Seite.
+ZEITEN = (("Mo bis Fr", 8, 18), ("Sa", 9, 14))
+TELEFONZEITEN = ", ".join(f"{tage} {ab} bis {bis} Uhr" for tage, ab, bis in ZEITEN)
+# Rückruf und WhatsApp-Antwort: „Mo bis Fr ab 8 Uhr, Sa ab 9 Uhr“, mit festem Leerzeichen vor „Uhr“.
+ZEITEN_AB = ", ".join(f"{tage} ab {ab}&nbsp;Uhr" for tage, ab, _ in ZEITEN)
+# Fuß: je Tag eine Zeile.
+# JSON-LD (openingHoursSpecification): Wochentage je Anzeige, Zeiten als hh:00.
+SCHEMA_TAGE = {"Mo bis Fr": '["Monday","Tuesday","Wednesday","Thursday","Friday"]', "Sa": '"Saturday"'}
+OEFFNUNGSZEITEN_LD = ",\n    ".join(
+    f'{{ "@type": "OpeningHoursSpecification", "dayOfWeek": {SCHEMA_TAGE[tage]}, '
+    f'"opens": "{ab:02d}:00", "closes": "{bis:02d}:00" }}' for tage, ab, bis in ZEITEN)
+ZEITEN_ZEILEN = "\n      ".join(f"{tage} {ab} bis {bis} Uhr<br>" for tage, ab, bis in ZEITEN)
+# Kostensatz der Startseite, wortgleich unter der Überschrift von umland.html (Runde 6, Punkt 15, Vorschlag der
+# Rechtsrolle zu den Anzeigentexten v10); Zeuge E7.
+KOSTEN_SATZ = ("Der andere war schuld? Dann zahlt das Gutachten in der Regel seine Versicherung. Bei kleinen Schäden "
+               "oft nicht: Das klären wir vorab am Telefon.")
+RUF_ZEILE = (f'<p class="ruf"><a href="{TELEFON_LINK}" data-messung="phone_click"><svg><use href="#i-tel"/></svg>'
+             f'{TELEFON_ANZEIGE}</a><span>{TELEFONZEITEN}</span></p>')
+# Ohne JavaScript bleibt der Absendeknopf gesperrt (Runde 6, A2); dieser Satz steht dann unter dem Formular.
+OHNE_SKRIPT = (f'<p class="status fehler" data-ohne-skript>Bitte rufen Sie an: <a class="ziel" href="{TELEFON_LINK}">'
+               f'{TELEFON_ANZEIGE}</a></p>')
 
 # Menü: eine Liste für die Kopfzeile (ab 1024 px) und das Handy-Menü (details, ohne JavaScript). Die Punkte führen
 # auf Seiten, nicht auf Sprungmarken der Startseite. Die Adresse umland.html bleibt, weil Anzeigen darauf zeigen;
@@ -152,6 +201,12 @@ GLOBAL = {
     "wa_anzeige": WHATSAPP_ANZEIGE,
     "rueckruf_werktags": RUECKRUF_WERKTAGS,
     "rueckruf_sonst": RUECKRUF_SONST,
+    "telefonzeiten": TELEFONZEITEN,
+    "zeiten_ab": ZEITEN_AB,
+    "zeiten_zeilen": ZEITEN_ZEILEN,
+    "oeffnungszeiten_ld": OEFFNUNGSZEITEN_LD,
+    "kosten_satz": KOSTEN_SATZ,
+    "ohne_skript": OHNE_SKRIPT,
 }
 
 
@@ -161,6 +216,10 @@ def konfig_fehler(konfig):
     werte = re.findall(r'^\s*(?:googleTag|phone_click|whatsapp_click|form_submit):\s*"([^"]*)"', konfig, re.M)
     if len(werte) != 4 or any(not w or re.search(r"AW-X|X{4,}", w) for w in werte):
         return "NOINDEX ist aus, aber konfig.js trägt noch Platzhalter (AW-X…). Erst Messung eintragen, dann bauen."
+    # Runde 6, 4a: googleTag in der Form AW- plus Ziffern, nicht nur „nicht leer“ (Codex: "falsch" ging durch).
+    tag = re.findall(r'^\s*googleTag:\s*"([^"]*)"', konfig, re.M)
+    if len(tag) != 1 or not re.fullmatch(r"AW-\d{6,15}", tag[0]):
+        return "NOINDEX ist aus, aber googleTag in konfig.js hat nicht die Form AW- plus Ziffern."
     # website_call: leer ist erlaubt und heißt „kein Nummerntausch“. Gesetzt muss es ein echtes Label sein, sonst
     # schaltete ein stehengebliebener Platzhalter oder Tippfehler die Anrufmessung stumm ab (Programmierer r1, Fund 7).
     anruf = re.findall(r'^\s*website_call:\s*"([^"]*)"', konfig, re.M)
@@ -183,6 +242,23 @@ def noindex_fehler(konfig):
         return ("NOINDEX ist aus und BEWERTUNG_ZEIGEN an, aber BEWERTUNG_LINK ist noch die Kartensuche. "
                 "Echte Profiladresse eintragen oder BEWERTUNG_ZEIGEN = False.")
     return None
+
+
+def modus_fehler(konfig):
+    """Runde 6, 4a: einwilligungsModus muss genau "einfach" sein, in jedem Betriebszustand (auch mit Platzhaltern).
+    Mit "erweitert" lädt einwilligung.js das Google-Skript vor der Wahl des Besuchers, die Datenschutzseite sagt das
+    Gegenteil. Gibt die Meldung zurück oder None. Zeuge: pruefen/zeuge_bauen.py, W1 bis W4."""
+    modus = re.findall(r'^\s*einwilligungsModus:\s*"([^"]*)"', konfig, re.M)
+    if modus != ["einfach"]:
+        return (f"konfig.js: einwilligungsModus ist {modus!r}, zulässig ist genau einmal \"einfach\" "
+                "(Datenschutzseite: vor dem Erlauben lädt nichts von Google).")
+    return None
+
+
+def sperre_modus():
+    fehler = modus_fehler((HIER / "konfig.js").read_text(encoding="utf-8"))
+    if fehler:
+        sys.exit(fehler)
 
 
 def sperre_noindex():
@@ -256,7 +332,7 @@ def bewertung_zeile():
 
 
 def vertrauen():
-    """O1: Bewertungskasten und Namenszeile im Hero der Startseite (zwischen h1 und Knopf), je mit eigenem Schalter. Leer, wenn beide
+    """O1: Bewertungskasten und Namenszeile in der Kontaktfläche der Startseite (.karte-person), je mit eigenem Schalter. Leer, wenn beide
     aus sind; bauen() nimmt dann die ganze Zeile mit dem Platzhalter heraus."""
     e = html.escape
     teile = []
@@ -276,6 +352,8 @@ def bild_fehler(platz):
     """Prüft einen Bildplatz aus BILDER; gibt die Fehlermeldung zurück oder None. Ein leerer Platz (keine Datei
     eingetragen) ist kein Fehler, er erscheint einfach nicht. Zeuge: pruefen/zeuge_bauen.py, G1 bis G6."""
     b = BILDER[platz]
+    if not isinstance(b.get("ki"), bool):
+        return f"Bildplatz {platz}: Feld ki fehlt oder ist nicht True oder False"
     datei = b["datei"]
     if not datei:
         return None
@@ -287,7 +365,30 @@ def bild_fehler(platz):
         return f"Bildplatz {platz}: Bildnachweis fehlt"
     if not (BILDWURZEL / datei).is_file():
         return f"Bildplatz {platz}: Datei {datei} fehlt"
+    for weitere in varianten(b):
+        if not (BILDWURZEL / weitere).is_file():
+            return f"Bildplatz {platz}: Datei {weitere} fehlt"
+    if b.get("ki") and KI_KENNWORT not in b["nachweis"]:
+        return f"Bildplatz {platz}: KI-Bild, der Nachweis nennt „{KI_KENNWORT}“ nicht"
     return None
+
+
+def stufen(datei, breiten):
+    """Die Dateien eines Bildes je Breite: aus bilder/x-1536.webp und [768, 1536] wird [(bilder/x-768.webp, 768), …].
+    Ohne Breitenangabe im Namen bleibt die Datei allein."""
+    m = re.match(r"^(.*)-\d+(\.\w+)$", datei)
+    if not m:
+        return [(datei, 0)]
+    return [(f"{m.group(1)}-{w}{m.group(2)}", w) for w in breiten]
+
+
+def varianten(b):
+    """Alle Dateien eines Platzes außer datei selbst (Breitenstufen und schmaler Anschnitt)."""
+    dateien = [d for d, _ in stufen(b["datei"], b.get("breiten") or [])]
+    s = b.get("schmal")
+    if s:
+        dateien += [s["datei"]] + [d for d, _ in stufen(s["datei"], s.get("breiten") or [])]
+    return [d for d in dict.fromkeys(dateien) if d != b["datei"]]
 
 
 def bild_html(platz):
@@ -298,8 +399,19 @@ def bild_html(platz):
     e = html.escape
     laden = 'fetchpriority="high"' if b.get("vorrang") else 'loading="lazy"'
     unter = f'<figcaption>{e(b["unterschrift"])}</figcaption>' if b["unterschrift"] else ""
-    return (f'<figure class="bild"><img src="{e(b["datei"])}" alt="{e(b["alt"])}" width="{b["breite"]}" '
-            f'height="{b["hoehe"]}" {laden}>{unter}</figure>')
+    klasse = f'bild {e(b["klasse"])}' if b.get("klasse") else "bild"
+    satz = ""
+    if b.get("breiten"):
+        satz = (f' srcset="{e(", ".join(f"{d} {w}w" for d, w in stufen(b["datei"], b["breiten"])))}"'
+                f' sizes="{e(b.get("sizes", "100vw"))}"')
+    bild = (f'<img src="{e(b["datei"])}" alt="{e(b["alt"])}" width="{b["breite"]}" '
+            f'height="{b["hoehe"]}"{satz} {laden}>')
+    s = b.get("schmal")
+    if s:
+        quellen = ", ".join(f"{d} {w}w" for d, w in stufen(s["datei"], s.get("breiten") or [s["breite"]]))
+        bild = (f'<picture><source media="{e(s["medien"])}" srcset="{e(quellen)}" sizes="100vw" '
+                f'width="{s["breite"]}" height="{s["hoehe"]}">{bild}</picture>')
+    return f'<figure class="{klasse}">{bild}{unter}</figure>'
 
 
 def sperre_bilder():
@@ -313,13 +425,166 @@ def sperre_bilder():
             sys.exit(meldung)
 
 
+def impressum_fehler(seiten):
+    """Jedes gezeigte KI-Bild hat seine Nachweiszeile in der gebauten impressum.html; gibt die Meldung zurück oder
+    None. Runde 5 (Programmierer M2 und S5, Codex 4): vorher prüfte die Sperre nur das Feld, nicht das Ergebnis, und
+    ein Impressum ohne {{bildnachweise}} baute mit Exit 0. Zeuge: pruefen/zeuge_bauen.py, G15 bis G17."""
+    impressum = seiten.get("impressum.html", "")
+    for platz, b in BILDER.items():
+        if b.get("ki") and bild_html(platz) and html.escape(b["nachweis"].strip()) not in impressum:
+            return f"Bildplatz {platz}: KI-Bild ohne Nachweiszeile in der gebauten impressum.html"
+    return None
+
+
+def impressum_sperre(seiten):
+    """Bricht ab, wenn impressum_fehler etwas meldet. Steht in main zwischen Bauen und Schreiben, damit keine Seite
+    geschrieben ist, wenn der Nachweis fehlt."""
+    if not FOTOS_ZEIGEN:
+        return
+    meldung = impressum_fehler(seiten) or nachweis_sichtbar_fehler(seiten.get("impressum.html", ""), stile())
+    if meldung:
+        sys.exit(meldung)
+
+
+def stile():
+    """Text aller ausgelieferten Stildateien (*.css der Wurzel), Name zu Text."""
+    return {d.name: d.read_text(encoding="utf-8") for d in sorted(HIER.glob("*.css"))}
+
+
+def verbergende_klassen(css_texte):
+    """Klassen, die eine Regel mit display:none, visibility:hidden oder opacity:0 selbst trifft (letzter Teil des
+    Wählers), auch in Media Queries. In die sichere Richtung nur für Klassen: Ein Klassenwähler mit verbergender
+    Regel im letzten Teil gilt als verborgen, auch wenn er nicht trifft. Verbergen über ID- oder Elementwähler im
+    letzten Teil (#bn, .huelle div) sieht diese Prüfung nicht (Grenze in DEPLOY.md)."""
+    klassen = set()
+    for text in css_texte.values():
+        text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
+        for waehler, rumpf in re.findall(r"([^{}]+)\{([^{}]*)\}", text):
+            if re.search(r"display\s*:\s*none|visibility\s*:\s*hidden|opacity\s*:\s*0(?![.\d])", rumpf):
+                for teil in waehler.split(","):
+                    letzter = re.split(r"[\s>+~]+", teil.strip())[-1]
+                    klassen |= set(re.findall(r"\.([A-Za-z0-9_-]+)", letzter))
+    return klassen
+
+
+VERBORGENE_TAGS = {"template", "noscript", "script", "style", "textarea", "title", "head"}
+LEERE_TAGS = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
+
+
+class _Sichtbar(HTMLParser):
+    """Trennt den Text einer Seite in sichtbar und verborgen (Vorfahre mit hidden, aria-hidden, inert, verbergendem
+    style oder verbergender Klasse, template, noscript, geschlossenes details außer summary)."""
+
+    def __init__(self, klassen):
+        super().__init__(convert_charrefs=True)
+        self.klassen, self.stapel, self.sichtbar = klassen, [], []
+
+    def handle_starttag(self, tag, attrs):
+        a = {k: (v or "") for k, v in attrs}
+        oben = self.stapel[-1] if self.stapel else (tag, False, False)
+        verborgen = oben[1]
+        if tag == "summary" and oben[2]:  # summary eines geschlossenen details bleibt sichtbar
+            verborgen = self.stapel[-2][1] if len(self.stapel) > 1 else False
+        elif oben[2]:
+            verborgen = True
+        stil = a.get("style", "")
+        verborgen = verborgen or tag in VERBORGENE_TAGS or "hidden" in a or "inert" in a \
+            or a.get("aria-hidden", "").strip().lower() == "true" \
+            or bool(re.search(r"display\s*:\s*none|visibility\s*:\s*hidden|opacity\s*:\s*0(?![.\d])", stil)) \
+            or bool(set(a.get("class", "").split()) & self.klassen)
+        if tag in LEERE_TAGS:
+            return
+        self.stapel.append((tag, verborgen, tag == "details" and "open" not in a))
+
+    def handle_endtag(self, tag):
+        for i in range(len(self.stapel) - 1, -1, -1):
+            if self.stapel[i][0] == tag:
+                del self.stapel[i:]
+                return
+
+    def handle_data(self, data):
+        if not (self.stapel and self.stapel[-1][1]):
+            self.sichtbar.append(data)
+
+
+def sichtbarer_text(seite, css_texte):
+    leser = _Sichtbar(verbergende_klassen(css_texte))
+    leser.feed(seite)
+    leser.close()
+    return " ".join(" ".join(leser.sichtbar).split())
+
+
+def nachweis_sichtbar_fehler(impressum, css_texte):
+    """Runde 6, A1b: Überschrift, Sammelsatz und jede Zeile des Bildnachweises stehen im sichtbaren Text der gebauten
+    impressum.html, nicht unter einem verborgenen Vorfahren (Codex: <div hidden> um {{bildnachweise}}). Ein
+    HTML-Kommentar um den Platzhalter fällt schon in ohne_kommentare weg und fängt impressum_fehler."""
+    if not FOTOS_ZEIGEN:
+        return None
+    soll = [BILDER[p]["nachweis"].strip() for p in BILDER if bild_html(p)]
+    if not soll:
+        return None
+    if any(BILDER[p].get("ki") for p in BILDER if bild_html(p)):
+        soll = [NACHWEIS_SATZ] + soll
+    sichtbar = sichtbarer_text(impressum, css_texte)
+    for teil in ["Bildnachweise"] + soll:
+        if " ".join(teil.split()) not in sichtbar:
+            return f"impressum.html: Bildnachweis nicht sichtbar (verborgener Vorfahre oder fehlt): {teil[:60]}"
+    return None
+
+
+def url_fehler(seiten, css_texte):
+    """Runde 6, A1a: url() lädt nur Schriften. Ein Bild als background-image in stil.css oder in einem style-Attribut
+    ginge an Bildplätzen und Nachweis vorbei (Codex: bilder/detail.webp an .kosten-kopf). @import und image-set sind
+    ebenso gesperrt. Gibt die Meldung zurück oder None."""
+    quellen = dict(css_texte)
+    quellen.update(seiten)
+    for name, text in quellen.items():
+        text = re.sub(r"/\*.*?\*/", "", text, flags=re.S) if name.endswith(".css") else text
+        if re.search(r"@import|image-set\s*\(", text, flags=re.I):
+            return f"{name}: @import oder image-set, nur url() auf schriften/ ist erlaubt"
+        for ziel in re.findall(r"url\(\s*(?:\"([^\"]*)\"|'([^']*)'|([^)\s]*))\s*\)", text, flags=re.I):
+            pfad = next(z for z in ziel if z) if any(ziel) else ""
+            if not pfad.startswith("schriften/"):
+                return f"{name}: url({pfad}) lädt etwas außerhalb von schriften/"
+    return None
+
+
+BILD_MARKUP = re.compile(r"<(?:img|picture|source|image|video|object|embed|iframe)\b|\b(?:srcset|poster)\s*=|"
+                         r"<input\b[^>]*\btype\s*=\s*[\"']?image[\"'\s/>]", re.I)
+
+
+def bild_fehler_seiten(seiten):
+    """Runde 6, Punkt 10 (Programmierer S4): Bilder nur aus Bildplätzen. Ohne das Markup der gezeigten Plätze darf
+    keine gebaute Seite mehr ein Bildelement tragen (img, picture, source, srcset, video, …); vorher fing ein direktes
+    <img> in inhalte/ nur der Zeuge B1/B2. Gibt die Meldung zurück oder None."""
+    plaetze = [bild_html(p) for p in BILDER]
+    for name, seite in seiten.items():
+        rest = seite
+        for stueck in plaetze:
+            if stueck:
+                rest = rest.replace(stueck, "")
+        treffer = BILD_MARKUP.search(rest)
+        if treffer:
+            return f"{name}: Bild außerhalb der Bildplätze: {rest[treffer.start():treffer.start() + 60]}"
+    return None
+
+
+def ausgabe_sperre(seiten):
+    """Steht in main zwischen Bauen und Schreiben, wie impressum_sperre; gilt auch bei FOTOS_ZEIGEN = False."""
+    meldung = bild_fehler_seiten(seiten) or url_fehler(seiten, stile())
+    if meldung:
+        sys.exit(meldung)
+
+
 def bildnachweise():
     """Abschnitt fürs Impressum: je gezeigtem Bild eine Zeile. Leer, wenn kein Bild gezeigt wird; bauen() nimmt dann
     die Zeile mit dem Platzhalter heraus."""
     zeilen = [html.escape(BILDER[platz]["nachweis"].strip()) for platz in BILDER if bild_html(platz)]
     if not zeilen:
         return ""
-    return "<h2>Bildnachweise</h2>\n    <p>" + "<br>".join(zeilen) + "</p>"
+    ki = any(BILDER[p].get("ki") for p in BILDER if bild_html(p))
+    satz = f"\n    <p>{html.escape(NACHWEIS_SATZ)}</p>" if ki else ""
+    return "<h2>Bildnachweise</h2>" + satz + "\n    <p>" + "<br>".join(zeilen) + "</p>"
 
 
 def ohne_kommentare(text):
@@ -331,23 +596,6 @@ def ohne_kommentare(text):
     text = re.sub(r"^[ \t]*<!--(?:(?!-->).)*-->[ \t]*\n", "", text, flags=re.S | re.M)
     return re.sub(r"[ \t]*<!--(?:(?!-->).)*-->", "", text, flags=re.S)
 
-
-def nur_text(roh):
-    return " ".join(html.unescape(re.sub(r"<[^>]+>", "", roh)).split())
-
-
-def faq_jsonld(seite):
-    """P3: FAQPage aus den sichtbaren Fragen, Antworttext wortgleich mit der Anzeige."""
-    paare = re.findall(r'<details>\s*<summary>(.*?)</summary>\s*<div class="antwort">(.*?)</div>\s*</details>', seite, re.S)
-    if not paare:
-        sys.exit("{{faq_jsonld}} ohne <details>-Fragen")
-    zeilen = []
-    for frage, antwort in paare:
-        eintrag = {"@type": "Question", "name": nur_text(frage),
-                   "acceptedAnswer": {"@type": "Answer", "text": nur_text(antwort)}}
-        zeilen.append("    " + json.dumps(eintrag, ensure_ascii=False))
-    kopf = '<script type="application/ld+json">\n{\n  "@context": "https://schema.org",\n  "@type": "FAQPage",\n  "mainEntity": [\n'
-    return kopf + ",\n".join(zeilen) + "\n  ]\n}\n</script>"
 
 SEITEN = {
     "index.html": {
@@ -376,7 +624,7 @@ SEITEN = {
     },
     "kontakt.html": {
         "titel": "Kontakt und Anfahrt | Kfz Gutachter Es, Mönchengladbach",
-        "beschreibung": "Telefon 02161 688 86 91, WhatsApp und Rückruf. Besichtigung mit Hebebühne an der Karstraße 25 in Mönchengladbach, Büro an der Dahlener Straße 286 in Rheydt. Telefonzeiten Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr.",
+        "beschreibung": "Telefon 02161 688 86 91, WhatsApp und Rückruf. Besichtigung mit Hebebühne an der Karstraße 25 in Mönchengladbach, Büro an der Dahlener Straße 286 in Rheydt. Telefonzeiten " + TELEFONZEITEN + ".",
         "kanonisch": "kontakt.html",
         "skripte": '<script src="formular.js" defer></script>',
     },
@@ -428,8 +676,6 @@ def bauen(name, meta):
     seite = schale
     for schluessel, wert in werte.items():
         seite = seite.replace("{{" + schluessel + "}}", wert)
-    if "{{faq_jsonld}}" in seite:
-        seite = seite.replace("{{faq_jsonld}}", faq_jsonld(seite))
     if "{{" in seite:
         sys.exit(f"{name}: Platzhalter offen: {seite[seite.index('{{'):seite.index('{{') + 30]}")
     if "<!--" in seite:
@@ -441,15 +687,19 @@ def main():
     if "--bewertungszeile" in sys.argv:
         print(bewertung_zeile())
         return
+    sperre_modus()
     sperre_noindex()
     sperre_bilder()
     pruefen = "--pruefen" in sys.argv
     meldung = bewertung_meldung()
     if meldung:  # laut, in Bau und Prüfung; der Exit bleibt davon unberührt
         print(meldung)
+    gebaut = {name: bauen(name, meta) for name, meta in SEITEN.items()}
+    impressum_sperre(gebaut)
+    ausgabe_sperre(gebaut)
     abweichungen = 0
-    for name, meta in SEITEN.items():
-        neu = bauen(name, meta)
+    for name in SEITEN:
+        neu = gebaut[name]
         ziel = HIER / name
         if pruefen:
             alt = ziel.read_text(encoding="utf-8") if ziel.exists() else ""

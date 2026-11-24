@@ -34,6 +34,24 @@ def m(name, fall, art, datei, alt="", neu="", regex=False, alle=False):
             "alle": alle}
 
 
+# Betriebsart aus bauen.py gelesen, nicht importiert (die Probe ändert bauen.py in ihren Kopien).
+_SCHALTER = re.findall(r"^NOINDEX = (True|False)$", (WURZEL / "bauen.py").read_text(encoding="utf-8"), re.M)
+if len(_SCHALTER) != 1:
+    sys.exit(f"ABBRUCH: NOINDEX steht {len(_SCHALTER)}-mal als Zeile in bauen.py")
+NOINDEX = _SCHALTER[0] == "True"
+P_NOINDEX = [
+    m("P-a noindex auf ablauf.html entfernt", "P1", "seite", "ablauf.html",
+      '<meta name="robots" content="noindex">\n', ""),
+    m("P-r robots „no index“ statt noindex (ablauf.html)", "P1", "seite", "ablauf.html",
+      '<meta name="robots" content="noindex">', '<meta name="robots" content="no index">'),
+]
+P_LIVE = [
+    m("P-a noindex auf ablauf.html eingefügt, obwohl NOINDEX = False", "P1", "seite", "ablauf.html",
+      '<meta charset="utf-8">\n', '<meta charset="utf-8">\n<meta name="robots" content="noindex">\n'),
+    m("P-r robots „nofollow, NOINDEX“ auf ablauf.html, obwohl NOINDEX = False", "P1", "seite", "ablauf.html",
+      '<meta charset="utf-8">\n', '<meta charset="utf-8">\n<meta name="robots" content="nofollow, NOINDEX">\n'),
+]
+
 MUTATIONEN = [
     # Regel 1, Menü
     m("M-a Handy-Menü auf ablauf.html entfernt", "M1", "seite", "ablauf.html",
@@ -52,12 +70,10 @@ MUTATIONEN = [
       "<title>Kfz-Gutachter für Viersen, Neuss und Kaarst |", "<title>Kfz-Gutachter für Viersen, Neuss, Kaarst und Umland |"),
     m("U-b meta description mit „Umland“ über SEITEN in bauen.py", "U1", "bau", "bauen.py",
       "Kaarst, ebenso in Willich", "Kaarst und im Umland, ebenso in Willich"),
-    m("U-c alt-Text mit „Umland“ (index.html)", "U1", "seite", "index.html",
-      'alt="Eingedrückte hintere Seitenwand mit gerissenem Lack"',
-      'alt="Eingedrückte hintere Seitenwand mit gerissenem Lack, Umland"'),
-    m("U-d Bildunterschrift mit „Umland“ (umland.html)", "U1", "seite", "umland.html",
-      "<figcaption>Mönchengladbach, Münster St. Vitus</figcaption>",
-      "<figcaption>Mönchengladbach und Umland, Münster St. Vitus</figcaption>"),
+    m("U-c alt-Text der Bühne mit „Umland“ (index.html)", "U1", "seite", "index.html",
+      'die Spiegelung knickt an der Delle ab"', 'die Spiegelung knickt an der Delle ab, Umland"'),
+    m("U-d Bildunterschrift mit „Umland“ (kosten.html, verdeckter Schaden; Münster-Foto entfällt seit R1 schlank)", "U1",
+      "seite", "kosten.html", "zerdrückter Pralldämpfer.</figcaption>", "zerdrückter Pralldämpfer, wie oft im Umland.</figcaption>"),
     m("U-e aria-label mit „Umland“ (kosten.html)", "U1", "seite", "kosten.html",
       'aria-label="Hauptmenü"', 'aria-label="Hauptmenü Umland"'),
     m("U-f JSON-LD mit „Umland“ (index.html)", "U1", "seite", "index.html",
@@ -90,31 +106,64 @@ MUTATIONEN = [
       'telefonAnzeige: "02161 688 86 91"', 'telefonAnzeige: "02161 688 86 92"'),
     # Regel 4, Bilder und Nachweise (die zwei unbemerkten Fälle aus dem Codex-Gegenlauf, Abschnitt 6)
     m("B-a Platzhalter {{bild_streifschaden}} aus inhalte/kosten.html entfernt, nicht neu gebaut", "B3", "quelle",
-      "inhalte/kosten.html", "        {{bild_streifschaden}}\n", ""),
+      "inhalte/kosten.html", "    {{bild_streifschaden}}\n", ""),
     m("B-b Platzhalter {{bild_streifschaden}} entfernt und neu gebaut: Bild weg, Nachweis bleibt", "B1", "bau",
-      "inhalte/kosten.html", "        {{bild_streifschaden}}\n", ""),
+      "inhalte/kosten.html", "    {{bild_streifschaden}}\n", ""),
     m("B-c {{bildnachweise}} aus inhalte/impressum.html entfernt, nicht neu gebaut", "B3", "quelle",
       "inhalte/impressum.html", "    {{bildnachweise}}\n", ""),
-    m("B-d {{bildnachweise}} entfernt und neu gebaut: Bilder ohne veröffentlichten Nachweis", "B1", "bau",
-      "inhalte/impressum.html", "    {{bildnachweise}}\n", ""),
+    # Seit Runde 5 bricht der Neubau ohne {{bildnachweise}} selbst ab (bauen.py impressum_sperre, zeuge_bauen G17,
+    # Rotprobe R37); B-d nimmt deshalb den ganzen Block aus der gebauten Seite.
+    m("B-d ganzer Nachweisblock im gebauten Impressum entfernt: Bilder ohne veröffentlichten Nachweis", "B1", "seite",
+      "impressum.html", r"<h2>Bildnachweise</h2>\s*<p>[^<]*</p>\s*<p>.*?</p>", "", regex=True),
     m("B-e Nachweiszeile des Streifschadens im gebauten Impressum entfernt", "B2", "seite", "impressum.html",
-      r"Seite „Wer zahlt\?“, Auto mit Streifschaden:[^<]*<br>", "", regex=True),
+      r"<br>Seite „Wer zahlt\?“, verdeckter Schaden hinter der Stoßstange:[^<]*", "", regex=True),
     m("B-f Bild ohne Platz und ohne Nachweis auf ablauf.html eingefügt", "B2", "seite", "ablauf.html",
       "<h1>Nach dem Unfall: was Sie jetzt tun sollten</h1>",
       '<h1>Nach dem Unfall: was Sie jetzt tun sollten</h1><figure class="bild"><img src="bilder/favicon.svg" '
       'alt="Zeichen" width="10" height="10" loading="lazy"><figcaption>Symbolbild: Zeichen</figcaption></figure>'),
-    # Regel 5, Symbolbild
-    m("S-a Unterschrift ohne „Symbolbild“ (kosten.html)", "S1", "seite", "kosten.html",
-      "<figcaption>Symbolbild: Streifschaden an Kotflügel und Stoßfänger</figcaption>",
-      "<figcaption>Streifschaden an Kotflügel und Stoßfänger</figcaption>"),
-    m("S-b Unterschrift ohne „Symbolbild“ über BILDER in bauen.py, neu gebaut", "S1", "bau", "bauen.py",
-      '"unterschrift": "Symbolbild: eingedrückte Seitenwand mit gerissenem Lack"',
-      '"unterschrift": "Eingedrückte Seitenwand mit gerissenem Lack"'),
-    m("S-c Unterschrift ganz entfernt (index.html)", "S1", "seite", "index.html",
-      "<figcaption>Symbolbild: eingedrückte Seitenwand mit gerissenem Lack</figcaption>", ""),
+    # Kein Schild am Bild (Fabrice 24.11.2026), Nachweis im Impressum, kein Symbolbild-Etikett, Namenskarte nicht am
+    # Schadenfoto. S-a, S-b und S-e seit Runde 4 auf den neuen Gegenstand gestellt.
+    m("S-a Schild „KI-erzeugtes Bild“ am verdeckten Schaden wieder eingesetzt (kosten.html)", "S1", "seite", "kosten.html",
+      '<figcaption>Von außen', '<span class="bild-marke">KI-erzeugtes Bild</span><figcaption>Von außen'),
+    # S-b, S-c, S-d seit R1 schlank (24.11.2026) auf Bühne und verdeckten Schaden gestellt, weil der Lackriss entfällt.
+    m("S-b Nachweiszeile der Bühne im Impressum ohne „mit KI erzeugt“ (impressum.html)", "S1", "seite", "impressum.html",
+      "Startseite, Messung an einer Delle: mit KI erzeugt", "Startseite, Messung an einer Delle: erzeugt"),
+    m("S-c Unterschrift mit „Symbolbild“ vorn (kosten.html, verdeckter Schaden)", "S1", "seite", "kosten.html",
+      "<figcaption>Von außen", "<figcaption>Symbolbild: Von außen"),
+    m("S-d Namenskarte in den Bildblock der Bühne gesetzt (index.html)", "S2", "seite", "index.html",
+      '<figure class="bild buehne-bild">', '<p class="name-zeile">Ihr Sachverständiger: Cihan Es</p><figure class="bild buehne-bild">'),
+    m("S-e Wort „KI“ im alt-Text der Bühne (index.html)", "S1", "seite", "index.html",
+      'alt="Eine Hand setzt', 'alt="KI-Bild: Eine Hand setzt'),
+    m("S-f „ki-erzeugt“ klein geschrieben in der Unterschrift (kosten.html)", "S1", "seite", "kosten.html",
+      "<figcaption>Von außen", "<figcaption>ki-erzeugt. Von außen"),
+    m("S-g „künstlicher Intelligenz“ im alt-Text (kosten.html)", "S1", "seite", "kosten.html",
+      'alt="Abgenommene Stoßstange', 'alt="Mit künstlicher Intelligenz erzeugt: Abgenommene Stoßstange'),
+    # Runde 5: Aussagen der Änderung (Programmierer S3, Codex 5)
+    m("E-a „750 Euro“ im Vorspann der Startseite", "E1", "seite", "index.html",
+      '<p class="unterzeile">Der andere', '<p class="unterzeile">Gutachten ab 750 Euro. Der andere'),
+    m("E-b Betrag mit „€“ im Vorspann der Startseite", "E1", "seite", "index.html",
+      '<p class="unterzeile">Der andere', '<p class="unterzeile">Ab 99 €. Der andere'),
+    m("E-c „225/13“ auf nachts-wochenende.html", "E2", "seite", "nachts-wochenende.html",
+      r"(<h1>)", r"\1Az. 225/13 ", regex=True),
+    m("E-d Telefonzeiten aus der Bühne entfernt", "E3", "seite", "index.html",
+      "<b>Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr.</b>", ""),
+    m("E-e leeres span.bild-marke am verdeckten Schaden", "E4", "seite", "kosten.html",
+      "<figcaption>Von außen", '<span class="bild-marke"></span><figcaption>Von außen'),
+    m("E-f anderes Element mit anderer Aufschrift an der Stelle des Schilds", "E4", "seite", "kosten.html",
+      "<figcaption>Von außen", '<span class="hinweis">Beispiel</span><figcaption>Von außen'),
+    m("E-g Worum-Zeile in der Kontaktfläche geändert", "E5", "seite", "index.html",
+      '<p class="worum-karte nur-klein">Termin am Telefon', '<p class="worum-karte nur-klein">Termin per Telefon'),
+    m("E-h Ausweichzeile in der Kontaktfläche geändert", "E5", "seite", "index.html",
+      '<p class="ausweich nur-klein">Sonst per', '<p class="ausweich nur-klein">Oder per'),
+    m("E-i dritte Frage auf der Startseite", "E6", "seite", "index.html",
+      r'(<section class="abschnitt fragen" id="fragen">)',
+      r'\1<details><summary>Dritte Frage</summary><div class="antwort">Antwort</div></details>', regex=True),
+    m("E-j FAQPage auf kosten.html", "E6", "seite", "kosten.html",
+      "</main>", '<script type="application/ld+json">{"@type": "FAQPage"}</script></main>'),
     # Regel 6, Seitenregeln
-    m("P-a noindex auf ablauf.html entfernt", "P1", "seite", "ablauf.html",
-      '<meta name="robots" content="noindex">\n', ""),
+    # Runde 6, A3: P-a und P-r laufen in beiden Betriebsarten. Mit NOINDEX = True fehlt das Tag oder ist verschrieben,
+    # am Live-Stand (NOINDEX = False) wird ein noindex eingefügt, das P1 dann melden muss.
+    *(P_NOINDEX if NOINDEX else P_LIVE),
     m("P-b keine h1 auf kontakt.html", "P2", "seite", "kontakt.html",
       "<h1>Kontakt und Anfahrt</h1>", "<h2>Kontakt und Anfahrt</h2>"),
     m("P-c zweite h1 auf ablauf.html", "P2", "seite", "ablauf.html",
@@ -159,20 +208,86 @@ MUTATIONEN = [
       "stil.css", r"\A", "/* 02161 622 57 68 */\n", regex=True),
     m("B-g Platzhalter des leeren Platzes {{bild_unfall}} aus inhalte/ablauf.html entfernt", "B3", "quelle",
       "inhalte/ablauf.html", "    {{bild_unfall}}\n", ""),
-    m("B-h Nachweisblock im gebauten Impressum auskommentiert", "B1", "seite", "impressum.html",
-      r"(<h2>Bildnachweise</h2>\s*<p>.*?</p>)", r"<!--\1-->", regex=True),
+    # Runde 5 (Codex 5): vorher erfasste der Ausdruck nur Überschrift und Sammelsatz; jetzt genau die Nachweiszeilen.
+    m("B-h Nachweiszeilen im gebauten Impressum entfernt, Überschrift und Sammelsatz bleiben", "B1", "seite",
+      "impressum.html", r"(<h2>Bildnachweise</h2>\s*<p>[^<]*</p>\s*)<p>.*?</p>", r"\1", regex=True),
+    m("B-i <img> direkt in ablauf.html (der Bau bricht davor ab, Zeuge I4 in zeuge_bauen.py)", "B1", "seite",
+      "ablauf.html",
+      "<h1>Nach dem Unfall: was Sie jetzt tun sollten</h1>",
+      '<h1>Nach dem Unfall: was Sie jetzt tun sollten</h1><img src="bilder/favicon.svg" alt="Zeichen" width="10" height="10">'),
+    m("B-j Datei in bilder/, die keine Seite lädt", "B4", "neu", "bilder/unbenutzt-768.webp", neu="x"),
     m("P-p Link mit falscher Groß-/Kleinschreibung (umland.html → KOSTEN.html#honorar)", "P4", "seite",
       "umland.html", 'href="kosten.html#honorar"', 'href="KOSTEN.html#honorar"'),
     m("P-q Link auf eine Bauquelle, die nicht ausgeliefert wird (impressum.html → inhalte/datenschutz.html)", "P4",
       "seite", "impressum.html", 'href="datenschutz.html"', 'href="inhalte/datenschutz.html"'),
-    m("P-r robots „no index“ statt noindex (ablauf.html)", "P1", "seite", "ablauf.html",
-      '<meta name="robots" content="noindex">', '<meta name="robots" content="no index">'),
     m("P-s formular.js auf kontakt.html als type=text/plain (lädt nicht)", "P6", "seite", "kontakt.html",
       '<script src="formular.js" defer></script>', '<script type="text/plain" src="formular.js" defer></script>'),
     m("P-t neunte HTML-Seite im Repo, nicht in SEITEN", "P0", "neu", "alt-startseite.html",
       neu="<!DOCTYPE html><title>alt</title><h1>alt</h1>\n"),
     m("P-u Canonical der Startseite ../ in SEITEN, neu gebaut", "P3", "bau", "bauen.py",
       '"kanonisch": "./"', '"kanonisch": "../"'),
+    # Runde 6, A1a: url() nur auf schriften/.
+    m("Q-a Bild als background-image in stil.css", "Q1", "seite", "stil.css", ".seitenkopf .kostensatz {",
+      '.kosten-kopf { background-image: url("bilder/r2-messung-768.webp"); }\n.seitenkopf .kostensatz {'),
+    m("Q-b Bild im style-Attribut auf kosten.html", "Q1", "seite", "kosten.html",
+      '<section class="seitenkopf dunkel kosten-kopf">',
+      "<section class=\"seitenkopf dunkel kosten-kopf\" style=\"background-image:url('bilder/r2-messung-768.webp')\">"),
+    # Runde 6, A1b: Nachweis sichtbar.
+    m("Q-c Bildnachweis im Impressum in <div hidden>", "Q2", "seite", "impressum.html",
+      r"(<h2>Bildnachweise</h2>.*?nachbearbeitet</p>)", r"<div hidden>\1</div>", regex=True),
+    m("Q-d Bildnachweis im Impressum in <template>", "Q2", "seite", "impressum.html",
+      r"(<h2>Bildnachweise</h2>.*?nachbearbeitet</p>)", r"<template>\1</template>", regex=True),
+    # Runde 6, Punkt 10: Bilder nur aus Bildplätzen.
+    m("Q-e <picture> mit srcset ohne img auf ablauf.html", "Q3", "seite", "ablauf.html",
+      "<main>", '<main><picture><source srcset="bilder/r2-messung-768.webp"></picture>'),
+    # Runde 6, A2: Formular ohne JavaScript.
+    m("F-a Formular auf kontakt.html ohne method=post", "F1", "seite", "kontakt.html",
+      ' method="post" novalidate', " novalidate"),
+    m("F-b Absendeknopf auf index.html ohne disabled", "F1", "seite", "index.html",
+      '<button class="knopf" type="submit" disabled>', '<button class="knopf" type="submit">'),
+    m("F-c Anrufsatz auf kontakt.html entfernt", "F1", "seite", "kontakt.html",
+      r"\s*<p class=\"status fehler\" data-ohne-skript>.*?</p>", "", regex=True),
+    m("F-e Anrufsatz auf index.html wieder in noscript", "F1", "seite", "index.html",
+      r"(<p class=\"status fehler\" data-ohne-skript>.*?</p>)", r"<noscript>\1</noscript>", regex=True),
+    m("F-d formular.js schaltet den Knopf vor dem Handler frei", "F1", "seite", "formular.js",
+      r"(  var telFeld = [^\n]*\n)(?P<rest>.*?)\n  knopf\.disabled = false;\n",
+      r"\1  knopf.disabled = false;\n\g<rest>\n", regex=True),
+    m("F-f formular.js blendet den Anrufsatz nicht aus", "F1", "seite", "formular.js",
+      "  if (ohneSkript) ohneSkript.hidden = true;\n", ""),
+    # Runde 6, Punkt 15: Kostenabsatz wortgleich.
+    m("E-k Kostenabsatz auf umland.html um ein Wort anders", "E7", "seite", "umland.html",
+      "Das klären wir vorab am Telefon.</p>", "Das klären wir gern vorab am Telefon.</p>"),
+    m("E-l Kostenabsatz in inhalte/umland.html als eigenes Literal, neu gebaut", "E7", "bau", "inhalte/umland.html",
+      '<p class="kostensatz">{{kosten_satz}}</p>',
+      '<p class="kostensatz">Der andere war schuld? Dann zahlt das Gutachten seine Versicherung.</p>'),
+    # Runde 6, Punkte 12 und 6: Telefonzeiten aus einer Quelle, voller Wortlaut in der Bühne.
+    m("E-m Uhrzeit als Literal in inhalte/nachts-wochenende.html", "E8", "quelle", "inhalte/nachts-wochenende.html",
+      "<span>{{telefonzeiten}}.</span>", "<span>Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr.</span>"),
+    m("E-n Telefonzeiten in der Bühne ohne Uhrzeiten („Mo bis Fr Uhr“)", "E3", "seite", "index.html",
+      "<b>Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr.</b>", "<b>Mo bis Fr Uhr</b>"),
+    # Runde 6, Punkt 13: Freihalteliste gegen das Markup.
+    m("K2-a FREI_HALTEN mit einem Wähler, den es nicht mehr gibt (.hero .stern)", "K2", "seite", "einwilligung.js",
+      'var FREI_HALTEN = ".hero .knoepfe .knopf, ', 'var FREI_HALTEN = ".hero .stern, .hero .knoepfe .knopf, '),
+    m("K2-b Telefonzeiten der Bühne unter anderer Klasse (Wähler trifft nichts)", "K2", "seite", "index.html",
+      '<p class="buehne-zeiten">', '<p class="zeiten">'),
+    # Runde 6, Punkt 4: ein Umschaltpunkt.
+    m("C-a zwei Queries für die Textfassungen wie bis Runde 5 (Lücke 699,98 bis 700 px)", "C1", "seite", "stil.css",
+      ".nur-gross { display: none; }\n@media (min-width: 700px) { .nur-gross { display: revert; } .nur-klein { display: none; } }",
+      "@media (max-width: 699.98px) { .nur-gross { display: none; } }\n@media (min-width: 700px) { .nur-klein { display: none; } }"),
+    # Runde 6, Punkt 7: IDs aus formular.js im Markup.
+    m("P-v Telefonfeld auf kontakt.html mit anderer id", "P7", "seite", "kontakt.html",
+      '<input id="f-tel"', '<input id="f-telefon"'),
+    m("P-x Telefonfeld auf index.html außerhalb des Formulars", "P7", "seite", "index.html",
+      r"(\s*<label for=\"f-tel\">.*?<input id=\"f-tel\"[^>]*>)(?P<mitte>.*?</form>)", r"\g<mitte>\1",
+      regex=True),
+    m("P-y zweiter Absendeknopf im Formular auf kontakt.html", "P7", "seite", "kontakt.html",
+      '<button class="knopf" type="submit" disabled>', '<button class="knopf" type="submit" disabled>Noch einmal</button>'
+      '<button class="knopf" type="submit" disabled>'),
+    m("E-o Öffnungszeit im JSON-LD als Literal in inhalte/index.html", "E8", "quelle", "inhalte/index.html",
+      "    {{oeffnungszeiten_ld}}", '    { "@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", '
+      '"opens": "09:00", "closes": "14:00" }'),
+    m("P-w formular.js liest ein Feld, das es im Markup nicht gibt", "P7", "seite", "formular.js",
+      'form.querySelector("#f-name")', 'form.querySelector("#f-vorname")'),
 ]
 
 
