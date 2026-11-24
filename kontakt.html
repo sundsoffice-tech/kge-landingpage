@@ -97,7 +97,7 @@
       <h2>Rückruf anfordern</h2>
       <p class="vorspann">Sie können gerade nicht telefonieren? Hinterlassen Sie Ihre Nummer. Der Rückruf kommt Mo bis Fr ab 8&nbsp;Uhr, Sa ab 9&nbsp;Uhr.</p>
     </div>
-    <form class="formular" id="rueckruf-formular" novalidate aria-label="Rückruf anfordern" data-erfolg="Danke. Ihre Nummer ist angekommen. Der Rückruf kommt Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr.">
+    <form class="formular" id="rueckruf-formular" method="post" novalidate aria-label="Rückruf anfordern" data-erfolg="Danke. Ihre Nummer ist angekommen. Der Rückruf kommt Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr.">
       <p class="hinweis">Drei Felder, nur die Telefonnummer ist Pflicht.</p>
       <label for="f-tel">Ihre Telefonnummer</label>
       <input id="f-tel" name="telefon" type="tel" autocomplete="tel" inputmode="tel" required aria-describedby="f-status" placeholder="z. B. 0177 1234567">
@@ -106,7 +106,8 @@
       <label for="f-text">Was ist passiert? <span class="frei">(freiwillig)</span></label>
       <textarea id="f-text" name="nachricht" rows="3" placeholder="z. B. Auffahrunfall gestern in Rheydt, Heck beschädigt, Gegner hat Schuld eingeräumt"></textarea>
       <div class="honig" aria-hidden="true"><label for="f-website">Website</label><input id="f-website" name="website" type="checkbox" tabindex="-1" autocomplete="off"></div>
-      <button class="knopf" type="submit">Rückruf anfordern</button>
+      <button class="knopf" type="submit" disabled>Rückruf anfordern</button>
+      <noscript><p class="status fehler">Bitte rufen Sie an: <a class="ziel" href="tel:+4921616888691">02161 688 86 91</a></p></noscript>
       <p class="status" id="f-status" role="status" aria-live="polite"></p>
       <p class="datenschutz">Ihre Angaben werden nur für den Rückruf genutzt. Die Anfrage geht an einen Server in Deutschland. Mehr dazu im <a class="ziel" href="datenschutz.html#formular">Datenschutz</a>.</p>
     </form>

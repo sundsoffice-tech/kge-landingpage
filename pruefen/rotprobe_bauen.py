@@ -3,7 +3,8 @@
 dann rot werden. Bleibt er grün, prüft er die Regel nicht (Programmierer r2, F2).
 
 Aufruf: python pruefen/rotprobe_bauen.py   Exit 0, wenn der Stand grün ist und jede Mutation rot macht, sonst Exit 1.
-Gerechnet wird in einer Kopie in einem Temp-Ordner (bauen.py, konfig.js, vorlagen/, inhalte/, bilder/, pruefen/zeuge_bauen.py);
+Gerechnet wird in einer Kopie in einem Temp-Ordner (bauen.py, konfig.js, *.css, vorlagen/, inhalte/, bilder/,
+pruefen/zeuge_bauen.py); seit Runde 6 zählt nur ein Rot im benannten Fall (ERWARTET), nicht irgendeine rote Zeile;
 der Arbeitsbaum bleibt unberührt. Jede Mutation ersetzt eine Zeichenkette, die in bauen.py genau einmal stehen muss,
 sonst bricht die Probe ab (eine Mutation, die nichts trifft, wäre eine grüne Lüge).
 """
@@ -136,6 +137,7 @@ MUTATIONEN = [
      '        print(meldung)\n'
      '    gebaut = {name: bauen(name, meta) for name, meta in SEITEN.items()}\n'
      '    impressum_sperre(gebaut)\n'
+     '    ausgabe_sperre(gebaut)\n'
      '    abweichungen = 0\n'
      '    for name in SEITEN:\n'
      '        neu = gebaut[name]\n'
@@ -154,6 +156,7 @@ MUTATIONEN = [
      '        print(meldung)\n'
      '    gebaut = {name: bauen(name, meta) for name, meta in SEITEN.items()}\n'
      '    impressum_sperre(gebaut)\n'
+     '    ausgabe_sperre(gebaut)\n'
      '    abweichungen = 0\n'
      '    for name in SEITEN:\n'
      '        neu = gebaut[name]\n'
@@ -170,11 +173,69 @@ MUTATIONEN = [
     ("R34 FOTOS_ZEIGEN = False schaltet die Bildsperre nicht mehr ab",
      '    if not FOTOS_ZEIGEN:\n        return\n    for platz in BILDER:',
      '    for platz in BILDER:'),
+    # Runde 6, 4a: Einwilligungsmodus und Form des googleTag.
+    ("R39 sperre_modus wird in main nicht mehr gerufen",
+     '    sperre_modus()\n    sperre_noindex()\n',
+     '    sperre_noindex()\n'),
+    ("R40 modus_fehler nimmt jeden Modus",
+     '    if modus != ["einfach"]:\n',
+     '    if not modus:\n'),
+    ("R41 googleTag nur noch „nicht leer“ statt AW- plus Ziffern",
+     r'if len(tag) != 1 or not re.fullmatch(r"AW-\d{6,15}", tag[0]):',
+     'if len(tag) != 1 or not tag[0]:'),
+    # Runde 6, A1b: Nachweis sichtbar.
+    ("R42 Sichtbarkeit des Nachweises in main nicht mehr geprüft",
+     '    meldung = impressum_fehler(seiten) or nachweis_sichtbar_fehler(seiten.get("impressum.html", ""), stile())\n',
+     '    meldung = impressum_fehler(seiten)\n'),
+    ("R43 Attribut hidden zählt nicht als verborgen",
+     ' or "hidden" in a or "inert" in a',
+     ' or "inert" in a'),
+    ("R44 aria-hidden zählt nicht als verborgen",
+     'or a.get("aria-hidden", "").strip().lower() == "true"',
+     'or False'),
+    ("R45 template zählt nicht als verborgen",
+     'VERBORGENE_TAGS = {"template", ',
+     'VERBORGENE_TAGS = {'),
+    ("R46 style-Attribut zählt nicht als verborgen",
+     r'or bool(re.search(r"display\s*:\s*none|visibility\s*:\s*hidden|opacity\s*:\s*0(?![.\d])", stil))',
+     'or False'),
+    ("R47 verbergende Klasse aus den Stildateien zählt nicht",
+     'or bool(set(a.get("class", "").split()) & self.klassen)',
+     'or False'),
+    ("R48 geschlossenes details zählt nicht als verborgen",
+     'self.stapel.append((tag, verborgen, tag == "details" and "open" not in a))',
+     'self.stapel.append((tag, verborgen, False))'),
+    # Runde 6, A1a: url() nur auf schriften/.
+    ("R49 url-Sperre prüft die Stildateien nicht mehr",
+     '    quellen = dict(css_texte)\n',
+     '    quellen = {}\n'),
+    ("R50 @import erlaubt",
+     r'        if re.search(r"@import|image-set\s*\(", text, flags=re.I):',
+     '        if False:'),
+    # Runde 6, Punkt 10: Bilder nur aus Bildplätzen.
+    ("R51 ausgabe_sperre wird in main nicht mehr gerufen",
+     '    impressum_sperre(gebaut)\n    ausgabe_sperre(gebaut)\n',
+     '    impressum_sperre(gebaut)\n'),
+    ("R52 Bildsperre der Seiten kennt nur noch img",
+     r'BILD_MARKUP = re.compile(r"<(?:img|picture|source|image|video|object|embed|iframe)\b|\b(?:srcset|poster)\s*=|"',
+     r'BILD_MARKUP = re.compile(r"<img\b|"'),
 ]
+
+# Runde 6, Punkt 6 (Codex 3, Programmierer K4): Jede Mutation muss im benannten Fall rot werden, nicht irgendwo.
+# Die Fälle sind die erste Kennung der Zeile im Zeugen (K1, G13, W5 …). Zuordnung gemessen am Stand ced80c1.
+ERWARTET = {
+    "R1": "K1", "R2": "K1", "R3": "S1", "R4": "B2", "R5": "J1", "R6": "J2", "R7": "J5", "R8": "B8", "R9": "A2",
+    "R10": "B1", "R11": "L3", "R12": "L1", "R13": "N1", "R14": "V1", "R15": "F3", "R16": "F1", "R17": "V2",
+    "R18": "A5", "R19": "A5", "R20": "A7", "R21": "B12", "R22": "B11", "R23": "P1", "R24": "P3", "R25": "P2",
+    "R26": "G1", "R27": "G3", "R28": "G4", "R29": "G7", "R30": "G5", "R31": "G8", "R32": "G12", "R33": "G13",
+    "R34": "G14", "R35": "G13", "R36": "G6a", "R37": "G17", "R38": "G6c",
+    "R39": "W5", "R40": "W2", "R41": "T1", "R42": "H8", "R43": "H2", "R44": "H3", "R45": "H4", "R46": "H5",
+    "R47": "H6", "R48": "H7", "R49": "U2", "R50": "U4", "R51": "I4", "R52": "I3",
+}
 
 
 def kopie(ziel):
-    for name in ("bauen.py", "konfig.js"):
+    for name in ["bauen.py", "konfig.js"] + [d.name for d in WURZEL.glob("*.css")]:
         shutil.copy2(WURZEL / name, ziel / name)
     for ordner in ("vorlagen", "inhalte", "bilder"):
         shutil.copytree(WURZEL / ordner, ziel / ordner)
@@ -186,8 +247,8 @@ def zeuge(ziel):
     umgebung = dict(os.environ, PYTHONIOENCODING="utf-8")  # sonst schreibt der Zeuge unter Windows cp1252
     lauf = subprocess.run([sys.executable, "-B", str(ziel / "pruefen" / "zeuge_bauen.py")], env=umgebung,
                           capture_output=True, text=True, encoding="utf-8", errors="replace")
-    erste_rot = next((z for z in lauf.stdout.splitlines() if z.startswith("ROT  ")), "")
-    return lauf.returncode, erste_rot, lauf.stdout + lauf.stderr
+    rote = [z for z in lauf.stdout.splitlines() if z.startswith("ROT  ")]
+    return lauf.returncode, rote, lauf.stdout + lauf.stderr
 
 
 def main():
@@ -197,6 +258,8 @@ def main():
         n = quelle.count(alt)
         if n != 1:
             sys.exit(f"ABBRUCH: {name}: Ausgangstext steht {n}-mal statt einmal in bauen.py")
+        if name.split()[0] not in ERWARTET:
+            sys.exit(f"ABBRUCH: {name}: kein erwarteter Fall in ERWARTET")
     gruene = 0
     with tempfile.TemporaryDirectory(prefix="kge-rotprobe-") as tmp:
         ziel = pathlib.Path(tmp) / "baum"
@@ -208,17 +271,23 @@ def main():
             sys.exit("ABBRUCH: Der Zeuge ist schon ohne Mutation rot (Stand rot).")
         for name, alt, neu in MUTATIONEN:
             (ziel / "bauen.py").write_text(quelle.replace(alt, neu, 1), encoding="utf-8", newline="")
-            rc, erste_rot, ausgabe = zeuge(ziel)
-            if rc == 1 and erste_rot:
-                print(f"ROT   {name} · zuerst: {erste_rot[5:]}")
+            rc, rote, ausgabe = zeuge(ziel)
+            soll = ERWARTET[name.split()[0]]
+            treffer = [z for z in rote if z[5:].split()[0] == soll]
+            if rc == 1 and treffer:
+                andere = sorted({z[5:].split()[0] for z in rote} - {soll})
+                print(f"ROT   {name} · {treffer[0][5:200]}" + (f" · auch {', '.join(andere)}" if andere else ""))
+            elif rc == 1:
+                gruene += 1
+                print(f"FEHL  {name} · rot, aber nicht im Fall {soll}: {', '.join(z[5:].split()[0] for z in rote)}")
             else:
                 gruene += 1
                 print(f"GRÜN  {name} · der Zeuge merkt die Mutation nicht (rc {rc})")
         (ziel / "bauen.py").write_text(quelle, encoding="utf-8", newline="")
     if gruene:
-        print(f"ROTPROBE DURCHGEFALLEN: {gruene} von {len(MUTATIONEN)} Mutationen bleiben grün")
+        print(f"ROTPROBE DURCHGEFALLEN: {gruene} von {len(MUTATIONEN)} Mutationen nicht im benannten Fall rot")
         sys.exit(1)
-    print(f"ROTPROBE BESTANDEN: Stand grün, {len(MUTATIONEN)} von {len(MUTATIONEN)} Mutationen rot")
+    print(f"ROTPROBE BESTANDEN: Stand grün, {len(MUTATIONEN)} von {len(MUTATIONEN)} Mutationen im benannten Fall rot")
 
 
 if __name__ == "__main__":

@@ -26,10 +26,11 @@ sys.path.insert(0, str(HIER.parent))
 import bauen  # noqa: E402
 
 
-def konfig(tag="AW-1234567890", klick="LabKlick", wa="LabWa", form="LabForm", anruf='    website_call: ""\n'):
+def konfig(tag="AW-1234567890", klick="LabKlick", wa="LabWa", form="LabForm", anruf='    website_call: ""\n',
+           modus='  einwilligungsModus: "einfach"\n'):
     return ('/* Beispiel im Kommentar: "AW-XXXXXXXXXX" */\nwindow.KGE_KONFIG = {\n'
             f'  googleTag: "{tag}",\n  labels: {{\n    phone_click: "{klick}",\n    whatsapp_click: "{wa}",\n'
-            f'    form_submit: "{form}",\n{anruf}  }},\n  einwilligungsModus: "einfach"\n}};\n')
+            f'    form_submit: "{form}",\n{anruf}  }},\n{modus}}};\n')
 
 
 TEST = {"googleTag": "AW-1234567890", "phone_click": "TestKlick01", "whatsapp_click": "TestWa01",
@@ -47,6 +48,9 @@ def echte_mit(werte):
 
 
 FAELLE = [
+    # Runde 6, 4a: googleTag in der Form AW- plus Ziffern (Codex: "falsch" ging durch).
+    ("T1 googleTag „falsch“ bei sonst echten Werten: Abbruch", konfig(tag="falsch"), True),
+    ("T2 googleTag AW- ohne Ziffern: Abbruch", konfig(tag="AW-abc1234567"), True),
     ("echte Werte, website_call leer: erlaubt", konfig(), False),
     ("echte Werte, website_call gesetzt: erlaubt", konfig(anruf='    website_call: "AbC-d_1234567890"\n'), False),
     ("website_call Platzhalter mit X: Abbruch", konfig(anruf='    website_call: "XXXXXXXXXXXXXXXXXXX"\n'), True),
@@ -289,7 +293,77 @@ def schreibordner():
     ordner = pathlib.Path(tempfile.mkdtemp(dir=WURZEL_TMP))
     for teil in ("vorlagen", "inhalte"):
         shutil.copytree(HIER.parent / teil, ordner / teil)
+    # Runde 6: main() liest konfig.js (Modussperre) und die Stildateien (url-Sperre, Sichtbarkeit des Nachweises).
+    for datei in ["konfig.js"] + [d.name for d in HIER.parent.glob("*.css")]:
+        shutil.copy2(HIER.parent / datei, ordner / datei)
     return ordner
+
+
+def main_mit(aendern):
+    """Runde 6: main() schreibend in einem eigenen Ordner mit echter Bildtabelle; aendern(ordner) beschädigt vorher
+    eine Quelle. Gibt (Abbruchmeldung oder None, Zahl der geschriebenen Seiten) zurück."""
+    ordner = schreibordner()
+    aendern(ordner)
+    with schalter(HIER=ordner, NOINDEX=True, FOTOS_ZEIGEN=True, BILDWURZEL=HIER.parent), \
+            contextlib.redirect_stdout(io.StringIO()):
+        argv, sys.argv = sys.argv, ["bauen.py"]
+        abbruch = None
+        try:
+            bauen.main()
+        except SystemExit as e:
+            abbruch = str(e.code)
+        finally:
+            sys.argv = argv
+    return abbruch, len(list(ordner.glob("*.html")))
+
+
+def ersetze_in(datei, alt, neu):
+    """Gibt eine Funktion für main_mit zurück, die in ordner/datei alt genau einmal durch neu ersetzt."""
+    def aendern(ordner):
+        pfad = ordner / datei
+        text = pfad.read_text(encoding="utf-8")
+        if text.count(alt) != 1:
+            raise AssertionError(f"{datei}: {alt!r} steht {text.count(alt)}-mal")
+        pfad.write_text(text.replace(alt, neu), encoding="utf-8", newline="\n")
+    return aendern
+
+
+def bricht_ab(aendern, wort):
+    """main bricht mit einer Meldung ab, die wort nennt, und keine Seite ist geschrieben."""
+    abbruch, geschrieben = main_mit(aendern)
+    return bool(abbruch) and wort in abbruch and geschrieben == 0
+
+
+def gebaut():
+    """Alle Seiten frisch im Speicher gebaut (ohne Sperren), Name zu Text."""
+    return {n: bauen.bauen(n, m) for n, m in bauen.SEITEN.items()}
+
+
+NACHWEIS_AUF = "<h2>Bildnachweise</h2>"
+NACHWEIS_ZU = "nachbearbeitet</p>"
+
+
+def nachweis_in(auf, zu, css=None):
+    """Runde 6, A1b: der ganze Bildnachweis des frisch gebauten Impressums in auf … zu gehüllt; gibt die Meldung von
+    nachweis_sichtbar_fehler zurück (css: Stildateien, sonst die echten)."""
+    seite = gebaut()["impressum.html"]
+    for stueck in (NACHWEIS_AUF, NACHWEIS_ZU):
+        if seite.count(stueck) != 1:
+            raise AssertionError(f"impressum.html: {stueck!r} steht {seite.count(stueck)}-mal")
+    seite = seite.replace(NACHWEIS_AUF, auf + NACHWEIS_AUF).replace(NACHWEIS_ZU, NACHWEIS_ZU + zu)
+    return bauen.nachweis_sichtbar_fehler(seite, bauen.stile() if css is None else css)
+
+
+def seiten_mit(name, alt, neu):
+    """Alle Seiten frisch gebaut, in name alt genau einmal durch neu ersetzt."""
+    seiten = gebaut()
+    if seiten[name].count(alt) != 1:
+        raise AssertionError(f"{name}: {alt!r} steht {seiten[name].count(alt)}-mal")
+    seiten[name] = seiten[name].replace(alt, neu)
+    return seiten
+
+
+HINTERGRUND = '\n.kosten-kopf { background-image: url("bilder/detail.webp"); }\n'
 
 
 def main_schreibend(an):
@@ -427,6 +501,53 @@ WEITERE = [
     ("G16 frisch gebautes Impressum: keine Meldung",
      lambda: bauen.impressum_fehler({"impressum.html": bauen.bauen("impressum.html", bauen.SEITEN["impressum.html"])}), OK),
     ("G17 Impressumsquelle ohne {{bildnachweise}}: main bricht ab, keine Seite geschrieben", impressum_ohne_nachweis, True),
+    # Runde 6, 4a: Einwilligungsmodus genau "einfach", in jedem Betriebszustand.
+    ("W1 Modus einfach: keine Meldung", lambda: bauen.modus_fehler(konfig()), OK),
+    ("W2 Modus erweitert: Meldung", lambda: bauen.modus_fehler(konfig(modus='  einwilligungsModus: "erweitert"\n')),
+     FEHLER),
+    ("W3 Modus fehlt: Meldung", lambda: bauen.modus_fehler(konfig(modus="")), FEHLER),
+    ("W4 Modus zweimal: Meldung", lambda: bauen.modus_fehler(konfig(
+        modus='  einwilligungsModus: "einfach",\n  einwilligungsModus: "erweitert"\n')), FEHLER),
+    ("W5 konfig.js mit erweitert: main bricht ab (auch mit noindex), keine Seite geschrieben", lambda: bricht_ab(
+        ersetze_in("konfig.js", '\n  einwilligungsModus: "einfach",', '\n  einwilligungsModus: "erweitert",'),
+        "einwilligungsModus"), True),
+    # Runde 6, A1b: Bildnachweis sichtbar, kein verborgener Vorfahre.
+    ("H1 frisch gebautes Impressum: Nachweis sichtbar", lambda: nachweis_in("", ""), OK),
+    ("H2 Nachweis in <div hidden>: Meldung", lambda: nachweis_in("<div hidden>", "</div>"), FEHLER),
+    ("H3 Nachweis in aria-hidden: Meldung", lambda: nachweis_in('<div aria-hidden="true">', "</div>"), FEHLER),
+    ("H4 Nachweis in <template>: Meldung", lambda: nachweis_in("<template>", "</template>"), FEHLER),
+    ("H5 Nachweis in style display:none: Meldung", lambda: nachweis_in('<div style="display: none">', "</div>"),
+     FEHLER),
+    ("H6 Nachweis in einer Klasse, die stil.css verbirgt: Meldung", lambda: nachweis_in(
+        '<div class="weg">', "</div>", css={"x.css": "@media (min-width: 1px) { .wrap .weg { display: none } }"}),
+     FEHLER),
+    ("H7 Nachweis in geschlossenem <details>: Meldung", lambda: nachweis_in("<details>", "</details>"), FEHLER),
+    ("H8 Impressumsquelle mit <div hidden> um {{bildnachweise}}: main bricht ab, keine Seite geschrieben",
+     lambda: bricht_ab(ersetze_in("inhalte/impressum.html", "{{bildnachweise}}",
+                                  "<div hidden>{{bildnachweise}}</div>"), "nicht sichtbar"), True),
+    # Runde 6, A1a: url() lädt nur Schriften.
+    ("U1 echte Seiten und Stile: keine Meldung", lambda: bauen.url_fehler(gebaut(), bauen.stile()), OK),
+    ("U2 Bild als background-image in stil.css: Meldung", lambda: bauen.url_fehler(
+        gebaut(), {"stil.css": bauen.stile()["stil.css"] + HINTERGRUND}), FEHLER),
+    ("U3 Bild im style-Attribut einer Seite: Meldung", lambda: bauen.url_fehler(seiten_mit(
+        "kosten.html", '<section class="seitenkopf dunkel kosten-kopf">',
+        "<section class=\"seitenkopf dunkel kosten-kopf\" style=\"background:url('bilder/detail.webp')\">"),
+        bauen.stile()), FEHLER),
+    ("U4 @import in stil.css: Meldung", lambda: bauen.url_fehler(
+        gebaut(), {"stil.css": '@import "bild.css";\n' + bauen.stile()["stil.css"]}), FEHLER),
+    ("U5 stil.css mit background-image: main bricht ab, keine Seite geschrieben", lambda: bricht_ab(
+        lambda o: (o / "stil.css").write_text((o / "stil.css").read_text(encoding="utf-8") + HINTERGRUND,
+                                              encoding="utf-8", newline="\n"), "url(bilder/detail.webp)"), True),
+    # Runde 6, Punkt 10 (Programmierer S4): Bilder nur aus Bildplätzen.
+    ("I1 echte Seiten: keine Meldung", lambda: bauen.bild_fehler_seiten(gebaut()), OK),
+    ("I2 zusätzliches <img> in einer gebauten Seite: Meldung", lambda: bauen.bild_fehler_seiten(seiten_mit(
+        "ablauf.html", "<main>", '<main><img src="bilder/r2-messung-768.webp" alt="" width="768" height="432">')),
+     FEHLER),
+    ("I3 <picture> mit srcset ohne img: Meldung", lambda: bauen.bild_fehler_seiten(seiten_mit(
+        "ablauf.html", "<main>", '<main><picture><source srcset="bilder/r2-messung-768.webp"></picture>')), FEHLER),
+    ("I4 direktes <img> in inhalte/ablauf.html: main bricht ab, keine Seite geschrieben", lambda: bricht_ab(
+        ersetze_in("inhalte/ablauf.html", "<main>", '<main>\n<img src="bilder/r2-messung-768.webp" alt="">'),
+        "außerhalb der Bildplätze"), True),
     ("G7 Datei fehlt: der Platz erscheint nicht, der Bau läuft", lambda: enthaelt("<main>", fehlt=("<figure",), vorhanden=False), True),
     ("G8 vorrang: fetchpriority statt lazy", lambda: enthaelt('fetchpriority="high"', fehlt=('loading="lazy"',), vorrang=True), True),
     ("G9 Unterschrift leer: keine figcaption", lambda: enthaelt("<figure", fehlt=("<figcaption",), unterschrift=""), True),

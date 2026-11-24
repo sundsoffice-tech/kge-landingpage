@@ -12,7 +12,7 @@
       <p class="frage">Cihan Es, Kfz-Sachverständiger für Unfallschäden</p>
       <h1><span class="h1-vor">Kfz-Gutachter in Mönchengladbach</span> Ums Gutachten kümmern wir uns.</h1>
       <p class="worum nur-gross">Termin am Telefon, Besichtigung dort, wo Ihr Auto steht, Versand an die Versicherung.</p>
-      <p class="unterzeile">Der andere war schuld? Dann zahlt das Gutachten in der Regel seine Versicherung. Bei kleinen Schäden oft nicht: Das klären wir vorab am Telefon.</p>
+      <p class="unterzeile">{{kosten_satz}}</p>
       <div class="knoepfe">
         <a class="knopf" href="tel:+4921616888691" data-messung="phone_click"><svg><use href="#i-tel"/></svg><span>Anrufen: 02161 688 86 91</span></a>
       </div>
@@ -100,7 +100,7 @@
       <p class="vorspann">Hinterlassen Sie Ihre Nummer. Der Rückruf kommt Mo bis Fr ab 8&nbsp;Uhr, Sa ab 9&nbsp;Uhr.</p>
       <p class="ruf-gross ruf-rueckruf"><a href="tel:+4921616888691" data-messung="phone_click">02161 688 86 91</a></p>
     </div>
-    <form class="formular" id="rueckruf-formular" novalidate aria-label="Rückruf anfordern" data-erfolg="Danke. Ihre Nummer ist angekommen. Der Rückruf kommt Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr.">
+    <form class="formular" id="rueckruf-formular" method="post" novalidate aria-label="Rückruf anfordern" data-erfolg="Danke. Ihre Nummer ist angekommen. Der Rückruf kommt {{telefonzeiten}}.">
       <p class="hinweis">Nur die Telefonnummer ist Pflicht.</p>
       <label for="f-tel">Ihre Telefonnummer</label>
       <input id="f-tel" name="telefon" type="tel" autocomplete="tel" inputmode="tel" required aria-describedby="f-status" placeholder="z. B. 0177 1234567">
@@ -109,7 +109,8 @@
       <label for="f-text">Was ist passiert? <span class="frei">(freiwillig)</span></label>
       <textarea id="f-text" name="nachricht" rows="3" placeholder="z. B. Auffahrunfall gestern, Heck beschädigt"></textarea>
       <div class="honig" aria-hidden="true"><label for="f-website">Website</label><input id="f-website" name="website" type="checkbox" tabindex="-1" autocomplete="off"></div>
-      <button class="knopf" type="submit">Rückruf anfordern</button>
+      <button class="knopf" type="submit" disabled>Rückruf anfordern</button>
+      {{ohne_skript}}
       <p class="status" id="f-status" role="status" aria-live="polite"></p>
       <p class="datenschutz">Ihre Angaben werden nur für den Rückruf genutzt. Die Anfrage geht an einen Server in Deutschland. Mehr dazu im <a class="ziel" href="datenschutz.html#formular">Datenschutz</a>.</p>
     </form>

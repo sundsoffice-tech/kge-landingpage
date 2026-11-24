@@ -714,9 +714,69 @@ def e6():
     return v
 
 
+def roh_seiten():
+    return {n: s.roh for n, s in SEITEN.items()}
+
+
+def q1():
+    """Runde 6, A1a: url() in stil.css und allen gebauten Seiten nur auf schriften/ (Prüfung aus bauen.py)."""
+    meldung = bauen.url_fehler(roh_seiten(), {n: (WURZEL / n).read_text(encoding="utf-8")
+                                              for n in SKRIPTE if n.endswith(".css")})
+    return [meldung] if meldung else []
+
+
+def q2():
+    """Runde 6, A1b: Bildnachweis des gebauten Impressums im sichtbaren Text (kein verborgener Vorfahre)."""
+    meldung = bauen.nachweis_sichtbar_fehler(SEITEN["impressum.html"].roh, {
+        n: (WURZEL / n).read_text(encoding="utf-8") for n in SKRIPTE if n.endswith(".css")})
+    return [meldung] if meldung else []
+
+
+def q3():
+    """Runde 6, Punkt 10: kein Bildelement außerhalb des Markups der Bildplätze."""
+    meldung = bauen.bild_fehler_seiten(roh_seiten())
+    return [meldung] if meldung else []
+
+
+def f1():
+    """Runde 6, A2: ohne JavaScript geht nichts per GET in die Adresse. Jedes Formular hat method="post", jeder
+    Absendeknopf steht im Markup gesperrt, unter dem Knopf steht der noscript-Satz mit der Rufnummer, und formular.js
+    schaltet den Knopf beim Laden frei."""
+    v = []
+    for n, s in SEITEN.items():
+        for form in re.findall(r"<form\b[^>]*>.*?</form>", s.roh, re.S):
+            kopf = re.match(r"<form\b[^>]*>", form).group(0)
+            if not re.search(r'\smethod="post"', kopf):
+                v.append(f"{n}: Formular ohne method=\"post\": {kopf[:80]}")
+            for knopf in re.findall(r"<button\b[^>]*>", form):
+                if 'type="submit"' in knopf and not re.search(r"\sdisabled[\s>]", knopf):
+                    v.append(f"{n}: Absendeknopf ohne disabled im Markup: {knopf}")
+            if bauen.OHNE_SKRIPT not in form:
+                v.append(f"{n}: Formular ohne noscript-Satz mit Rufnummer")
+    js = (WURZEL / "formular.js").read_text(encoding="utf-8")
+    vor_dem_absenden = js.split('form.addEventListener("submit"', 1)[0]
+    if not re.search(r"^\s*knopf\.disabled = false;", vor_dem_absenden, re.M):
+        v.append("formular.js: schaltet den Absendeknopf vor dem Absenden nicht frei")
+    if not re.search(r"Bitte rufen Sie an: <a [^>]*href=\"tel:\+4921616888691\"", bauen.OHNE_SKRIPT):
+        v.append("bauen.OHNE_SKRIPT: kein tel-Link auf die Nummer")
+    return v
+
+
+def e7():
+    """Runde 6, Punkt 15: der Kostenabsatz steht wortgleich (Text und Absatz) auf index.html und umland.html."""
+    v = []
+    for n, klasse in (("index.html", "unterzeile"), ("umland.html", "kostensatz")):
+        absatz = einmal(rf'<p class="{klasse}">(.*?)</p>', SEITEN[n].roh)
+        if absatz is None or klartext(absatz) != bauen.KOSTEN_SATZ:
+            v.append(f"{n}: Kostenabsatz fehlt oder weicht ab: {klartext(absatz or '')!r}")
+    return v
+
+
 def b4():
     """Jede Datei in bilder/ wird von mindestens einer Seite oder einem ausgelieferten Stil geladen (Runde 5, Punkt 10:
     nicht geladene Dateien liegen in bilder-archiv/, das per export-ignore nicht ausgeliefert wird)."""
+    # Runde 6 (Codex 3, A1a): nur src, srcset und href der Seiten zählen. Eine Erwähnung in einem Stil (url() sperrt
+    # Q1) oder in einem Skriptkommentar ist keine Nutzung.
     genutzt = set()
     for s in SEITEN.values():
         for wert in re.findall(r'(?:src|srcset|href)="([^"]+)"', s.roh):
@@ -724,8 +784,6 @@ def b4():
                 pfad = teil.strip().split(" ")[0]
                 if pfad.startswith("bilder/"):
                     genutzt.add(pfad)
-    for name in SKRIPTE:
-        genutzt |= set(re.findall(r"(bilder/[^\"')\s]+)", (WURZEL / name).read_text(encoding="utf-8")))
     da = {"bilder/" + d.relative_to(WURZEL / "bilder").as_posix() for d in (WURZEL / "bilder").rglob("*") if d.is_file()}
     return [f"{d} liegt in bilder/, keine Seite lädt sie" for d in sorted(da - genutzt)]
 
@@ -752,7 +810,12 @@ FAELLE = [
     ("E4", "keine bild-marke und kein Element an ihrer Stelle in einer figure", e4),
     ("E5", "Worum- und Ausweichzeile an beiden Stellen wortgleich", e5),
     ("E6", "genau zwei Fragen, kein FAQPage", e6),
-    ("B4", "jede Datei in bilder/ wird geladen", b4),
+    ("E7", "Kostenabsatz wortgleich auf index.html und umland.html (KOSTEN_SATZ)", e7),
+    ("B4", "jede Datei in bilder/ wird von einer Seite geladen (src, srcset, href)", b4),
+    ("Q1", "stil.css und alle gebauten Seiten laden über url() nur Dateien aus schriften/", q1),
+    ("Q2", "Bildnachweis im Impressum sichtbar, kein verborgener Vorfahre", q2),
+    ("Q3", "kein Bildelement außerhalb der Bildplätze", q3),
+    ("F1", "Formular: method=post, Absendeknopf gesperrt, noscript mit Rufnummer, formular.js schaltet frei", f1),
     ("P1", "noindex genau einmal je Seite, solange NOINDEX = True", p1),
     ("P2", "genau eine h1 je Seite", p2),
     ("P3", "Canonical genau einmal, aus SEITEN, zeigt auf die Seite selbst", p3),

@@ -21,6 +21,9 @@
   var status = document.getElementById("f-status");
   var knopf = form.querySelector("button[type=submit]");
   var knopfText = knopf.textContent;
+  // Im Markup ist der Knopf gesperrt (disabled), damit ohne dieses Skript nichts per GET in die Adresse geht
+  // (Runde 6, A2); erst hier wird er frei.
+  knopf.disabled = false;
   var telFeld = form.querySelector("#f-tel");
   var ERFOLG = form.getAttribute("data-erfolg") || "Danke. Wir rufen Sie zurück.";
 

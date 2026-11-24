@@ -34,6 +34,24 @@ def m(name, fall, art, datei, alt="", neu="", regex=False, alle=False):
             "alle": alle}
 
 
+# Betriebsart aus bauen.py gelesen, nicht importiert (die Probe ändert bauen.py in ihren Kopien).
+_SCHALTER = re.findall(r"^NOINDEX = (True|False)$", (WURZEL / "bauen.py").read_text(encoding="utf-8"), re.M)
+if len(_SCHALTER) != 1:
+    sys.exit(f"ABBRUCH: NOINDEX steht {len(_SCHALTER)}-mal als Zeile in bauen.py")
+NOINDEX = _SCHALTER[0] == "True"
+P_NOINDEX = [
+    m("P-a noindex auf ablauf.html entfernt", "P1", "seite", "ablauf.html",
+      '<meta name="robots" content="noindex">\n', ""),
+    m("P-r robots „no index“ statt noindex (ablauf.html)", "P1", "seite", "ablauf.html",
+      '<meta name="robots" content="noindex">', '<meta name="robots" content="no index">'),
+]
+P_LIVE = [
+    m("P-a noindex auf ablauf.html eingefügt, obwohl NOINDEX = False", "P1", "seite", "ablauf.html",
+      '<meta charset="utf-8">\n', '<meta charset="utf-8">\n<meta name="robots" content="noindex">\n'),
+    m("P-r robots „nofollow, NOINDEX“ auf ablauf.html, obwohl NOINDEX = False", "P1", "seite", "ablauf.html",
+      '<meta charset="utf-8">\n', '<meta charset="utf-8">\n<meta name="robots" content="nofollow, NOINDEX">\n'),
+]
+
 MUTATIONEN = [
     # Regel 1, Menü
     m("M-a Handy-Menü auf ablauf.html entfernt", "M1", "seite", "ablauf.html",
@@ -143,8 +161,9 @@ MUTATIONEN = [
     m("E-j FAQPage auf kosten.html", "E6", "seite", "kosten.html",
       "</main>", '<script type="application/ld+json">{"@type": "FAQPage"}</script></main>'),
     # Regel 6, Seitenregeln
-    m("P-a noindex auf ablauf.html entfernt", "P1", "seite", "ablauf.html",
-      '<meta name="robots" content="noindex">\n', ""),
+    # Runde 6, A3: P-a und P-r laufen in beiden Betriebsarten. Mit NOINDEX = True fehlt das Tag oder ist verschrieben,
+    # am Live-Stand (NOINDEX = False) wird ein noindex eingefügt, das P1 dann melden muss.
+    *(P_NOINDEX if NOINDEX else P_LIVE),
     m("P-b keine h1 auf kontakt.html", "P2", "seite", "kontakt.html",
       "<h1>Kontakt und Anfahrt</h1>", "<h2>Kontakt und Anfahrt</h2>"),
     m("P-c zweite h1 auf ablauf.html", "P2", "seite", "ablauf.html",
@@ -192,7 +211,8 @@ MUTATIONEN = [
     # Runde 5 (Codex 5): vorher erfasste der Ausdruck nur Überschrift und Sammelsatz; jetzt genau die Nachweiszeilen.
     m("B-h Nachweiszeilen im gebauten Impressum entfernt, Überschrift und Sammelsatz bleiben", "B1", "seite",
       "impressum.html", r"(<h2>Bildnachweise</h2>\s*<p>[^<]*</p>\s*)<p>.*?</p>", r"\1", regex=True),
-    m("B-i <img> direkt in inhalte/ablauf.html, neu gebaut", "B1", "bau", "inhalte/ablauf.html",
+    m("B-i <img> direkt in ablauf.html (der Bau bricht davor ab, Zeuge I4 in zeuge_bauen.py)", "B1", "seite",
+      "ablauf.html",
       "<h1>Nach dem Unfall: was Sie jetzt tun sollten</h1>",
       '<h1>Nach dem Unfall: was Sie jetzt tun sollten</h1><img src="bilder/favicon.svg" alt="Zeichen" width="10" height="10">'),
     m("B-j Datei in bilder/, die keine Seite lädt", "B4", "neu", "bilder/unbenutzt-768.webp", neu="x"),
@@ -200,14 +220,41 @@ MUTATIONEN = [
       "umland.html", 'href="kosten.html#honorar"', 'href="KOSTEN.html#honorar"'),
     m("P-q Link auf eine Bauquelle, die nicht ausgeliefert wird (impressum.html → inhalte/datenschutz.html)", "P4",
       "seite", "impressum.html", 'href="datenschutz.html"', 'href="inhalte/datenschutz.html"'),
-    m("P-r robots „no index“ statt noindex (ablauf.html)", "P1", "seite", "ablauf.html",
-      '<meta name="robots" content="noindex">', '<meta name="robots" content="no index">'),
     m("P-s formular.js auf kontakt.html als type=text/plain (lädt nicht)", "P6", "seite", "kontakt.html",
       '<script src="formular.js" defer></script>', '<script type="text/plain" src="formular.js" defer></script>'),
     m("P-t neunte HTML-Seite im Repo, nicht in SEITEN", "P0", "neu", "alt-startseite.html",
       neu="<!DOCTYPE html><title>alt</title><h1>alt</h1>\n"),
     m("P-u Canonical der Startseite ../ in SEITEN, neu gebaut", "P3", "bau", "bauen.py",
       '"kanonisch": "./"', '"kanonisch": "../"'),
+    # Runde 6, A1a: url() nur auf schriften/.
+    m("Q-a Bild als background-image in stil.css", "Q1", "seite", "stil.css", ".seitenkopf .kostensatz {",
+      '.kosten-kopf { background-image: url("bilder/r2-messung-768.webp"); }\n.seitenkopf .kostensatz {'),
+    m("Q-b Bild im style-Attribut auf kosten.html", "Q1", "seite", "kosten.html",
+      '<section class="seitenkopf dunkel kosten-kopf">',
+      "<section class=\"seitenkopf dunkel kosten-kopf\" style=\"background-image:url('bilder/r2-messung-768.webp')\">"),
+    # Runde 6, A1b: Nachweis sichtbar.
+    m("Q-c Bildnachweis im Impressum in <div hidden>", "Q2", "seite", "impressum.html",
+      r"(<h2>Bildnachweise</h2>.*?nachbearbeitet</p>)", r"<div hidden>\1</div>", regex=True),
+    m("Q-d Bildnachweis im Impressum in <template>", "Q2", "seite", "impressum.html",
+      r"(<h2>Bildnachweise</h2>.*?nachbearbeitet</p>)", r"<template>\1</template>", regex=True),
+    # Runde 6, Punkt 10: Bilder nur aus Bildplätzen.
+    m("Q-e <picture> mit srcset ohne img auf ablauf.html", "Q3", "seite", "ablauf.html",
+      "<main>", '<main><picture><source srcset="bilder/r2-messung-768.webp"></picture>'),
+    # Runde 6, A2: Formular ohne JavaScript.
+    m("F-a Formular auf kontakt.html ohne method=post", "F1", "seite", "kontakt.html",
+      ' method="post" novalidate', " novalidate"),
+    m("F-b Absendeknopf auf index.html ohne disabled", "F1", "seite", "index.html",
+      '<button class="knopf" type="submit" disabled>', '<button class="knopf" type="submit">'),
+    m("F-c noscript-Satz auf kontakt.html entfernt", "F1", "seite", "kontakt.html",
+      r"\s*<noscript>.*?</noscript>", "", regex=True),
+    m("F-d formular.js schaltet den Knopf nicht mehr frei", "F1", "seite", "formular.js",
+      "  knopf.disabled = false;\n  var telFeld", "  var telFeld"),
+    # Runde 6, Punkt 15: Kostenabsatz wortgleich.
+    m("E-k Kostenabsatz auf umland.html um ein Wort anders", "E7", "seite", "umland.html",
+      "Das klären wir vorab am Telefon.</p>", "Das klären wir gern vorab am Telefon.</p>"),
+    m("E-l Kostenabsatz in inhalte/umland.html als eigenes Literal, neu gebaut", "E7", "bau", "inhalte/umland.html",
+      '<p class="kostensatz">{{kosten_satz}}</p>',
+      '<p class="kostensatz">Der andere war schuld? Dann zahlt das Gutachten seine Versicherung.</p>'),
 ]
 
 

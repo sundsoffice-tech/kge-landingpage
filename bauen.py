@@ -11,10 +11,17 @@ Aufruf: python bauen.py            schreibt alle Seiten
 NOINDEX: True bis zum Go-Live auf unfall-mg.de (DEPLOY.md), danach False setzen und neu bauen. Der Bau bricht ab,
 solange NOINDEX aus ist und konfig.js noch Platzhalter trägt (sonst ginge die Seite ohne Messung in den Index).
 
-Werte, die auf mehreren Seiten stehen, stehen genau einmal hier (WhatsApp, Rückrufzusage, Fotoschalter).
+Werte, die auf mehreren Seiten stehen, stehen genau einmal hier (WhatsApp, Rückrufzusage, Telefonzeiten, Kostensatz,
+Fotoschalter).
+
+Sperren vor dem Schreiben (Runde 6): Einwilligungsmodus (immer), Konfiguration (ohne noindex), Bildplätze, Nachweis
+im gebauten Impressum und sichtbar, Bilder nur aus Bildplätzen, url() nur auf schriften/. Grenze: Die Sperren sitzen
+in main(). Wer bauen() direkt aufruft (Zeugen, eigene Skripte), bekommt die Seite ohne diese Sperren; ausgeliefert
+wird nur, was python bauen.py schreibt (Programmierer r2, K1c).
 """
 import datetime
 import html
+from html.parser import HTMLParser
 import pathlib
 import re
 import sys
@@ -141,8 +148,20 @@ def whatsapp_nummer():
 # Anrufzeile im Kopf der Unterseiten: Nummer als Text und als Link, steht nur hier. Auf der Startseite trägt der
 # Knopf im Hero die Nummer. Große Anrufknöpfe am Ende der Abschnitte gibt es seit dem Umbau vom 23.11.2026 nicht mehr:
 # Anrufstellen sind Kopf, ein Knopf oder diese Zeile oben, die Anrufleiste am Handy und der Kontaktabschnitt.
-RUF_ZEILE = ('<p class="ruf"><a href="tel:+4921616888691" data-messung="phone_click"><svg><use href="#i-tel"/></svg>'
-             '02161 688 86 91</a><span>Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr</span></p>')
+TELEFON_ANZEIGE = "02161 688 86 91"
+TELEFON_LINK = "tel:+4921616888691"
+# Telefonzeiten: stehen nur hier (Runde 6, Punkt 12; vorher an fünf Stellen getrennt gepflegt). In inhalte/ und in
+# der Schale steht {{telefonzeiten}}; der Zeuge E3 verlangt den Wortlaut, E8 verbietet das Literal in den Quellen.
+TELEFONZEITEN = "Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr"
+# Kostensatz der Startseite, wortgleich unter der Überschrift von umland.html (Runde 6, Punkt 15, Vorschlag der
+# Rechtsrolle zu den Anzeigentexten v10); Zeuge E7.
+KOSTEN_SATZ = ("Der andere war schuld? Dann zahlt das Gutachten in der Regel seine Versicherung. Bei kleinen Schäden "
+               "oft nicht: Das klären wir vorab am Telefon.")
+RUF_ZEILE = (f'<p class="ruf"><a href="{TELEFON_LINK}" data-messung="phone_click"><svg><use href="#i-tel"/></svg>'
+             f'{TELEFON_ANZEIGE}</a><span>{TELEFONZEITEN}</span></p>')
+# Ohne JavaScript bleibt der Absendeknopf gesperrt (Runde 6, A2); dieser Satz steht dann unter dem Formular.
+OHNE_SKRIPT = (f'<noscript><p class="status fehler">Bitte rufen Sie an: <a class="ziel" href="{TELEFON_LINK}">'
+               f'{TELEFON_ANZEIGE}</a></p></noscript>')
 
 # Menü: eine Liste für die Kopfzeile (ab 1024 px) und das Handy-Menü (details, ohne JavaScript). Die Punkte führen
 # auf Seiten, nicht auf Sprungmarken der Startseite. Die Adresse umland.html bleibt, weil Anzeigen darauf zeigen;
@@ -169,6 +188,9 @@ GLOBAL = {
     "wa_anzeige": WHATSAPP_ANZEIGE,
     "rueckruf_werktags": RUECKRUF_WERKTAGS,
     "rueckruf_sonst": RUECKRUF_SONST,
+    "telefonzeiten": TELEFONZEITEN,
+    "kosten_satz": KOSTEN_SATZ,
+    "ohne_skript": OHNE_SKRIPT,
 }
 
 
@@ -178,6 +200,10 @@ def konfig_fehler(konfig):
     werte = re.findall(r'^\s*(?:googleTag|phone_click|whatsapp_click|form_submit):\s*"([^"]*)"', konfig, re.M)
     if len(werte) != 4 or any(not w or re.search(r"AW-X|X{4,}", w) for w in werte):
         return "NOINDEX ist aus, aber konfig.js trägt noch Platzhalter (AW-X…). Erst Messung eintragen, dann bauen."
+    # Runde 6, 4a: googleTag in der Form AW- plus Ziffern, nicht nur „nicht leer“ (Codex: "falsch" ging durch).
+    tag = re.findall(r'^\s*googleTag:\s*"([^"]*)"', konfig, re.M)
+    if len(tag) != 1 or not re.fullmatch(r"AW-\d{6,15}", tag[0]):
+        return "NOINDEX ist aus, aber googleTag in konfig.js hat nicht die Form AW- plus Ziffern."
     # website_call: leer ist erlaubt und heißt „kein Nummerntausch“. Gesetzt muss es ein echtes Label sein, sonst
     # schaltete ein stehengebliebener Platzhalter oder Tippfehler die Anrufmessung stumm ab (Programmierer r1, Fund 7).
     anruf = re.findall(r'^\s*website_call:\s*"([^"]*)"', konfig, re.M)
@@ -200,6 +226,23 @@ def noindex_fehler(konfig):
         return ("NOINDEX ist aus und BEWERTUNG_ZEIGEN an, aber BEWERTUNG_LINK ist noch die Kartensuche. "
                 "Echte Profiladresse eintragen oder BEWERTUNG_ZEIGEN = False.")
     return None
+
+
+def modus_fehler(konfig):
+    """Runde 6, 4a: einwilligungsModus muss genau "einfach" sein, in jedem Betriebszustand (auch mit Platzhaltern).
+    Mit "erweitert" lädt einwilligung.js das Google-Skript vor der Wahl des Besuchers, die Datenschutzseite sagt das
+    Gegenteil. Gibt die Meldung zurück oder None. Zeuge: pruefen/zeuge_bauen.py, W1 bis W4."""
+    modus = re.findall(r'^\s*einwilligungsModus:\s*"([^"]*)"', konfig, re.M)
+    if modus != ["einfach"]:
+        return (f"konfig.js: einwilligungsModus ist {modus!r}, zulässig ist genau einmal \"einfach\" "
+                "(Datenschutzseite: vor dem Erlauben lädt nichts von Google).")
+    return None
+
+
+def sperre_modus():
+    fehler = modus_fehler((HIER / "konfig.js").read_text(encoding="utf-8"))
+    if fehler:
+        sys.exit(fehler)
 
 
 def sperre_noindex():
@@ -382,7 +425,135 @@ def impressum_sperre(seiten):
     geschrieben ist, wenn der Nachweis fehlt."""
     if not FOTOS_ZEIGEN:
         return
-    meldung = impressum_fehler(seiten)
+    meldung = impressum_fehler(seiten) or nachweis_sichtbar_fehler(seiten.get("impressum.html", ""), stile())
+    if meldung:
+        sys.exit(meldung)
+
+
+def stile():
+    """Text aller ausgelieferten Stildateien (*.css der Wurzel), Name zu Text."""
+    return {d.name: d.read_text(encoding="utf-8") for d in sorted(HIER.glob("*.css"))}
+
+
+def verbergende_klassen(css_texte):
+    """Klassen, die eine Regel mit display:none, visibility:hidden oder opacity:0 selbst trifft (letzter Teil des
+    Wählers), auch in Media Queries. Grob, aber in die sichere Richtung: im Zweifel gilt ein Nachweis als verborgen."""
+    klassen = set()
+    for text in css_texte.values():
+        text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
+        for waehler, rumpf in re.findall(r"([^{}]+)\{([^{}]*)\}", text):
+            if re.search(r"display\s*:\s*none|visibility\s*:\s*hidden|opacity\s*:\s*0(?![.\d])", rumpf):
+                for teil in waehler.split(","):
+                    letzter = re.split(r"[\s>+~]+", teil.strip())[-1]
+                    klassen |= set(re.findall(r"\.([A-Za-z0-9_-]+)", letzter))
+    return klassen
+
+
+VERBORGENE_TAGS = {"template", "noscript", "script", "style", "textarea", "title", "head"}
+LEERE_TAGS = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
+
+
+class _Sichtbar(HTMLParser):
+    """Trennt den Text einer Seite in sichtbar und verborgen (Vorfahre mit hidden, aria-hidden, inert, verbergendem
+    style oder verbergender Klasse, template, noscript, geschlossenes details außer summary)."""
+
+    def __init__(self, klassen):
+        super().__init__(convert_charrefs=True)
+        self.klassen, self.stapel, self.sichtbar = klassen, [], []
+
+    def handle_starttag(self, tag, attrs):
+        a = {k: (v or "") for k, v in attrs}
+        oben = self.stapel[-1] if self.stapel else (tag, False, False)
+        verborgen = oben[1]
+        if tag == "summary" and oben[2]:  # summary eines geschlossenen details bleibt sichtbar
+            verborgen = self.stapel[-2][1] if len(self.stapel) > 1 else False
+        elif oben[2]:
+            verborgen = True
+        stil = a.get("style", "")
+        verborgen = verborgen or tag in VERBORGENE_TAGS or "hidden" in a or "inert" in a \
+            or a.get("aria-hidden", "").strip().lower() == "true" \
+            or bool(re.search(r"display\s*:\s*none|visibility\s*:\s*hidden|opacity\s*:\s*0(?![.\d])", stil)) \
+            or bool(set(a.get("class", "").split()) & self.klassen)
+        if tag in LEERE_TAGS:
+            return
+        self.stapel.append((tag, verborgen, tag == "details" and "open" not in a))
+
+    def handle_endtag(self, tag):
+        for i in range(len(self.stapel) - 1, -1, -1):
+            if self.stapel[i][0] == tag:
+                del self.stapel[i:]
+                return
+
+    def handle_data(self, data):
+        if not (self.stapel and self.stapel[-1][1]):
+            self.sichtbar.append(data)
+
+
+def sichtbarer_text(seite, css_texte):
+    leser = _Sichtbar(verbergende_klassen(css_texte))
+    leser.feed(seite)
+    leser.close()
+    return " ".join(" ".join(leser.sichtbar).split())
+
+
+def nachweis_sichtbar_fehler(impressum, css_texte):
+    """Runde 6, A1b: Überschrift, Sammelsatz und jede Zeile des Bildnachweises stehen im sichtbaren Text der gebauten
+    impressum.html, nicht unter einem verborgenen Vorfahren (Codex: <div hidden> um {{bildnachweise}}). Ein
+    HTML-Kommentar um den Platzhalter fällt schon in ohne_kommentare weg und fängt impressum_fehler."""
+    if not FOTOS_ZEIGEN:
+        return None
+    soll = [BILDER[p]["nachweis"].strip() for p in BILDER if bild_html(p)]
+    if not soll:
+        return None
+    if any(BILDER[p].get("ki") for p in BILDER if bild_html(p)):
+        soll = [NACHWEIS_SATZ] + soll
+    sichtbar = sichtbarer_text(impressum, css_texte)
+    for teil in ["Bildnachweise"] + soll:
+        if " ".join(teil.split()) not in sichtbar:
+            return f"impressum.html: Bildnachweis nicht sichtbar (verborgener Vorfahre oder fehlt): {teil[:60]}"
+    return None
+
+
+def url_fehler(seiten, css_texte):
+    """Runde 6, A1a: url() lädt nur Schriften. Ein Bild als background-image in stil.css oder in einem style-Attribut
+    ginge an Bildplätzen und Nachweis vorbei (Codex: bilder/detail.webp an .kosten-kopf). @import und image-set sind
+    ebenso gesperrt. Gibt die Meldung zurück oder None."""
+    quellen = dict(css_texte)
+    quellen.update(seiten)
+    for name, text in quellen.items():
+        text = re.sub(r"/\*.*?\*/", "", text, flags=re.S) if name.endswith(".css") else text
+        if re.search(r"@import|image-set\s*\(", text, flags=re.I):
+            return f"{name}: @import oder image-set, nur url() auf schriften/ ist erlaubt"
+        for ziel in re.findall(r"url\(\s*(?:\"([^\"]*)\"|'([^']*)'|([^)\s]*))\s*\)", text, flags=re.I):
+            pfad = next(z for z in ziel if z) if any(ziel) else ""
+            if not pfad.startswith("schriften/"):
+                return f"{name}: url({pfad}) lädt etwas außerhalb von schriften/"
+    return None
+
+
+BILD_MARKUP = re.compile(r"<(?:img|picture|source|image|video|object|embed|iframe)\b|\b(?:srcset|poster)\s*=|"
+                         r"<input\b[^>]*\btype\s*=\s*[\"']?image[\"'\s/>]", re.I)
+
+
+def bild_fehler_seiten(seiten):
+    """Runde 6, Punkt 10 (Programmierer S4): Bilder nur aus Bildplätzen. Ohne das Markup der gezeigten Plätze darf
+    keine gebaute Seite mehr ein Bildelement tragen (img, picture, source, srcset, video, …); vorher fing ein direktes
+    <img> in inhalte/ nur der Zeuge B1/B2. Gibt die Meldung zurück oder None."""
+    plaetze = [bild_html(p) for p in BILDER]
+    for name, seite in seiten.items():
+        rest = seite
+        for stueck in plaetze:
+            if stueck:
+                rest = rest.replace(stueck, "")
+        treffer = BILD_MARKUP.search(rest)
+        if treffer:
+            return f"{name}: Bild außerhalb der Bildplätze: {rest[treffer.start():treffer.start() + 60]}"
+    return None
+
+
+def ausgabe_sperre(seiten):
+    """Steht in main zwischen Bauen und Schreiben, wie impressum_sperre; gilt auch bei FOTOS_ZEIGEN = False."""
+    meldung = bild_fehler_seiten(seiten) or url_fehler(seiten, stile())
     if meldung:
         sys.exit(meldung)
 
@@ -498,6 +669,7 @@ def main():
     if "--bewertungszeile" in sys.argv:
         print(bewertung_zeile())
         return
+    sperre_modus()
     sperre_noindex()
     sperre_bilder()
     pruefen = "--pruefen" in sys.argv
@@ -506,6 +678,7 @@ def main():
         print(meldung)
     gebaut = {name: bauen(name, meta) for name, meta in SEITEN.items()}
     impressum_sperre(gebaut)
+    ausgabe_sperre(gebaut)
     abweichungen = 0
     for name in SEITEN:
         neu = gebaut[name]
