@@ -464,60 +464,21 @@ main > .abschnitt:last-child { padding-bottom: var(--luft); }
 .versetzt { max-width: 34rem; margin-top: 36px; }
 @media (min-width: 900px) { .versetzt { margin-left: 50%; margin-top: 56px; } }
 
-/* ---------- Bühne (erste Ansicht der Startseite) ---------- */
-.buehne { padding: 28px 0 0; position: relative; }
-.buehne-raster { display: grid; gap: 0; }
-.buehne-kopf .frage { margin-bottom: 14px; }
-.buehne-spalte { margin-top: 24px; }
-/* Am Rechner: Kopfzeilen über die ganze Breite, darunter Aussage und Spalte auf derselben Oberkante;
-   die Spalte beginnt auf der Höhe der Großbuchstaben von „Sie müssen“ (gemessen per Sonde, Bericht) */
-@media (min-width: 900px) {
-  .buehne { padding-top: 48px; }
-  .buehne-raster { grid-template-columns: minmax(0, 1fr) minmax(0, 300px); grid-template-areas: "kopf ." "aussage spalte"; column-gap: 64px; align-items: start; }
-  .buehne-kopf { grid-area: kopf; }
-  .buehne-raster > .aussage { grid-area: aussage; }
-  .buehne-spalte { grid-area: spalte; margin-top: 0; padding-top: 10px; }
-}
 .dach { font-size: 15px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tinte-2); line-height: 1.4; margin: 0 0 14px; }
 .frage { font-size: clamp(20px, 2.3vw, 29px); font-weight: 500; line-height: 1.3; color: var(--tinte-2); max-width: 22em; margin: 0 0 14px; letter-spacing: -0.01em; }
 .aussage { margin: 0; max-width: none; }
 .aussage-gross { display: block; font-size: clamp(42px, 7.6vw, 104px); font-weight: 900; line-height: 0.96; letter-spacing: -0.035em; color: var(--navy); }
 .aussage-gross mark { padding: 0 0.06em; margin: 0 -0.02em; }
 .aussage-rest { display: block; font-size: clamp(19px, 2.1vw, 27px); font-weight: 700; line-height: 1.3; color: var(--tinte); margin-top: 16px; max-width: 26em; letter-spacing: -0.01em; }
-.buehne-spalte { display: flex; flex-direction: column; align-items: flex-start; }
-.buehne .unterzeile { font-size: 17px; line-height: 1.5; color: var(--tinte); margin: 0 0 18px; }
-.buehne .knoepfe { display: flex; width: 100%; }
-.buehne .knopf { width: 100%; min-height: 58px; }
-@media (min-width: 540px) and (max-width: 899px) { .buehne .knopf { width: auto; } }
 .kostenzeile { margin: 18px 0 0; font-size: 15px; line-height: 1.5; color: var(--tinte-2); }
 .kostenzeile a { color: var(--navy); font-weight: 700; display: inline-block; padding-block: 12px; margin-block: -12px; }
 
-/* Bildband: am Rechner randabfallend vom 38-Prozent-Punkt bis zum rechten Fensterrand, oben links eine große Rundung;
-   die Zeitenleiste liegt über der linken Bildkante. Am Handy über die volle Breite. */
-.band { position: relative; margin-top: 28px; display: flex; flex-direction: column; }
-.band .bild { order: 1; }
-.band-leiste { order: 2; }
-.band .bild { margin: 0; max-width: none; position: relative; }
-.band .bild img { width: 100%; height: auto; border: 0; border-radius: 0; }
-.band .bild figcaption { font-size: 15px; color: var(--tinte-2); margin: 12px var(--rand) 0; max-width: 40em; }
-.band-leiste { background: var(--navy); color: var(--hell); padding: 16px var(--rand) 18px; }
-.band-leiste .zeiten { margin: 0; font-size: 15px; line-height: 1.55; color: var(--hell-2); max-width: 34rem; }
-.band-leiste .zeiten b { color: var(--hell); }
-.band-leiste .zeiten a { color: var(--hell); font-weight: 700; display: inline-block; padding-block: 12px; margin-block: -12px; }
-.band-leiste .zeiten a:hover { color: var(--amber-hell); }
-@media (min-width: 900px) {
-  .band { margin: 80px 0 0 38vw; }
-  .band .bild img { border-radius: var(--bild-rund) 0 0 var(--bild-rund); max-height: 600px; object-fit: cover; }
-  .band .bild figcaption { margin: 14px var(--rand) 0 0; }
-  .band-leiste { position: absolute; z-index: 2; top: -40px; left: calc(var(--rand) - 38vw); width: min(560px, 46vw); padding: 18px 22px 20px; border-radius: var(--radius); box-shadow: var(--schatten); --schatten-farbe: var(--amber); }
-}
 /* Kennzeichnung auf dem Bild (bauen.py BILD_MARKE): wie ein Fotonachweis in der Ecke oben rechts, 12 px hell,
    kein Kasten; ein weicher Verlauf dahinter hält den Kontrast auch auf hellen Bildstellen */
 .bild { position: relative; }
 .bild-marke { position: absolute; top: 0; right: 0; z-index: 1; padding: 10px 12px 26px 56px; font-size: 12px; font-weight: 600; line-height: 1; letter-spacing: 0.02em; color: rgba(255, 255, 255, 0.95); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55); background: radial-gradient(ellipse at 100% 0, rgba(9, 19, 28, 0.7) 0, rgba(9, 19, 28, 0.35) 45%, rgba(9, 19, 28, 0) 72%); pointer-events: none; }
 
 /* ---------- Versicherung: große Aussage über die volle Breite, Begründung versetzt ---------- */
-#versicherung .merksatz.gross { color: var(--navy); }
 
 /* ---------- Verweis: eine enge Zeile ---------- */
 .verweis { font-size: 18px; }
@@ -618,15 +579,9 @@ main > .abschnitt:last-child { padding-bottom: var(--luft); }
 .selbst .zeilen dt { font-size: 18px; }
 .selbst { display: grid; gap: 28px; }
 .selbst-text { padding: 0 var(--rand); }
-.selbst .bild { margin: 0; max-width: none; }
-.selbst .bild img { width: 100%; height: auto; border: 0; border-radius: 0; }
-.selbst .bild figcaption { margin: 12px var(--rand) 0; font-size: 15px; color: var(--tinte-2); max-width: 34em; }
 @media (min-width: 900px) {
   .selbst { grid-template-columns: minmax(0, 1fr) minmax(0, 46vw); column-gap: 64px; align-items: start; }
   .selbst-text { padding: 0 0 0 var(--rand); }
-  .selbst .bild { position: sticky; top: 96px; }
-  .selbst .bild img { border-radius: var(--bild-rund) 0 0 var(--bild-rund); }
-  .selbst .bild figcaption { margin-left: 0; }
 }
 .wahl .merksatz.gross { color: var(--hell); }
 .themen.zwei { max-width: none; }
@@ -638,14 +593,6 @@ main > .abschnitt:last-child { padding-bottom: var(--luft); }
 /* Wer zahlt?: die Bedingungen sind der zweite Blickfang, ihre Überschrift tritt hinter den Seitentitel zurück */
 .inhalt .bedingung .titel-gross { font-size: clamp(28px, 3.4vw, 44px); margin-bottom: 22px; }
 
-/* Wer zahlt?: rechts im Kopf die Schwelle aus „Kleiner Schaden“ als Zahl, gebunden an die Unterkante der Rufzeile */
-.kopf-raster { display: grid; gap: 32px; }
-.seitenkopf .schwelle { border-top: 2px solid var(--navy); padding-top: 16px; max-width: 26rem; }
-.seitenkopf .schwelle-zahl { font-size: clamp(48px, 5.4vw, 72px); font-weight: 900; line-height: 1; letter-spacing: -0.035em; color: var(--navy); margin: 0 0 14px; max-width: none; }
-.seitenkopf .schwelle-vor { display: block; font-size: 15px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tinte-2); line-height: 1.4; margin-bottom: 6px; }
-.seitenkopf .schwelle-satz { font-size: 17px; line-height: 1.5; color: var(--tinte); margin: 0; }
-.seitenkopf .schwelle-satz a { font-weight: 700; color: var(--navy); display: inline-block; padding-block: 12px; margin-block: -12px; }
-@media (min-width: 900px) { .kopf-raster { grid-template-columns: minmax(0, 1fr) minmax(0, 320px); column-gap: 64px; align-items: end; } .seitenkopf .schwelle { margin-bottom: 6px; } }
 
 /* ==========================================================================================================
    Richtung B „Geteilte Bühne“ (Gestaltungsvertrag 24.11.2026, Rechtsnachtrag): links Nachtblau mit dem Text an
@@ -693,7 +640,6 @@ main > .abschnitt:last-child { padding-bottom: var(--luft); }
 .kopf-b .ruf a { color: var(--hell); }
 .kopf-b .ruf a:hover { color: var(--amber-hell); }
 .kopf-b .ruf svg { color: var(--amber); }
-@media (min-width: 900px) { .kopf-b .bild img { height: 460px; object-position: 30% 60%; } }
 
 /* Namensfläche: eigene helle Fläche unter der Bühne, ohne Foto daneben (Zeuge S2) */
 .namensflaeche { background: var(--sanft); padding-bottom: var(--luft-weit); }
