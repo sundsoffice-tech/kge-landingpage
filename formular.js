@@ -5,15 +5,19 @@
  *  - Honigtopf ist eine Checkbox und wird über .checked gelesen, nie über .value (Lektion E2).
  *  - Der Erfolgstext steht im Attribut data-erfolg am Formular, gesetzt von bauen.py aus den Telefonzeiten
  *    (TELEFONZEITEN, Runde 6, Punkt 12).
- *  - Drei Ausgänge (Runde 7, Punkt 1):
- *    a) Erfolg: der Endpunkt antwortet mit ok:true. Erfolgstext, Knopf bleibt gesperrt, danach Messung form_submit
- *       über window.kgeMessung (einwilligung.js); wirft die Messung, bleibt die Erfolgsmeldung stehen.
- *    b) Sicher gescheitert: eine Antwort ist da, aber HTTP-Fehler oder lesbares JSON ohne ok:true. Fehlertext mit
- *       tippbarer Nummer, Knopf wieder frei.
- *    c) Unklar: Zeitgrenze, Netzfehler beim Versand oder 2xx mit unlesbarem JSON. Die Anfrage kann angekommen sein:
- *       Hinweis mit tippbarer Nummer, Knopf bleibt gesperrt mit seinem Text, Eingaben bleiben stehen, kein zweiter
- *       Versand. Den Ausgang meldet der Zeitgeber selbst, auch ohne AbortController; eine später doch eintreffende
- *       Antwort ändert die Anzeige nur noch in Richtung Erfolg.
+ *  - Drei Ausgänge (Runde 7, Punkt 1; Regeln seit Runde 8):
+ *    a) Erfolg: 2xx mit lesbarem JSON und ok === true. Erfolgstext, Knopf bleibt gesperrt, danach Messung
+ *       form_submit über window.kgeMessung (einwilligung.js); wirft die Messung, bleibt die Erfolgsmeldung stehen.
+ *    b) Sicher gescheitert: NUR eine Antwort unter 500 mit lesbarem JSON, dessen ok nicht true ist (etwa 200 mit
+ *       ok:false oder 400 mit JSON). Der Endpunkt hat dann selbst abgelehnt. Fehlertext mit tippbarer Nummer, Knopf
+ *       wieder frei.
+ *    c) Unklar: alles andere, das kein Erfolg ist: jeder Status ab 500 (mit oder ohne JSON; ein 502 oder 504 des
+ *       vorgeschalteten Servers kann nach dem Speichern kommen), jede Antwort ohne lesbares JSON, Netzfehler beim
+ *       Versand und die Zeitgrenze. Die Anfrage kann angekommen sein: Hinweis mit tippbarer Nummer, Knopf bleibt
+ *       gesperrt mit seinem Text, Eingaben bleiben stehen, kein zweiter Versand. Den Ausgang meldet der Zeitgeber
+ *       selbst. Er bricht den Versand nicht ab (kein AbortController): Eine später doch eintreffende Erfolgsantwort
+ *       stellt die Anzeige noch auf Erfolg und zählt als form_submit; jede andere späte Antwort ändert nichts.
+ *  - Ist telefonAnzeige in konfig.js keine Zeichenkette, gelten die Rückfallwerte für Anzeige und Link.
  *  - Laden (Runde 7, Punkt 2): Im Markup ist der Knopf gesperrt und darunter steht sichtbar „Bitte rufen Sie an: …“
  *    ([data-ohne-skript]). Erst als letzter Schritt, nach der Registrierung des Absende-Handlers, schaltet dieses
  *    Skript den Knopf frei und blendet den Satz aus. Lädt es nicht oder scheitert es vorher, bleiben Knopf gesperrt
@@ -24,7 +28,8 @@
   var konfig = window.KGE_KONFIG || {};
   var ENDPUNKT = konfig.leadEndpunkt || "https://leads.sundsconnect.de/lead";
   var KUNDE = konfig.kunde || "kge";
-  var TELEFON = String(konfig.telefonAnzeige || "02161 688 86 91");
+  var TELEFON = typeof konfig.telefonAnzeige === "string" && konfig.telefonAnzeige ? konfig.telefonAnzeige
+    : "02161 688 86 91";
   var TELEFON_LINK = "tel:+" + (TELEFON.replace(/\D/g, "").replace(/^0/, "49"));
   var ZEITGRENZE_MS = 15000;
 
@@ -114,16 +119,14 @@
     melde("Einen Moment …");
 
     var honig = form.querySelector("#f-website");
-    var abbruch = typeof AbortController === "function" ? new AbortController() : null;
+    // Die Zeitgrenze meldet nur „unklar“ und bricht nicht ab, damit eine späte Erfolgsantwort noch ankommt.
     var uhr = setTimeout(function () {
       unklar("Zeitgrenze " + ZEITGRENZE_MS + " ms");
-      if (abbruch) abbruch.abort();
     }, ZEITGRENZE_MS);
     var versand;
     try {
       versand = fetch(ENDPUNKT, {
         method: "POST",
-        signal: abbruch ? abbruch.signal : undefined,
         headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify({
           kunde: KUNDE,
@@ -144,8 +147,8 @@
     }).then(function (a) {
       clearTimeout(uhr);
       if (a.r.ok && a.lesbar && a.daten && a.daten.ok === true) erfolg();
-      else if (!a.r.ok || a.lesbar) gescheitert((a.daten && a.daten.fehler) || "HTTP " + a.r.status + ", ohne ok:true");
-      else unklar("Antwort 2xx, JSON nicht lesbar");
+      else if (a.lesbar && a.r.status < 500) gescheitert((a.daten && a.daten.fehler) || "HTTP " + a.r.status + ", ohne ok:true");
+      else unklar("HTTP " + a.r.status + (a.lesbar ? "" : ", JSON nicht lesbar"));
     }, function (fehler) {
       clearTimeout(uhr);
       unklar(fehler);

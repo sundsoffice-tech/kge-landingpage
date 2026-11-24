@@ -17,7 +17,7 @@ Stand 09.11.2026 (Neuaufbau auf Zweig `neu-2026-11-09`). Zielseite der Google-Ad
 | `stil.css` | gemeinsames Stylesheet, Signaletik-Look (Skill `dossier`) |
 | `konfig.js` | AW-ID, Conversion-Labels, Telefonanzeige, Lead-Endpunkt; Platzhalter bis zur Kontoanlage |
 | `einwilligung.js` | Consent-Banner, Consent Mode v2 (default denied, update beim Klick), Google-Tag, Conversion-Aktionen |
-| `formular.js` | Rückruf-Formular an `https://leads.sundsconnect.de/lead`, Erfolg erst nach `ok:true`; schaltet nach der Registrierung des Absende-Handlers den im Markup gesperrten Knopf frei und blendet den Anrufsatz aus; drei Ausgänge: Erfolg, sicher gescheitert (Knopf wieder frei), unklar (Zeitgrenze 15 s, Netzfehler, 2xx ohne lesbares JSON: Hinweis mit Nummer, Knopf bleibt gesperrt, kein zweiter Versand) |
+| `formular.js` | Rückruf-Formular an `https://leads.sundsconnect.de/lead`, Erfolg erst nach `ok:true`; schaltet nach der Registrierung des Absende-Handlers den im Markup gesperrten Knopf frei und blendet den Anrufsatz aus; drei Ausgänge: Erfolg (2xx, JSON mit `ok: true`); sicher gescheitert nur bei Status unter 500 mit lesbarem JSON ohne `ok: true` (Knopf wieder frei); sonst unklar (jeder Status ab 500, jede Antwort ohne lesbares JSON, Netzfehler, Zeitgrenze 15 s: Hinweis mit Nummer, Knopf bleibt gesperrt, kein zweiter Versand). Die Zeitgrenze bricht nicht ab; eine späte Erfolgsantwort stellt noch auf Erfolg und zählt als `form_submit` |
 | `leiste.js` | blendet die Anrufleiste aus, solange der Anrufknopf im Hero zu sehen ist |
 | `pruefen/` | Zeugen ohne Browser: `zeuge-einwilligung.js`, `rotprobe-einwilligung.js`, `zeuge-formular.js`, `rotprobe-formular.js`, `zeuge_bauen.py`, `rotprobe_bauen.py`, `zeuge_seiten.py` (Regeln der acht gebauten Seiten), `rotprobe_seiten.py`; werden nicht ausgeliefert |
 | `.gitattributes` | nimmt Bauquellen und Zeugen aus `git archive` aus (`export-ignore`) |
@@ -61,8 +61,9 @@ Rotproben sind langsam (zusammen rund 3 Minuten) und laufen nacheinander, nicht 
 4. Screenshots 390 und 1280 ansehen (Skill `hinsehen`, `schirmfoto.mjs` mit Geräteemulation; ein reines `--window-size=390` schneidet rechts ab).
 5. Zeugen, jeder mit Exit 0, in einem Lauf:
    `node pruefen/zeuge-formular.js` (Pflichtlauf seit Runde 7: `formular.js` in nachgebautem DOM, je Fall Status,
-   Knopf und ob ein zweiter Versand möglich ist: Erfolg, Serverfehler, 200 ohne `ok:true`, 2xx mit unlesbarem JSON,
-   Netzfehler, Zeitgrenze, ohne `AbortController` samt später Antwort, Messfunktion wirft, Ladefehler vor dem Handler);
+   Knopf und ob ein zweiter Versand möglich ist: Erfolg, 500 mit JSON, 502 als HTML, 400 und 200 ohne `ok:true`,
+   2xx mit unlesbarem JSON, Netzfehler, Zeitgrenze mit später Erfolgs- oder Fehlantwort, ohne `AbortController`,
+   Messfunktion wirft, Ladefehler vor dem Handler, Rufnummer keine Zeichenkette);
    `node pruefen/zeuge-einwilligung.js` (Einwilligung, Nummerntausch, Widerruf, Freihalteliste);
    `python pruefen/zeuge_bauen.py` (Sperren in `bauen.py`: Konfiguration samt Form des `googleTag`, Einwilligungsmodus,
    Bewertungskasten mit fester Uhr, Kommentare, Fotoschalter, Bildsperre und Impressumssperre vor dem Schreiben,

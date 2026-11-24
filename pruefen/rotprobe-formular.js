@@ -14,16 +14,16 @@ const QUELLE = fs.readFileSync(path.join(__dirname, "..", "formular.js"), "utf8"
 const MUTATIONEN = [
   ["M1 unklar gibt den Knopf frei", "C1",
     "zustand = \"unklar\";\n    knopf.disabled = true;", "zustand = \"unklar\";\n    knopf.disabled = false;"],
-  ["M2 der Zeitgeber meldet nicht (nur Abbruch)", "Z2",
+  ["M2 der Zeitgeber meldet nicht", "Z1",
     "      unklar(\"Zeitgrenze \" + ZEITGRENZE_MS + \" ms\");\n", ""],
   ["M3 Freischaltung vor dem Handler", "L2",
     "  var ERFOLG = form.getAttribute", "  knopf.disabled = false;\n  var ERFOLG = form.getAttribute"],
-  ["M4 späte Fehlantwort überschreibt unklar", "Z3",
+  ["M4 späte Fehlantwort überschreibt unklar", "Z2",
     "  function gescheitert(grund) {\n    if (zustand !== \"sendet\") return;",
     "  function gescheitert(grund) {\n    if (zustand === \"erfolg\") return;"],
   ["M5 Erfolg ohne ok === true", "B3", "a.daten && a.daten.ok === true", "a.daten && a.daten.ok"],
   ["M6 2xx mit unlesbarem JSON gilt als gescheitert", "C1",
-    "else unklar(\"Antwort 2xx, JSON nicht lesbar\");", "else gescheitert(\"Antwort 2xx, JSON nicht lesbar\");"],
+    "else unklar(\"HTTP \"", "else gescheitert(\"HTTP \""],
   ["M7 Netzfehler gilt als gescheitert", "C2",
     "      clearTimeout(uhr);\n      unklar(fehler);", "      clearTimeout(uhr);\n      gescheitert(fehler);"],
   ["M8 Zeitgrenze 30 s statt 15 s", "A1", "var ZEITGRENZE_MS = 15000;", "var ZEITGRENZE_MS = 30000;"],
@@ -36,6 +36,21 @@ const MUTATIONEN = [
     "    if (typeof window.kgeMessung === \"function\") window.kgeMessung(\"form_submit\");\n"],
   ["M12 Erfolg hält den Zustand nicht fest (zweiter Versand möglich)", "A1",
     "    zustand = \"erfolg\";\n", "    zustand = \"offen\";\n"],
+  // Runde 8
+  ["M13 Status ab 500 mit JSON wieder sicher gescheitert", "B1",
+    "else if (a.lesbar && a.r.status < 500) gescheitert(", "else if (a.lesbar) gescheitert("],
+  ["M14 alte Regel: jeder Nicht-2xx gescheitert, auch ohne JSON", "B2",
+    "else if (a.lesbar && a.r.status < 500) gescheitert(", "else if (!a.r.ok || a.lesbar) gescheitert("],
+  ["M15 späte Erfolgsantwort nach der Zeitgrenze wird verworfen", "Z1",
+    "    if (zustand !== \"sendet\" && zustand !== \"unklar\") return;\n    zustand = \"erfolg\";",
+    "    if (zustand !== \"sendet\") return;\n    zustand = \"erfolg\";"],
+  ["M16 der Zeitgeber bricht den Versand wieder ab", "Z1",
+    "      method: \"POST\",\n", "      method: \"POST\",\n"
+    + "      signal: (function (c) { setTimeout(function () { c.abort(); }, ZEITGRENZE_MS); "
+    + "return c.signal; })(new AbortController()),\n"],
+  ["M17 Rufnummer ohne Typprüfung (Zahl ergibt falschen Link)", "L3",
+    "typeof konfig.telefonAnzeige === \"string\" && konfig.telefonAnzeige ? konfig.telefonAnzeige\n    : \"02161 688 86 91\"",
+    "String(konfig.telefonAnzeige || \"02161 688 86 91\")"],
 ];
 
 (async () => {

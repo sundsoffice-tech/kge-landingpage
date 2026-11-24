@@ -37,8 +37,9 @@ function aufgeschoben() {
   return d;
 }
 
-function antwort(httpOk, daten) {
-  return { ok: httpOk, status: httpOk ? 200 : 500,
+// Antwort mit HTTP-Status; daten als Error heißt: der Rumpf ist kein lesbares JSON (etwa eine HTML-Fehlerseite).
+function antwort(status, daten) {
+  return { ok: status >= 200 && status < 300, status,
     json: () => (daten instanceof Error ? Promise.reject(daten) : Promise.resolve(daten)) };
 }
 
@@ -114,15 +115,14 @@ const FAELLE = [
     const h = lade(q, { ohneTelefonfeld: true });
     return [h, { ladefehlerDa: true, frei: false, satzSichtbar: true, klickGeht: false }];
   }],
-  ["L3", "Rufnummer in konfig.js keine Zeichenkette: lädt, Link stimmt", async (q) => {
+  ["L3", "Rufnummer in konfig.js keine Zeichenkette: Rückfallwerte für Anzeige und Link", async (q) => {
     const h = lade(q, { konfig: { telefonAnzeige: 21616888691 } });
-    h.klick(); h.antworte(0, antwort(false, { ok: false })); await h.ruhe();
-    // Die Zahl wird als Text übernommen (ohne führende 0); entscheidend ist: kein Ladefehler, Knopf frei, Nummer im Hinweis.
-    return [h, { ladefehler: null, frei: true, status: "Das hat leider nicht geklappt. Bitte rufen Sie direkt an: 21616888691" }];
+    h.klick(); h.antworte(0, antwort(400, { ok: false })); await h.ruhe();
+    return [h, { ladefehler: null, frei: true, status: FEHLER, telLink: TEL_LINK }];
   }],
   ["L4", "konfig.js fehlt: Rückfallwerte, Erfolg", async (q) => {
     const h = lade(q, { konfig: undefined });
-    h.klick(); h.antworte(0, antwort(true, { ok: true })); await h.ruhe();
+    h.klick(); h.antworte(0, antwort(200, { ok: true })); await h.ruhe();
     return [h, { ladefehler: null, status: ERFOLG }];
   }],
   ["V1", "ungültige Nummer: Hinweis, kein Versand", async (q) => {
@@ -133,7 +133,7 @@ const FAELLE = [
   ["A1", "Erfolg: Erfolgstext, Knopf gesperrt, Messung, kein zweiter Versand", async (q) => {
     const h = lade(q); h.klick();
     const unterwegs = h.stand();
-    h.antworte(0, antwort(true, { ok: true })); await h.ruhe();
+    h.antworte(0, antwort(200, { ok: true })); await h.ruhe();
     const geleert = h.stand().telWert === "";
     h.klick(); await h.ruhe();
     return [h, { status: ERFOLG, klasse: "status ok", knopf: "Anfrage eingegangen", frei: false, gemessen: "form_submit",
@@ -142,27 +142,36 @@ const FAELLE = [
   }],
   ["A2", "Messfunktion wirft: Erfolgstext bleibt", async (q) => {
     const h = lade(q, { messungWirft: true }); h.klick();
-    h.antworte(0, antwort(true, { ok: true })); await h.ruhe();
+    h.antworte(0, antwort(200, { ok: true })); await h.ruhe();
     return [h, { status: ERFOLG, klasse: "status ok", frei: false }];
   }],
-  ["B1", "Serverfehler 500 mit JSON: Fehlertext mit Nummer, Knopf frei, zweiter Versand möglich", async (q) => {
+  ["B1", "Status 500 mit lesbarem JSON: unklar, Knopf gesperrt, kein zweiter Versand", async (q) => {
+    const h = lade(q); h.klick(); h.antworte(0, antwort(500, { ok: false, fehler: "x" })); await h.ruhe(); h.klick();
+    return [h, { status: UNKLAR, klasse: "status fehler", telLink: TEL_LINK, knopf: KNOPF, frei: false, aufrufe: 1,
+      telWert: "0177 1234567" }];
+  }],
+  ["B2", "Status 502 als HTML-Seite des Vorschalt-Servers: unklar", async (q) => {
+    const h = lade(q); h.klick(); h.antworte(0, antwort(502, new Error("kein JSON"))); await h.ruhe(); h.klick();
+    return [h, { status: UNKLAR, frei: false, knopf: KNOPF, aufrufe: 1 }];
+  }],
+  ["B3", "200 mit lesbarem JSON ohne ok:true (ok: \"true\"): sicher gescheitert", async (q) => {
+    const h = lade(q); h.klick(); h.antworte(0, antwort(200, { ok: "true" })); await h.ruhe();
+    return [h, { status: FEHLER, frei: true, gemessen: "" }];
+  }],
+  ["B4", "400 mit {\"ok\":false}: sicher gescheitert, Fehlertext mit Nummer, Knopf frei, zweiter Versand möglich", async (q) => {
     const h = lade(q); h.klick();
-    h.antworte(0, antwort(false, { ok: false, fehler: "x" })); await h.ruhe();
+    h.antworte(0, antwort(400, { ok: false, fehler: "x" })); await h.ruhe();
     const zwischen = h.stand(); h.klick();
     return [h, { status: "Einen Moment …", knopf: "Wird gesendet …", frei: false, aufrufe: 2,
       vorher: zwischen.frei && zwischen.status === FEHLER && zwischen.klasse === "status fehler"
         && zwischen.telLink === TEL_LINK && zwischen.knopf === KNOPF && zwischen.telWert === "0177 1234567" }];
   }],
-  ["B2", "Serverfehler 500 ohne lesbares JSON: sicher gescheitert", async (q) => {
-    const h = lade(q); h.klick(); h.antworte(0, antwort(false, new Error("kein JSON"))); await h.ruhe();
+  ["B5", "200 mit {}: sicher gescheitert", async (q) => {
+    const h = lade(q); h.klick(); h.antworte(0, antwort(200, {})); await h.ruhe();
     return [h, { status: FEHLER, frei: true, knopf: KNOPF }];
   }],
-  ["B3", "200 mit lesbarem JSON ohne ok:true (ok: \"true\"): sicher gescheitert", async (q) => {
-    const h = lade(q); h.klick(); h.antworte(0, antwort(true, { ok: "true" })); await h.ruhe();
-    return [h, { status: FEHLER, frei: true, gemessen: "" }];
-  }],
   ["C1", "200 mit unlesbarem JSON: unklar, Knopf gesperrt mit Text, Eingaben bleiben, kein zweiter Versand", async (q) => {
-    const h = lade(q); h.klick(); h.antworte(0, antwort(true, new Error("kein JSON"))); await h.ruhe(); h.klick();
+    const h = lade(q); h.klick(); h.antworte(0, antwort(200, new Error("kein JSON"))); await h.ruhe(); h.klick();
     return [h, { status: UNKLAR, klasse: "status fehler", telLink: TEL_LINK, knopf: KNOPF, frei: false,
       telWert: "0177 1234567", aufrufe: 1, gemessen: "" }];
   }],
@@ -170,23 +179,26 @@ const FAELLE = [
     const h = lade(q); h.klick(); h.scheitere(0, new TypeError("Failed to fetch")); await h.ruhe(); h.klick();
     return [h, { status: UNKLAR, frei: false, knopf: KNOPF, aufrufe: 1, uhrGeloescht: true }];
   }],
-  ["Z1", "Zeitgrenze mit AbortController: der Zeitgeber meldet unklar sofort, Versand abgebrochen", async (q) => {
+  ["Z1", "Zeitgrenze, danach Erfolg: unklar sofort, kein Abbruch, späte Erfolgsantwort zählt", async (q) => {
     const h = lade(q); h.klick(); h.uhr();
     const sofort = h.stand(); await h.ruhe(); h.klick();
-    return [h, { status: UNKLAR, frei: false, knopf: KNOPF, abgebrochen: true, aufrufe: 1,
-      sofort: sofort.status === UNKLAR && !sofort.frei }];
+    const zwischen = h.stand();
+    h.antworte(0, antwort(200, { ok: true })); await h.ruhe();
+    return [h, { status: ERFOLG, klasse: "status ok", gemessen: "form_submit", frei: false, abgebrochen: false,
+      aufrufe: 1, sofort: sofort.status === UNKLAR && !sofort.frei && sofort.knopf === KNOPF,
+      zwischen: zwischen.status === UNKLAR && zwischen.aufrufe === 1 }];
   }],
-  ["Z2", "Zeitgrenze ohne AbortController: unklar statt Hängen, späte Erfolgsantwort zählt", async (q) => {
+  ["Z2", "Zeitgrenze, danach Fehlantwort (400 mit JSON): bleibt unklar, Knopf gesperrt", async (q) => {
+    const h = lade(q); h.klick(); h.uhr(); await h.ruhe();
+    h.antworte(0, antwort(400, { ok: false })); await h.ruhe(); h.klick();
+    return [h, { status: UNKLAR, frei: false, aufrufe: 1, abgebrochen: false }];
+  }],
+  ["Z3", "Zeitgrenze ohne AbortController: unklar statt Hängen, späte 502 ändert nichts", async (q) => {
     const h = lade(q, { ohneAbort: true }); h.klick(); h.uhr(); await h.ruhe();
     const zwischen = h.stand();
-    h.antworte(0, antwort(true, { ok: true })); await h.ruhe();
-    return [h, { status: ERFOLG, gemessen: "form_submit", frei: false,
+    h.antworte(0, antwort(502, new Error("kein JSON"))); await h.ruhe(); h.klick();
+    return [h, { status: UNKLAR, frei: false, aufrufe: 1,
       zwischen: zwischen.status === UNKLAR && !zwischen.frei && zwischen.knopf === KNOPF }];
-  }],
-  ["Z3", "Zeitgrenze ohne AbortController, späte Fehlantwort: bleibt unklar, Knopf gesperrt", async (q) => {
-    const h = lade(q, { ohneAbort: true }); h.klick(); h.uhr(); await h.ruhe();
-    h.antworte(0, antwort(false, { ok: false })); await h.ruhe(); h.klick();
-    return [h, { status: UNKLAR, frei: false, aufrufe: 1 }];
   }],
 ];
 
