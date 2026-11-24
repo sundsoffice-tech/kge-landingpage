@@ -396,6 +396,10 @@ WEITERE = [
     ("G4 alt-Text leer: Meldung", lambda: platz_fehler(alt=""), FEHLER),
     ("G5 Höhe 0: Meldung", lambda: platz_fehler(hoehe=0), FEHLER),
     ("G6 leerer Platz (keine Datei eingetragen): keine Meldung", lambda: platz_fehler(datei=""), OK),
+    # Runde 4 (24.11.2026): kein Schild am Bild mehr, es bleibt die Sperre für den Nachweis des KI-Bilds.
+    ("G6a KI-Bild, Nachweis ohne „mit KI erzeugt“: Meldung", lambda: platz_fehler(ki=True), FEHLER),
+    ("G6b KI-Bild, Nachweis mit „mit KI erzeugt“: keine Meldung",
+     lambda: platz_fehler(ki=True, nachweis="Beispiel: mit KI erzeugt"), OK),
     ("G7 Datei fehlt: der Platz erscheint nicht, der Bau läuft", lambda: enthaelt("<main>", fehlt=("<figure",), vorhanden=False), True),
     ("G8 vorrang: fetchpriority statt lazy", lambda: enthaelt('fetchpriority="high"', fehlt=('loading="lazy"',), vorrang=True), True),
     ("G9 Unterschrift leer: keine figcaption", lambda: enthaelt("<figure", fehlt=("<figcaption",), unterschrift=""), True),

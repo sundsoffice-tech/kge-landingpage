@@ -160,14 +160,9 @@ b, strong { font-weight: 650; }
 @media (hover: hover) and (pointer: fine) { .weiter:hover svg { transform: translateX(3px); } }
 .ziel { display: inline-block; padding: 12px 0; margin: -12px 0; }
 
-/* ---------- Bilder: Marke „KI-erzeugtes Bild“ auf jedem KI-Bild, am Handy lesbar ---------- */
+/* ---------- Bilder ---------- */
 .bild { margin: 0; position: relative; }
 .bild img { width: 100%; height: auto; }
-.bild-marke {
-  position: absolute; top: 12px; right: 12px; z-index: 2;
-  font-family: var(--text); font-weight: 400; font-size: 13px; line-height: 1; letter-spacing: 0;
-  color: rgba(242, 238, 231, 0.92); background: rgba(14, 13, 12, 0.72); padding: 4px 6px; /* 0,72 statt 0,5: lesbar auch auf Papier-2, falls das Bild fehlt (Detector, Runde 2) */ border-radius: 2px;
-}
 .bild figcaption { font-size: 15px; line-height: 1.45; color: var(--tinte-2); margin-top: 10px; max-width: 34rem; }
 
 /* ---------- Bühne: das Foto über die ganze erste Ansicht, Text unten links ---------- */
@@ -182,9 +177,6 @@ b, strong { font-weight: 650; }
 /* Lesbarkeit unten links: Verlauf zur Nacht, nur dort, wo Text steht */
 .buehne-bild::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(14, 13, 12, 0.92) 0%, rgba(14, 13, 12, 0.55) 34%, rgba(14, 13, 12, 0) 62%); }
 @media (min-width: 900px) { .buehne-bild::after { background: linear-gradient(to top, rgba(14, 13, 12, 0.86) 0%, rgba(14, 13, 12, 0.4) 38%, rgba(14, 13, 12, 0) 64%), linear-gradient(to right, rgba(14, 13, 12, 0.92) 0%, rgba(14, 13, 12, 0.84) 40%, rgba(14, 13, 12, 0) 64%); } }
-.buehne-bild .bild-marke { top: 14px; right: 14px; }
-/* Rechner: Schild unten rechts, frei auf der Rückleuchte statt am Handrücken (Bericht 11, Stilfrage 1) */
-@media (min-width: 900px) { .hero .buehne-bild .bild-marke { top: auto; bottom: 14px; } }
 .buehne-text { position: relative; z-index: 3; padding: 120px 0 28px; }
 @media (min-width: 900px) { .buehne-text { padding: 120px 0 72px; } } /* 120 statt 160: Zeiten bleiben bei 1280x800 in der ersten Ansicht, auch mit dreizeiliger h1 (Fassung B) */
 .buehne h1 { font-size: clamp(46px, 7.6vw, 96px); line-height: 0.96; letter-spacing: -0.035em; color: var(--licht); margin-bottom: 18px; max-width: 12ch; text-wrap: initial; }
@@ -285,7 +277,6 @@ b, strong { font-weight: 650; }
   .strecke-bild figcaption { padding: 0; margin-top: 12px; }
   .bild-rechts .strecke-bild figcaption { padding-right: var(--rand); }
   .bild-links .strecke-bild figcaption { padding-left: max(var(--rand), calc((100vw - 1180px) / 2 + var(--rand))); }
-  .bild-links .strecke-bild .bild-marke { right: 12px; }
 }
 .strecke a { color: var(--licht); }
 .strecke a:hover { color: var(--glut-hell); }

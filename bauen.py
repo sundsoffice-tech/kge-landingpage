@@ -47,17 +47,17 @@ RUECKRUF_SONST = "sobald das Telefon wieder besetzt ist"
 # bevorzugt, alle anderen laden erst beim Heranscrollen.
 FOTOS_ZEIGEN = True
 # Richtung R1 „Nah dran“ (24.11.2026): die Schadenfotos sind KI-erzeugte Bilder (ChatGPT über Codex), alle im selben
-# Bildlook (Werkzeug _bildroh/bildlook.py im Arbeitsbaum, nicht ausgeliefert). Rechtsauflage (Richtungsvertrag,
-# Nachtrag 01:55): jedes KI-Bild trägt die Marke „KI-erzeugtes Bild“ sichtbar am Bild und steht im Bildnachweis.
+# Bildlook (Werkzeug _bildroh/bildlook.py im Arbeitsbaum, nicht ausgeliefert). Jedes KI-Bild steht im Bildnachweis des
+# Impressums. Ein Schild am Bild gibt es seit Fabrices Wort vom 24.11.2026 nicht mehr („ki erzeugtes bild nicht schreiben
+# mein wort“, gegen die Auflage der Rechtsrolle, Nachtrag 01:55).
 # Zusätzliche, freiwillige Felder je Platz:
 #   breiten  Liste der Breiten in Pixeln; neben datei (…-<breite>.webp) liegen die schmaleren Dateien, daraus srcset
 #   sizes    sizes-Angabe zum srcset (Vorgabe 100vw)
 #   schmal   eigener Anschnitt für schmale Fenster: datei, breiten, breite, hoehe, medien (picture/source)
-#   marke    kleine Marke auf dem Bild, bei ki=True genau „KI-erzeugtes Bild“ (sonst bricht der Bau ab)
-#   ki       True: KI-erzeugt; der Nachweis muss „KI-erzeugt“ nennen
+#   ki       True: mit KI erzeugt; der Nachweis muss „mit KI erzeugt“ nennen (sonst bricht der Bau ab)
 #   klasse   zusätzliche Klasse der figure (buehne-bild, strecke-bild)
-KI_MARKE = "KI-erzeugtes Bild"
-KI_NACHWEIS = ("KI-erzeugtes Bild (ChatGPT, OpenAI), am 24.11.2026 für diese Seite erzeugt und im Bildlook der Seite "
+KI_KENNWORT = "mit KI erzeugt"
+KI_NACHWEIS = ("mit KI erzeugt (ChatGPT, OpenAI), am 24.11.2026 für diese Seite und im Bildlook der Seite "
                "nachbearbeitet")
 BILDER = {
     # Startseite, Bühne über die ganze erste Ansicht: Messung an einer Delle im Abendlicht.
@@ -66,7 +66,7 @@ BILDER = {
                          "hoehe": 1536, "medien": "(max-width: 699px)"},
               "alt": "Eine Hand setzt ein Lackschichtdickenmessgerät an der hinteren Seitenwand auf, die Spiegelung "
                      "knickt an der Delle ab",
-              "breite": 1536, "hoehe": 864, "unterschrift": "", "marke": KI_MARKE, "ki": True,
+              "breite": 1536, "hoehe": 864, "unterschrift": "", "ki": True,
               "klasse": "buehne-bild", "nachweis": "Startseite, Messung an einer Delle: " + KI_NACHWEIS,
               "vorrang": True},
     # Nach dem Unfall, vor „An der Unfallstelle“: leer, 16:9.
@@ -77,7 +77,7 @@ BILDER = {
                       "alt": "Abgenommene Stoßstange, dahinter ein zerdrückter Pralldämpfer und ein gebrochener Halter",
                       "breite": 1536, "hoehe": 1024,
                       "unterschrift": "Von außen kaum ein Kratzer, dahinter ein zerdrückter Pralldämpfer.",
-                      "marke": KI_MARKE, "ki": True, "klasse": "strecke-bild",
+                      "ki": True, "klasse": "strecke-bild",
                       "nachweis": "Seite „Wer zahlt?“, verdeckter Schaden hinter der Stoßstange: " + KI_NACHWEIS},
     # R1 schlank (24.11.2026): Lackriss, die vier Ablaufbilder (Anruf, Werkstatt, Gutachten, Versand), das
     # Unterboden-Vollbild der Kostenseite und das Münster-Foto (Einsatzgebiet) sind aus der Erzeugung genommen. Die
@@ -87,8 +87,8 @@ BILDER = {
     "hebebuehne": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": ""},
     # Wer zahlt?: Kopf ohne Bild seit R1 schlank; r1-umschlag wird nicht mehr geladen.
 }
-# Satz nach den Nachweiszeilen im Impressum (Rechtsnachtrag 01:55, Wortlaut angepasst an KI-Bilder).
-NACHWEIS_SATZ = ("Die Bilder mit der Marke „KI-erzeugtes Bild“ sind mit KI erzeugte Beispielbilder. "
+# Satz vor den Nachweiszeilen im Impressum (Rechtsnachtrag 01:55; seit 24.11.2026 ohne Bezug auf ein Schild am Bild).
+NACHWEIS_SATZ = ("Die Fotos auf dieser Seite sind mit KI erzeugte Beispielbilder. "
                  "Sie zeigen keine Fälle, Personen oder Räume des Büros.")
 # Ordner, in dem bilder/ liegt; der Zeuge setzt ihn auf einen eigenen Ordner.
 BILDWURZEL = HIER
@@ -306,10 +306,8 @@ def bild_fehler(platz):
     for weitere in varianten(b):
         if not (BILDWURZEL / weitere).is_file():
             return f"Bildplatz {platz}: Datei {weitere} fehlt"
-    if b.get("ki") and b.get("marke") != KI_MARKE:
-        return f"Bildplatz {platz}: KI-Bild ohne Marke „{KI_MARKE}“"
-    if b.get("ki") and "KI-erzeugt" not in b["nachweis"]:
-        return f"Bildplatz {platz}: KI-Bild, der Nachweis nennt „KI-erzeugt“ nicht"
+    if b.get("ki") and KI_KENNWORT not in b["nachweis"]:
+        return f"Bildplatz {platz}: KI-Bild, der Nachweis nennt „{KI_KENNWORT}“ nicht"
     return None
 
 
@@ -339,7 +337,6 @@ def bild_html(platz):
     e = html.escape
     laden = 'fetchpriority="high"' if b.get("vorrang") else 'loading="lazy"'
     unter = f'<figcaption>{e(b["unterschrift"])}</figcaption>' if b["unterschrift"] else ""
-    marke = f'<span class="bild-marke">{e(b["marke"])}</span>' if b.get("marke") else ""
     klasse = f'bild {e(b["klasse"])}' if b.get("klasse") else "bild"
     satz = ""
     if b.get("breiten"):
@@ -352,7 +349,7 @@ def bild_html(platz):
         quellen = ", ".join(f"{d} {w}w" for d, w in stufen(s["datei"], s.get("breiten") or [s["breite"]]))
         bild = (f'<picture><source media="{e(s["medien"])}" srcset="{e(quellen)}" sizes="100vw" '
                 f'width="{s["breite"]}" height="{s["hoehe"]}">{bild}</picture>')
-    return f'<figure class="{klasse}">{bild}{marke}{unter}</figure>'
+    return f'<figure class="{klasse}">{bild}{unter}</figure>'
 
 
 def sperre_bilder():
@@ -374,7 +371,7 @@ def bildnachweise():
         return ""
     ki = any(BILDER[p].get("ki") for p in BILDER if bild_html(p))
     satz = f"\n    <p>{html.escape(NACHWEIS_SATZ)}</p>" if ki else ""
-    return "<h2>Bildnachweise</h2>\n    <p>" + "<br>".join(zeilen) + "</p>" + satz
+    return "<h2>Bildnachweise</h2>" + satz + "\n    <p>" + "<br>".join(zeilen) + "</p>"
 
 
 def ohne_kommentare(text):

@@ -26,9 +26,10 @@ Fälle:
   B1  Zahl der figure = Zahl der img = Zahl der gezeigten Bildplätze = Zahl der Nachweiszeilen im Impressum
   B2  jedes img gehört zu einem gezeigten Platz, steht auf dessen Seite genau einmal, sein Nachweis steht im Impressum
   B3  Quellen: je Platz aus BILDER (auch leer) {{bild_<platz>}} genau einmal in inhalte/, {{bildnachweise}} im Impressum
-  S1  kein „Symbolbild“-Etikett; jedes KI-Bild (BILDER[...]["ki"]) trägt „KI-erzeugtes Bild“ in seiner figure, jedes
-      andere Schadenfoto „Beispielfoto“, außer bei Plätzen, die Betrieb oder Ort zeigen (BETRIEB_ODER_ORT);
-      Richtungsvertrag Regel 5 und Nachtrag 01:55 (Rechtsauflagen), Richtung R1 24.11.2026
+  S1  kein „Symbolbild“-Etikett; „KI-erzeugtes Bild“ und das Wort „KI“ stehen auf keiner gebauten Seite außer dem
+      Impressum (Fabrice 24.11.2026: „ki erzeugtes bild nicht schreiben mein wort“, kein Schild am Bild); jedes
+      gezeigte KI-Bild (BILDER[...]["ki"]) hat seine Nachweiszeile mit „mit KI erzeugt“ im Impressum; jedes andere
+      Schadenfoto trägt „Beispielfoto“, außer bei Plätzen, die Betrieb oder Ort zeigen (BETRIEB_ODER_ORT)
   S2  die Namenskarte („Ihr Sachverständiger“) steht nicht im selben Bildblock (Elternelement der figure) wie ein
       Schadenfoto (Nachtrag 01:55, erster Punkt)
   P1  noindex genau einmal je Seite, solange NOINDEX = True (sonst keins)
@@ -354,7 +355,9 @@ def nachweiszeilen():
     if imp is None:
         return None
     roh = re.sub(r"<!--.*?-->", "", imp.roh, flags=re.S)  # ein auskommentierter Block ist nicht veröffentlicht
-    m = re.findall(r"<h2>\s*Bildnachweise\s*</h2>\s*<p>(.*?)</p>", roh, re.S | re.I)
+    # Seit Runde 4 (24.11.2026) steht der Satz zu den KI-Bildern vor den Zeilen; er ist keine Nachweiszeile.
+    satz = re.escape(html.escape(bauen.NACHWEIS_SATZ, quote=False))
+    m = re.findall(r"<h2>\s*Bildnachweise\s*</h2>\s*(?:<p>" + satz + r"</p>\s*)?<p>(.*?)</p>", roh, re.S | re.I)
     if len(m) > 1:
         return ["DOPPELT"] * 99
     zeilen = re.split(r"<br\s*/?>", m[0], flags=re.I) if m else []
@@ -437,9 +440,22 @@ def s1():
                     continue
                 text = norm("".join(f.get("text", [])))
                 ki = platz in bauen.BILDER and bauen.BILDER[platz].get("ki")
-                soll = "KI-erzeugtes Bild" if ki else "Beispielfoto"
-                if soll not in text:
-                    v.append(f"{n}: Bild {b['src']} (Platz {platz}) ohne „{soll}“ in Marke oder Unterschrift: {text!r}")
+                if ki:
+                    impressum = (WURZEL / "impressum.html").read_text(encoding="utf-8")
+                    zeile = html.escape(bauen.BILDER[platz]["nachweis"].strip())
+                    if bauen.KI_KENNWORT not in zeile or zeile not in impressum:
+                        v.append(f"{n}: KI-Bild {b['src']} (Platz {platz}) ohne Nachweiszeile „{bauen.KI_KENNWORT}“ im Impressum")
+                elif "Beispielfoto" not in text:
+                    v.append(f"{n}: Bild {b['src']} (Platz {platz}) ohne „Beispielfoto“ in der Unterschrift: {text!r}")
+    for n in SEITEN:
+        if n == "impressum.html":
+            continue
+        roh = (WURZEL / n).read_text(encoding="utf-8")
+        if "KI-erzeugtes Bild" in roh:
+            v.append(f"{n}: „KI-erzeugtes Bild“ steht auf der Seite")
+        treffer = re.findall(r"(?<![\w-])KI(?!\w)", roh)
+        if treffer:
+            v.append(f"{n}: das Wort „KI“ steht {len(treffer)}-mal auf der Seite")
     return v
 
 
@@ -626,7 +642,7 @@ FAELLE = [
     ("B1", "figure = img = gezeigte Bildplätze = Nachweiszeilen im Impressum", b1),
     ("B2", "jedes Bild gehört zu einem Platz, steht auf dessen Seite und hat seinen Nachweis", b2),
     ("B3", "Platzhalter der gezeigten Plätze und {{bildnachweise}} stehen je genau einmal in den Quellen", b3),
-    ("S1", "kein „Symbolbild“-Etikett; KI-Bilder mit „KI-erzeugtes Bild“, andere Schadenfotos mit „Beispielfoto“", s1),
+    ("S1", "kein „Symbolbild“-Etikett; „KI“ nur im Impressum; jedes KI-Bild mit Nachweiszeile im Impressum", s1),
     ("S2", "Namenskarte nicht im selben Bildblock wie ein Schadenfoto", s2),
     ("P1", "noindex genau einmal je Seite, solange NOINDEX = True", p1),
     ("P2", "genau eine h1 je Seite", p2),

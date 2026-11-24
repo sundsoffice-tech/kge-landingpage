@@ -101,20 +101,19 @@ MUTATIONEN = [
       "<h1>Nach dem Unfall: was Sie jetzt tun sollten</h1>",
       '<h1>Nach dem Unfall: was Sie jetzt tun sollten</h1><figure class="bild"><img src="bilder/favicon.svg" '
       'alt="Zeichen" width="10" height="10" loading="lazy"><figcaption>Symbolbild: Zeichen</figcaption></figure>'),
-    # Regel 5 und Nachtrag 01:55: KI-Marke, kein Symbolbild-Etikett, Namenskarte nicht am Schadenfoto (R1 24.11.2026)
-    m("S-a KI-Marke am verdeckten Schaden entfernt (kosten.html)", "S1", "seite", "kosten.html",
-      '<span class="bild-marke">KI-erzeugtes Bild</span><figcaption>Von außen', '<figcaption>Von außen'),
+    # Kein Schild am Bild (Fabrice 24.11.2026), Nachweis im Impressum, kein Symbolbild-Etikett, Namenskarte nicht am
+    # Schadenfoto. S-a, S-b und S-e seit Runde 4 auf den neuen Gegenstand gestellt.
+    m("S-a Schild „KI-erzeugtes Bild“ am verdeckten Schaden wieder eingesetzt (kosten.html)", "S1", "seite", "kosten.html",
+      '<figcaption>Von außen', '<span class="bild-marke">KI-erzeugtes Bild</span><figcaption>Von außen'),
     # S-b, S-c, S-d seit R1 schlank (24.11.2026) auf Bühne und verdeckten Schaden gestellt, weil der Lackriss entfällt.
-    m("S-b Bühnenbild nicht mehr als KI-Bild geführt, ohne Marke, neu gebaut", "S1", "bau", "bauen.py",
-      '"marke": KI_MARKE, "ki": True,\n              "klasse": "buehne-bild", "nachweis": "Startseite',
-      '"marke": "", "ki": False,\n              "klasse": "buehne-bild", "nachweis": "Startseite'),
+    m("S-b Nachweiszeile der Bühne im Impressum ohne „mit KI erzeugt“ (impressum.html)", "S1", "seite", "impressum.html",
+      "Startseite, Messung an einer Delle: mit KI erzeugt", "Startseite, Messung an einer Delle: erzeugt"),
     m("S-c Unterschrift mit „Symbolbild“ vorn (kosten.html, verdeckter Schaden)", "S1", "seite", "kosten.html",
       "<figcaption>Von außen", "<figcaption>Symbolbild: Von außen"),
     m("S-d Namenskarte in den Bildblock der Bühne gesetzt (index.html)", "S2", "seite", "index.html",
       '<figure class="bild buehne-bild">', '<p class="name-zeile">Ihr Sachverständiger: Cihan Es</p><figure class="bild buehne-bild">'),
-    m("S-e KI-Marke an der Bühne der Startseite entfernt (index.html)", "S1", "seite", "index.html",
-      'fetchpriority="high"></picture><span class="bild-marke">KI-erzeugtes Bild</span>',
-      'fetchpriority="high"></picture>'),
+    m("S-e Wort „KI“ im alt-Text der Bühne (index.html)", "S1", "seite", "index.html",
+      'alt="Eine Hand setzt', 'alt="KI-Bild: Eine Hand setzt'),
     # Regel 6, Seitenregeln
     m("P-a noindex auf ablauf.html entfernt", "P1", "seite", "ablauf.html",
       '<meta name="robots" content="noindex">\n', ""),
