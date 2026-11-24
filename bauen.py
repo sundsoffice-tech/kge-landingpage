@@ -47,28 +47,37 @@ RUECKRUF_SONST = "sobald das Telefon wieder besetzt ist"
 # bevorzugt, alle anderen laden erst beim Heranscrollen.
 FOTOS_ZEIGEN = True
 BILDER = {
-    # Startseite oben, über den Adressen: wartet auf das echte Foto des Kunden (Begutachtung am Fahrzeug), 4:3.
+    # Startseite, Abschnitt „Über Cihan Es“: wartet auf das echte Foto des Kunden (Cihan Es am Fahrzeug), 4:5.
+    # Steht bewusst nicht neben einem Schadenfoto (Rechtsbericht Bildunterschrift 24.11.2026, Nr. 2).
     "start": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": "", "vorrang": True},
     # Nach dem Unfall, vor „An der Unfallstelle“: leer seit der Nachbesserung vom 23.11.2026, 16:9.
     "unfall": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": ""},
-    # Wer zahlt?, in der Zeile „Kleiner Schaden“ (verdeckte Schäden hinter dem Stoßfänger), 4:3. Der Ausschnitt lässt
-    # das Markenzeichen auf der Felge weg.
+    # Wer zahlt?, Bild am rechten Rand neben „Wann Sie selbst etwas zahlen“, rund 2:1. Der Ausschnitt lässt das
+    # Markenzeichen auf der Felge weg (Spalten 190 bis 800, Zeilen 215 bis 525 der Vorschau, Ringe bei Zeile 555).
+    # Unterschrift: Aussage zuerst, Kennzeichnung am Ende (Rechtsbericht 24.11.2026, Nr. 3, sinngemäß gleich gebaut).
     "streifschaden": {"datei": "bilder/streifschaden-kotfluegel.jpg",
-                      "alt": "Weißes Auto auf einem Parkplatz mit Streifschaden an Kotflügel und Stoßfänger",
-                      "breite": 560, "hoehe": 420,
-                      "unterschrift": "Symbolbild: Streifschaden an Kotflügel und Stoßfänger",
-                      "nachweis": "Seite „Wer zahlt?“, Auto mit Streifschaden: Foto von Volodymyr Dobrovolskyy, "
-                                  "Unsplash (Unsplash-Lizenz), Ausschnitt"},
-    # Startseite, Abschnitt „So läuft es ab“, unter der Überschrift, 4:3.
+                      "alt": "Weißes Auto mit Schrammen an Kotflügel und Stoßfänger",
+                      "breite": 610, "hoehe": 310,
+                      "unterschrift": "Ein Streifschaden am Stoßfänger sieht oft harmlos aus: Dahinter sitzt oft mehr "
+                                      "Schaden, als man von außen erkennt. Beispielfoto, nicht aus einem Gutachten.",
+                      "art": "schaden",
+                      "nachweis": "Streifschaden an einem weißen Auto: Volodymyr Dobrovolskyy, Unsplash, Unsplash-Lizenz."},
+    # Startseite, Bildband in der ersten Ansicht, rund 9:5. marke=True setzt „Beispielfoto“ sichtbar auf das Bild,
+    # weil daneben Text mit Bezug zu Cihan Es steht (Rechtsbericht 24.11.2026, Nr. 2). Die Unterschrift steht unter
+    # dem Band, außerhalb der ersten Ansicht; Wortlaut geprüft (Rechtsbericht Nr. 3), steht nur hier.
     "schadendetail": {"datei": "bilder/schadendetail-lack.jpg",
-                      "alt": "Eingedrückte hintere Seitenwand mit gerissenem Lack",
-                      "breite": 800, "hoehe": 600, "unterschrift": "Symbolbild: eingedrückte Seitenwand mit gerissenem Lack",
-                      "nachweis": "Startseite, Lackschaden: Foto von Kenny, Unsplash (Unsplash-Lizenz), Ausschnitt"},
-    # Einsatzgebiet, neben den Ortslisten, 3:2.
+                      "alt": "Graue Limousine, hintere Seitenwand mit gerissenem Lack und eingedrücktem Blech",
+                      "breite": 800, "hoehe": 440,
+                      "unterschrift": "So sieht ein Seitenwandschaden oft aus: Unter gerissenem Lack sitzt oft mehr "
+                                      "Schaden, als man von außen erkennt. Beispielfoto, nicht aus einem Gutachten.",
+                      "art": "schaden", "marke": True, "vorrang": True,
+                      "nachweis": "Lackschaden an der Seitenwand: Kenny, Unsplash, Unsplash-Lizenz."},
+    # Startseite, Abschnitt Einsatzgebiet, am linken Rand, 3:2. Nicht neben einer Anschrift, nicht unter „Büro“ oder
+    # „Anfahrt“ (Rechtsbericht Nr. 4). Seit 24.11.2026 auf der Startseite statt auf der Seite Einsatzgebiet.
     "ort": {"datei": "bilder/moenchengladbach-muenster.jpg",
             "alt": "Das Münster St. Vitus in Mönchengladbach, vom Park aus gesehen",
-            "breite": 960, "hoehe": 640, "unterschrift": "Mönchengladbach, Münster St. Vitus",
-            "nachweis": "Seite „Einsatzgebiet“, Münster St. Vitus: Foto von BjøRe, Wikimedia Commons (CC0), Ausschnitt"},
+            "breite": 960, "hoehe": 640, "unterschrift": "Mönchengladbach, Münster St. Vitus", "art": "ort",
+            "nachweis": "Münster St. Vitus, Mönchengladbach: BjøRe, Wikimedia Commons, CC0."},
     # Einsatzgebiet, Abschnitt Hebebühne: kein freies Bild gefunden, 16:9.
     "hebebuehne": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": ""},
     # Wer zahlt?, vor „In der Regel zahlen Sie nichts“: kein freigegebenes Bild, 16:9.
@@ -298,8 +307,15 @@ def bild_html(platz):
     e = html.escape
     laden = 'fetchpriority="high"' if b.get("vorrang") else 'loading="lazy"'
     unter = f'<figcaption>{e(b["unterschrift"])}</figcaption>' if b["unterschrift"] else ""
+    marke = f'<span class="bild-marke">{BILD_MARKE}</span>' if b.get("marke") else ""
     return (f'<figure class="bild"><img src="{e(b["datei"])}" alt="{e(b["alt"])}" width="{b["breite"]}" '
-            f'height="{b["hoehe"]}" {laden}>{unter}</figure>')
+            f'height="{b["hoehe"]}" {laden}>{marke}{unter}</figure>')
+
+
+# Kennzeichnung auf dem Bild (Plätze mit marke=True) und Vorsatz der Bildnachweise im Impressum, wörtlich nach dem
+# Rechtsbericht Bildunterschrift vom 24.11.2026 (Nr. 2 und 5). Der Vorsatz steht nur, wenn ein Schadenfoto gezeigt wird.
+BILD_MARKE = "Beispielfoto"
+NACHWEIS_VORSATZ = "Die Schadenfotos auf dieser Seite sind Beispielfotos und zeigen keine Fälle des Büros."
 
 
 def sperre_bilder():
@@ -319,6 +335,8 @@ def bildnachweise():
     zeilen = [html.escape(BILDER[platz]["nachweis"].strip()) for platz in BILDER if bild_html(platz)]
     if not zeilen:
         return ""
+    if any(BILDER[p].get("art") == "schaden" for p in BILDER if bild_html(p)):
+        zeilen.insert(0, html.escape(NACHWEIS_VORSATZ))
     return "<h2>Bildnachweise</h2>\n    <p>" + "<br>".join(zeilen) + "</p>"
 
 

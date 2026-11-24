@@ -129,53 +129,6 @@ mark, .marker {
 .knopf:disabled, .knopf[aria-disabled="true"] { opacity: 0.6; cursor: default; transform: none; box-shadow: var(--schatten); }
 .dunkel .knopf { --schatten-farbe: #000; border-color: #000; }
 
-/* ---------- Hero ---------- */
-.hero { background: var(--navy); color: var(--hell); padding: 28px 0 40px; position: relative; }
-/* Amber-Kante als Abschluss von Hero und Seitenkopf, dieselbe Farbe wie der Marker. Ein Streifenmuster
-   (Absperrband) meldete impeccable detect als Generator-Muster (repeating-stripes-gradient), 17.11.2026. */
-.hero::after, .seitenkopf::after {
-  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 6px; background: var(--amber);
-}
-.hero .wrap { display: grid; gap: 28px; }
-@media (min-width: 900px) { .hero { padding: 56px 0 60px; } .hero .wrap { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); align-items: center; gap: 48px; } }
-.hero h1 { font-size: clamp(30px, 5vw, 46px); font-weight: 900; line-height: 1.08; color: var(--hell); margin-bottom: 16px; }
-.hero .unterzeile a { color: var(--amber-hell); font-weight: 800; text-decoration: none; }
-.hero .unterzeile { font-size: 18px; line-height: 1.5; color: var(--hell); max-width: 34rem; margin-bottom: 20px; }
-@media (min-width: 900px) { .hero .unterzeile { font-size: 20px; } }
-.hero .knoepfe { display: flex; flex-direction: column; gap: 14px; max-width: 420px; }
-@media (min-width: 540px) { .hero .knoepfe { flex-direction: row; flex-wrap: wrap; max-width: none; } }
-.hero .knopf { min-height: 58px; }
-/* 320 x 568: Hero 30 px dichter, damit der WhatsApp-Knopf mit Beschriftung über der Leiste steht statt als 5-px-Kante (Künstler Runde 3, Fund 14). */
-@media (max-width: 379px) { .hero { padding-top: 16px; } .hero h1 { margin-bottom: 10px; } .hero .unterzeile { margin-bottom: 14px; } }
-.zeiten { margin: 22px 0 0; color: var(--hell-2); font-size: 15px; line-height: 1.5; max-width: 34rem; }
-.zeiten b { color: var(--hell); font-weight: 700; }
-.zeiten a { color: var(--hell); }
-.zeiten a:hover { color: var(--amber-hell); }
-/* Satzlinks mit eigener Handlung (Hero, FAQ): Trefferfläche ab 44 px, Zeilenbild bleibt gleich (Künstler Runde 3, Fund 9). */
-.zeiten a, .faq .antwort a { display: inline-block; padding-block: 12px; margin-block: -12px; }
-
-/* Fotofläche im Hero: ruhige Farbfläche bis die Betriebsfotos kommen */
-.hero-bild {
-  position: relative; min-height: 0; border-radius: var(--radius);
-  background: var(--navy-2);
-  border: 1px solid rgba(255,255,255,0.08);
-  display: flex; align-items: flex-end;
-  overflow: hidden;
-}
-/* Bewertungskasten und Namenszeile (O1, Schalter BEWERTUNG_ZEIGEN und NAME_ZEIGEN in bauen.py): unter der
-   Sternchenerklärung, nie zwischen Knöpfen und Sternchen (Wettbewerbsrecht vorab 20.11.2026, Nr. 1 und 5b).
-   Der Hinweis ist so groß wie der Sternchentext (16 px), ohne Klick, im selben Kasten. Keine Sternegrafik. */
-.bewertung { margin: 16px 0 0; max-width: 34rem; padding: 12px 14px; border: 1.5px solid rgba(255,255,255,0.28); border-radius: var(--radius); font-size: 16px; line-height: 1.5; }
-.bewertung a { color: var(--hell); font-weight: 700; display: inline-block; padding-block: 10px; margin-block: -10px; }
-.bewertung a:hover { color: var(--amber-hell); }
-.bewertung p { margin: 6px 0 0; color: var(--hell-2); font-size: 16px; }
-.name-zeile { margin: 12px 0 0; color: var(--hell); font-weight: 600; font-size: 16px; }
-.hero-fakten { list-style: none; margin: 0; padding: 18px 20px 20px; width: 100%; position: relative; display: flex; flex-direction: column; }
-.hero-fakten li { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.12); font-size: 16px; line-height: 1.4; color: var(--hell); margin: 0; }
-.hero-fakten svg { width: 22px; height: 22px; color: var(--amber); flex: none; margin-top: 1px; }
-.hero-fakten small { display: block; color: var(--hell-2); font-size: 14px; }
-@media (min-width: 900px) { .hero-bild { align-self: center; } }
-
 /* ---------- Abschnitte ---------- */
 .abschnitt { padding: 44px 0; }
 @media (min-width: 900px) { .abschnitt { padding: 64px 0; } }
@@ -348,9 +301,9 @@ mark, .marker {
 
 /* Ein inszenierter Moment: der Marker im Hero zieht sich beim Laden auf. Hintergrundgröße statt clip-path,
    weil clip-path bei einem mehrzeiligen Inline-Element nur das erste Fragment trifft (gemessen 09.11.2026). */
-.hero h1 mark { background-color: transparent; background-image: linear-gradient(var(--amber), var(--amber)); background-repeat: no-repeat; background-size: 100% 100%; }
+.aussage mark { background-color: transparent; background-image: linear-gradient(var(--amber), var(--amber)); background-repeat: no-repeat; background-size: 100% 100%; }
 @media (prefers-reduced-motion: no-preference) {
-  .hero h1 mark { animation: marker-auf 600ms cubic-bezier(0.16, 1, 0.3, 1) 150ms both; }
+  .aussage mark { animation: marker-auf 600ms cubic-bezier(0.16, 1, 0.3, 1) 150ms both; }
   @keyframes marker-auf { from { background-size: 0% 100%; } to { background-size: 100% 100%; } }
 }
 
@@ -383,35 +336,6 @@ mark, .marker {
   .kopf-tel { padding: 8px; min-width: 44px; justify-content: center; }
   .kopf-tel svg { width: 20px; height: 20px; }
   .kopf-tel-nr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-}
-
-/* Hero der Startseite: Ort, Name, ein Anrufknopf, Zeiten, eine Kostenzeile. Die Reihenfolge steht hier und gilt auf
-   allen Breiten; am Handy löst sich die linke Spalte auf, damit die Adressen ans Ende rücken. */
-.hero .wrap > div:first-child { display: flex; flex-direction: column; align-items: flex-start; }
-.hero h1 { order: 2; margin-bottom: 10px; }
-.hero .name-zeile { order: 2; margin: 0 0 16px; font-size: 20px; font-weight: 700; color: var(--hell); }
-.hero .unterzeile { order: 3; }
-.hero .knoepfe { order: 4; }
-.hero .bewertung { order: 5; }
-.hero .zeiten { order: 6; margin-top: 20px; }
-.hero .kostenzeile { order: 7; margin: 16px 0 0; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.16); font-size: 16px; line-height: 1.5; color: var(--hell); max-width: 34rem; }
-.hero .kostenzeile a { color: var(--hell); font-weight: 700; display: inline-block; padding-block: 12px; margin-block: -12px; }
-.hero .kostenzeile a:hover { color: var(--amber-hell); }
-.hero-fakten li:first-child { border-top: 0; }
-.hero-fakten small { margin-bottom: 2px; }
-.hero-fakten span { font-weight: 700; }
-.hero-fakten small { font-weight: 500; }
-.hero-fakten a { color: var(--hell); font-weight: 700; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; }
-.hero-fakten a:hover { color: var(--amber-hell); }
-.hero-fakten a svg { width: 16px; height: 16px; margin: 0; }
-@media (max-width: 899px) {
-  .hero .wrap { gap: 0; }
-  .hero .wrap > div:first-child { display: contents; }
-  .hero .knoepfe { width: 100%; }
-  .hero-bild { order: 8; margin-top: 22px; border-color: rgba(255,255,255,0.12); }
-  .hero-fakten { padding: 4px 16px; max-width: none; }
-  .hero-fakten li { font-size: 16px; }
-  .hero-fakten svg { width: 20px; height: 20px; }
 }
 
 /* Abschnitte der Startseite: Überschrift links, Inhalt rechts (ab 900 px), darunter gestapelt */
@@ -470,10 +394,6 @@ main ol:not([class]) li::marker { font-weight: 700; }
 .bild { margin: 0 0 26px; max-width: 46rem; }
 .bild img { width: 100%; height: auto; border: 1px solid var(--linie); border-radius: var(--radius); }
 .bild figcaption { font-size: 14px; color: var(--tinte-2); margin-top: 6px; }
-.hero-bild { flex-direction: column; align-items: stretch; }
-.hero-bild .bild { margin: 0; max-width: none; }
-.hero-bild .bild img { border: 0; border-radius: 0; }
-.hero-bild .bild figcaption { color: var(--hell-2); margin: 0; padding: 8px 20px 0; }
 /* Funde der Prüfung vom 23.11.2026: Sprungliste mit Luft zu ihren Linien, Wortmarke mit 44 x 44 px Trefferfläche
    (unter 380 px steht nur das Zeichen), lange Adressen im Fließtext brechen um, Seitenkopf bei 320 px kleiner. */
 .sprung { padding: 6px 0; }
@@ -494,3 +414,216 @@ main ol:not([class]) li::marker { font-weight: 700; }
 .verweis .weiter { margin-top: 0; }
 /* Bild in einer Zeile der Zeilenliste (Wer zahlt?, kleiner Schaden) */
 .zeilen dd .bild { margin: 14px 0 0; max-width: 30rem; }
+
+/* ==========================================================================================================
+   Richtung A „Schrift als Bühne“ (Gestaltungsvertrag 24.11.2026). Heller Grund, die stärkste Aussage sehr groß,
+   eine schmale leise Spalte daneben, Bild als Band, das die erste Ansicht anschneidet und randabfallend läuft.
+   Rhythmus aus drei Abstandsstufen (eng, normal, weit), keine zwei Abschnitte in derselben Schablone.
+   ========================================================================================================== */
+:root {
+  --luft-eng: 24px;
+  --luft: 56px;
+  --luft-weit: 96px;
+  --rand: 16px;          /* Außenrand der Seite, gleich dem .wrap-Polster */
+  --bild-rund: 22px;
+}
+@media (min-width: 700px) { :root { --rand: 28px; } }
+@media (min-width: 900px) { :root { --luft-eng: 28px; --luft: 96px; --luft-weit: 168px; --bild-rund: 28px; } }
+@media (min-width: 1240px) { :root { --rand: calc((100vw - 1240px) / 2 + 28px); } }
+/* Richtung A: breitere Satzfläche, damit die große Aussage am Rechner in zwei Zeilen steht */
+.wrap { max-width: 1240px; }
+
+/* Kopf hell: Wortmarke, Menü, Telefon wie in der Branche üblich, ohne dunklen Balken über der hellen Bühne */
+.kopf { background: var(--papier); color: var(--tinte); border-bottom: 1px solid var(--linie); }
+.kopf .wrap { height: 68px; }
+.wortmarke { color: var(--navy); }
+.kopf-tel, .kopf-wa { color: var(--navy); border-color: var(--navy); }
+.kopf-tel:hover, .kopf-wa:hover { color: var(--navy); border-color: var(--amber); background: var(--sanft); }
+.kopf-nav a { color: var(--tinte-2); }
+.kopf-nav a:hover, .kopf-nav a[aria-current="page"] { color: var(--navy); }
+.menue summary { color: var(--navy); border-color: var(--navy); }
+.menue nav { background: var(--papier); border-top: 1px solid var(--linie); }
+.menue nav a { color: var(--navy); border-bottom-color: var(--linie); }
+.menue nav a:hover, .menue nav a[aria-current="page"] { color: var(--amber-tinte); }
+
+/* Abstandsstufen: der Abstand über einem Abschnitt sagt, wie wichtig er ist */
+.abschnitt { padding: var(--luft) 0 0; }
+.abschnitt.weit { padding-top: var(--luft-weit); }
+.abschnitt.eng { padding-top: var(--luft-eng); }
+.abschnitt.grau, .abschnitt.dunkel { padding-bottom: var(--luft); margin-top: var(--luft); }
+.abschnitt.weit.dunkel { padding-bottom: var(--luft-weit); margin-top: var(--luft-weit); }
+/* Zwei Farbflächen hintereinander stoßen aneinander; ein weißer Streifen dazwischen wäre Rest, nicht Raum */
+.abschnitt.grau + .abschnitt.dunkel, .abschnitt.dunkel + .abschnitt.grau { margin-top: 0; }
+main > .abschnitt:last-child { padding-bottom: var(--luft); }
+@media (min-width: 900px) { .abschnitt { padding: var(--luft) 0 0; } .abschnitt.weit { padding-top: var(--luft-weit); } .abschnitt.eng { padding-top: var(--luft-eng); } }
+
+.themenzeile { font-size: 15px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tinte-2); margin: 0 0 18px; line-height: 1.4; }
+.dunkel .themenzeile { color: var(--hell-2); }
+.titel-gross { font-size: clamp(34px, 5vw, 64px); font-weight: 900; line-height: 1.02; letter-spacing: -0.03em; margin: 0 0 28px; }
+.merksatz.gross { font-size: clamp(27px, 4.1vw, 52px); font-weight: 800; line-height: 1.12; letter-spacing: -0.025em; max-width: 21em; margin: 0; }
+.versetzt { max-width: 34rem; margin-top: 36px; }
+@media (min-width: 900px) { .versetzt { margin-left: 50%; margin-top: 56px; } }
+
+/* ---------- Bühne (erste Ansicht der Startseite) ---------- */
+.buehne { padding: 28px 0 0; position: relative; }
+.buehne-raster { display: grid; gap: 26px; }
+@media (min-width: 900px) {
+  .buehne { padding-top: 64px; }
+  .buehne-raster { grid-template-columns: minmax(0, 1fr) minmax(0, 300px); column-gap: 64px; align-items: end; }
+}
+.dach { font-size: 15px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tinte-2); line-height: 1.4; margin: 0 0 14px; }
+.frage { font-size: clamp(20px, 2.3vw, 29px); font-weight: 500; line-height: 1.3; color: var(--tinte-2); max-width: 22em; margin: 0 0 14px; letter-spacing: -0.01em; }
+.aussage { margin: 0; max-width: none; }
+.aussage-gross { display: block; font-size: clamp(42px, 7.6vw, 104px); font-weight: 900; line-height: 0.96; letter-spacing: -0.035em; color: var(--navy); }
+.aussage-gross mark { padding: 0 0.06em; margin: 0 -0.02em; }
+.aussage-rest { display: block; font-size: clamp(19px, 2.1vw, 27px); font-weight: 700; line-height: 1.3; color: var(--tinte); margin-top: 16px; max-width: 26em; letter-spacing: -0.01em; }
+.buehne-spalte { display: flex; flex-direction: column; align-items: flex-start; }
+.buehne .unterzeile { font-size: 17px; line-height: 1.5; color: var(--tinte); margin: 0 0 18px; }
+.buehne .knoepfe { display: flex; width: 100%; }
+.buehne .knopf { width: 100%; min-height: 58px; }
+@media (min-width: 540px) and (max-width: 899px) { .buehne .knopf { width: auto; } }
+.kostenzeile { margin: 18px 0 0; font-size: 15px; line-height: 1.5; color: var(--tinte-2); }
+.kostenzeile a { color: var(--navy); font-weight: 700; display: inline-block; padding-block: 12px; margin-block: -12px; }
+
+/* Bildband: am Rechner randabfallend vom 38-Prozent-Punkt bis zum rechten Fensterrand, oben links eine große Rundung;
+   die Zeitenleiste liegt über der linken Bildkante. Am Handy über die volle Breite. */
+.band { position: relative; margin-top: 40px; }
+.band .bild { margin: 0; max-width: none; position: relative; }
+.band .bild img { width: 100%; height: auto; border: 0; border-radius: 0; }
+.band .bild figcaption { font-size: 15px; color: var(--tinte-2); margin: 12px var(--rand) 0; max-width: 40em; }
+.band-leiste { background: var(--navy); color: var(--hell); padding: 16px var(--rand) 18px; }
+.band-leiste .zeiten { margin: 0; font-size: 15px; line-height: 1.55; color: var(--hell-2); max-width: 34rem; }
+.band-leiste .zeiten b { color: var(--hell); }
+.band-leiste .zeiten a { color: var(--hell); font-weight: 700; display: inline-block; padding-block: 12px; margin-block: -12px; }
+.band-leiste .zeiten a:hover { color: var(--amber-hell); }
+@media (min-width: 900px) {
+  .band { margin: 104px 0 0 38%; }
+  .band .bild img { border-radius: var(--bild-rund) 0 0 var(--bild-rund); max-height: 560px; object-fit: cover; }
+  .band .bild figcaption { margin: 14px var(--rand) 0 0; }
+  .band-leiste { position: absolute; z-index: 2; top: -44px; left: calc(-1 * min(26vw, 340px)); width: min(430px, 40vw); padding: 18px 22px 20px; border-radius: var(--radius); box-shadow: var(--schatten); --schatten-farbe: var(--amber); }
+}
+/* Kennzeichnung auf dem Bild (bauen.py BILD_MARKE): oben rechts, dunkler Grund, lesbar am Handy */
+.bild { position: relative; }
+.bild-marke { position: absolute; top: 12px; right: 12px; background: rgba(13, 27, 39, 0.86); color: #fff; font-size: 13px; font-weight: 700; line-height: 1; padding: 6px 9px; border-radius: 4px; letter-spacing: 0.02em; }
+
+/* ---------- Versicherung: große Aussage über die volle Breite, Begründung versetzt ---------- */
+#versicherung .merksatz.gross { color: var(--navy); }
+
+/* ---------- Verweis: eine enge Zeile ---------- */
+.verweis { font-size: 18px; }
+
+/* ---------- Wer zahlt: ein Hauptfall groß, drei Nebenfälle klein ---------- */
+.faelle { display: grid; gap: 0; }
+.hauptfall { margin: 0 0 40px; }
+.fall-name { font-size: 15px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--amber-tinte); margin: 0 0 10px; }
+.fall-antwort { font-size: clamp(24px, 2.9vw, 36px); font-weight: 700; line-height: 1.3; letter-spacing: -0.02em; max-width: 20em; margin: 0; }
+.nebenfaelle { display: grid; gap: 26px; margin: 0 0 36px; max-width: none; }
+.nebenfaelle dt { font-weight: 800; font-size: 18px; margin-bottom: 6px; display: flex; align-items: baseline; gap: 10px; }
+.nebenfaelle dt::before { content: ""; width: 10px; height: 10px; background: var(--amber); flex: none; transform: translateY(-1px); }
+.nebenfaelle dd { margin: 0; color: var(--tinte-2); }
+.faelle-schluss p { margin-bottom: 6px; }
+@media (min-width: 900px) {
+  .faelle { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: 56px; }
+  .faelle .titel-gross { grid-column: 1; grid-row: 1; }
+  .hauptfall { grid-column: 2; grid-row: 1; margin-bottom: 72px; padding-top: 10px; }
+  .nebenfaelle { grid-column: 1 / -1; grid-template-columns: 1fr 1.3fr 1.1fr; column-gap: 48px; margin-bottom: 40px; }
+  .faelle-schluss { grid-column: 2; }
+}
+
+/* ---------- Ablauf: vier Schritte als Zeitleiste mit großen Ziffern ---------- */
+.lauf { list-style: none; margin: 0 0 32px; padding: 0; counter-reset: lauf; display: grid; gap: 28px; max-width: none; }
+.lauf li { counter-increment: lauf; margin: 0; display: grid; grid-template-columns: 56px minmax(0, 1fr); column-gap: 16px; }
+.lauf li::before { content: counter(lauf); grid-row: 1 / span 2; font-size: 56px; font-weight: 900; line-height: 0.9; color: var(--navy); letter-spacing: -0.04em; }
+.lauf b { font-size: 20px; font-weight: 800; align-self: end; }
+.lauf p { margin: 6px 0 0; color: var(--tinte-2); }
+.lauf-schluss { max-width: 40rem; }
+@media (min-width: 900px) {
+  .lauf { grid-template-columns: 0.85fr 1.15fr 1.55fr 0.85fr; column-gap: 40px; border-top: 2px solid var(--navy); padding-top: 0; margin-bottom: 48px; }
+  .lauf li { grid-template-columns: 1fr; }
+  .lauf li { padding-top: 22px; }
+  .lauf li::before { grid-row: auto; font-size: 88px; margin: 0 0 14px; }
+  .lauf b { align-self: start; }
+  .lauf-schluss { margin-left: 33%; }
+}
+
+/* ---------- Über Cihan Es: dunkle Fläche, Name groß, zwei Anschriften groß; kein Schadenfoto in diesem Block ---------- */
+.person { display: grid; gap: 40px; }
+.person .name-zeile { font-size: clamp(30px, 4.2vw, 54px); font-weight: 900; line-height: 1.06; letter-spacing: -0.03em; color: var(--hell); margin: 0 0 22px; max-width: 12em; }
+.person-satz { font-size: 19px; color: var(--hell); max-width: 30rem; }
+.person .bild { margin: 24px 0 0; max-width: 26rem; }
+.person .bild img { border: 0; border-radius: var(--radius); }
+.person-orte > p { color: var(--hell-2); }
+.adressen { margin: 28px 0 18px; display: grid; gap: 24px; max-width: none; }
+.adressen dt { font-size: 14px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--amber); margin-bottom: 4px; }
+.adressen dd { margin: 0; font-size: clamp(22px, 2.4vw, 28px); font-weight: 800; line-height: 1.2; letter-spacing: -0.015em; color: var(--hell); }
+@media (min-width: 900px) { .person { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); column-gap: 80px; align-items: end; } }
+
+/* ---------- Einsatzgebiet: Ortsbild randabfallend links, Text rechts ---------- */
+.gebiet { display: grid; gap: 24px; }
+.gebiet .bild { margin: 0; max-width: none; }
+.gebiet .bild img { width: 100%; height: auto; border: 0; border-radius: 0; }
+.gebiet .bild figcaption { margin: 10px var(--rand) 0; font-size: 15px; color: var(--tinte-2); }
+.gebiet-text { padding: 0 var(--rand); }
+.gebiet-satz { font-size: clamp(19px, 1.9vw, 23px); line-height: 1.45; font-weight: 600; max-width: 26em; }
+@media (min-width: 900px) {
+  .gebiet { grid-template-columns: minmax(0, 50vw) minmax(0, 1fr); column-gap: 64px; align-items: center; }
+  .gebiet .bild img { border-radius: 0 var(--bild-rund) var(--bild-rund) 0; }
+  .gebiet .bild figcaption { margin-left: var(--rand); }
+  .gebiet-text { padding: 0 var(--rand) 0 0; }
+}
+
+/* ---------- Fragen: schmale Überschriftenspalte, Fragen versetzt ---------- */
+.fragen { display: grid; gap: 18px; }
+.fragen > h2 { font-size: clamp(26px, 3vw, 36px); font-weight: 900; line-height: 1.1; letter-spacing: -0.025em; }
+@media (min-width: 900px) { .fragen { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); column-gap: 64px; } .fragen > h2 { position: sticky; top: 96px; align-self: start; } }
+
+/* ---------- Kontakt: die Nummer groß ---------- */
+.gross-nummer { margin: 0 0 22px; }
+.gross-nummer a { font-size: clamp(36px, 5.4vw, 68px); font-weight: 900; letter-spacing: -0.03em; line-height: 1.05; color: var(--hell); text-decoration: underline; text-decoration-color: var(--amber); text-decoration-thickness: 4px; text-underline-offset: 8px; white-space: nowrap; display: inline-block; padding-block: 4px; }
+.gross-nummer a:hover { color: var(--amber-hell); }
+#rueckruf h2 { font-size: 15px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--hell-2); margin-bottom: 14px; }
+
+/* ---------- Unterseiten: heller Seitenkopf, Titel groß ---------- */
+.seitenkopf { background: var(--papier); color: var(--tinte); padding: 40px 0 8px; }
+.seitenkopf h1 { font-size: clamp(38px, 6.6vw, 88px); font-weight: 900; line-height: 1.0; letter-spacing: -0.035em; color: var(--navy); margin-bottom: 20px; max-width: 14em; }
+.seitenkopf p { color: var(--tinte-2); font-size: clamp(18px, 1.7vw, 21px); max-width: 34rem; }
+.seitenkopf .dach { font-size: 15px; color: var(--tinte-2); margin-bottom: 14px; }
+.seitenkopf .ruf { color: var(--tinte-2); }
+.seitenkopf .ruf a { color: var(--navy); }
+.seitenkopf .ruf a:hover { color: var(--amber-tinte); }
+.seitenkopf .ruf svg { color: var(--navy); }
+.seitenkopf .notruf { color: var(--tinte); }
+.seitenkopf .notruf b { color: var(--amber-tinte); }
+@media (min-width: 900px) { .seitenkopf { padding: 72px 0 16px; } }
+.inhalt { padding: var(--luft) 0 var(--luft); }
+
+/* Wer zahlt?: Bedingungen groß, Fälle neben dem randabfallenden Bild, Gutachterwahl als dunkle Aussage */
+.bedingung { margin-top: 24px; }
+.bedingungen { list-style: none; padding: 0; margin: 0; max-width: none; }
+.bedingungen li { font-size: clamp(22px, 2.8vw, 34px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; display: flex; gap: 16px; align-items: baseline; margin: 0 0 12px; }
+.bedingungen li::before { content: ""; width: 0.42em; height: 0.42em; background: var(--amber); flex: none; transform: translateY(-0.08em); }
+.selbst-block { padding: 0; }
+.inhalt .titel-gross { font-size: clamp(34px, 5vw, 64px); margin: 0 0 28px; }
+.selbst .zeilen > div { grid-template-columns: 1fr; }
+.selbst .zeilen dt { font-size: 18px; }
+.selbst { display: grid; gap: 28px; }
+.selbst-text { padding: 0 var(--rand); }
+.selbst .bild { margin: 0; max-width: none; }
+.selbst .bild img { width: 100%; height: auto; border: 0; border-radius: 0; }
+.selbst .bild figcaption { margin: 12px var(--rand) 0; font-size: 15px; color: var(--tinte-2); max-width: 34em; }
+@media (min-width: 900px) {
+  .selbst { grid-template-columns: minmax(0, 1fr) minmax(0, 46vw); column-gap: 64px; align-items: start; }
+  .selbst-text { padding: 0 0 0 var(--rand); }
+  .selbst .bild { position: sticky; top: 96px; }
+  .selbst .bild img { border-radius: var(--bild-rund) 0 0 var(--bild-rund); }
+  .selbst .bild figcaption { margin-left: 0; }
+}
+.wahl .merksatz.gross { color: var(--hell); }
+.themen.zwei { max-width: none; }
+@media (min-width: 900px) { .themen.zwei { columns: 2; column-gap: 64px; } .themen.zwei h3 { break-after: avoid; } .themen.zwei p { break-inside: avoid; } }
+
+/* Satzlinks mit eigener Handlung in den Fragen: Trefferfläche ab 44 px, Zeilenbild bleibt gleich */
+.faq .antwort a { display: inline-block; padding-block: 12px; margin-block: -12px; }
+
+/* Wer zahlt?: die Bedingungen sind der zweite Blickfang, ihre Überschrift tritt hinter den Seitentitel zurück */
+.inhalt .bedingung .titel-gross { font-size: clamp(28px, 3.4vw, 44px); margin-bottom: 22px; }

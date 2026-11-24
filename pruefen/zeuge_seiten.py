@@ -26,7 +26,10 @@ Fälle:
   B1  Zahl der figure = Zahl der img = Zahl der gezeigten Bildplätze = Zahl der Nachweiszeilen im Impressum
   B2  jedes img gehört zu einem gezeigten Platz, steht auf dessen Seite genau einmal, sein Nachweis steht im Impressum
   B3  Quellen: je Platz aus BILDER (auch leer) {{bild_<platz>}} genau einmal in inhalte/, {{bildnachweise}} im Impressum
-  S1  Bildunterschrift beginnt mit „Symbolbild“, außer bei Plätzen, die Betrieb oder Ort zeigen (BETRIEB_ODER_ORT)
+  S1  Schadenfotos tragen „Beispielfoto“ in der Unterschrift oder als Marke auf dem Bild, außer bei Plätzen, die
+      Betrieb oder Ort zeigen (BETRIEB_ODER_ORT); Rechtsbericht Bildunterschrift 24.11.2026, Nr. 2, 3 und 6
+  S2  die Namenskarte („Ihr Sachverständiger“) steht nicht im selben Bildblock (Elternelement der figure) wie ein
+      Schadenfoto (Rechtsbericht 24.11.2026, Nr. 1)
   P1  noindex genau einmal je Seite, solange NOINDEX = True (sonst keins)
   P2  genau eine h1 je Seite
   P3  Canonical genau einmal, gleich SEITEN[...]["kanonisch"], und er zeigt auf die Seite selbst
@@ -169,6 +172,8 @@ class Seite(HTMLParser):
             self._link["text"].append(data)
         if self._unterschrift and self._figur is not None:
             self._figur["unterschrift"].append(data)
+        if self._figur is not None:
+            self._figur.setdefault("text", []).append(data)
 
     @property
     def sichtbar(self):
@@ -353,7 +358,11 @@ def nachweiszeilen():
     if len(m) > 1:
         return ["DOPPELT"] * 99
     zeilen = re.split(r"<br\s*/?>", m[0], flags=re.I) if m else []
-    return [norm(html.unescape(re.sub(r"<[^>]+>", "", z))) for z in zeilen]
+    zeilen = [norm(html.unescape(re.sub(r"<[^>]+>", "", z))) for z in zeilen]
+    # Der Vorsatz (bauen.NACHWEIS_VORSATZ) ist keine Nachweiszeile eines Bildes.
+    if zeilen and zeilen[0] == norm(bauen.NACHWEIS_VORSATZ):
+        zeilen = zeilen[1:]
+    return zeilen
 
 
 def b1():
@@ -427,9 +436,49 @@ def s1():
                 platz = nach_datei.get(b["src"], "?")
                 if platz in BETRIEB_ODER_ORT:
                     continue
-                unter = norm("".join(f["unterschrift"]))
-                if not unter.startswith("Symbolbild"):
-                    v.append(f"{n}: Bild {b['src']} (Platz {platz}) mit Unterschrift {unter!r}, ohne „Symbolbild“")
+                text = norm("".join(f.get("text", [])))
+                if "Beispielfoto" not in text:
+                    v.append(f"{n}: Bild {b['src']} (Platz {platz}) ohne „Beispielfoto“ in Unterschrift oder Marke: {text!r}")
+    return v
+
+
+class Bildblock(HTMLParser):
+    """Merkt sich je offenem Element, ob darin die Namenskarte steht und ob ein Kind eine figure mit Schadenfoto ist."""
+    LEER = {"img", "br", "input", "meta", "link", "source", "hr", "wbr", "area", "base", "col", "embed", "track"}
+
+    def __init__(self, schaden):
+        super().__init__(convert_charrefs=True)
+        self.schaden, self.stapel, self.funde = schaden, [], []
+
+    def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
+        if tag == "img" and a.get("src") in self.schaden and len(self.stapel) >= 2 and self.stapel[-1]["tag"] == "figure":
+            self.stapel[-2]["foto"] = a.get("src")
+        if tag not in self.LEER:
+            self.stapel.append({"tag": tag, "name": False, "foto": None})
+
+    def handle_endtag(self, tag):
+        while self.stapel:
+            e = self.stapel.pop()
+            if e["name"] and e["foto"]:
+                self.funde.append(f"<{e['tag']}> mit Namenskarte und Schadenfoto {e['foto']}")
+            if e["tag"] == tag:
+                break
+
+    def handle_data(self, data):
+        if "Ihr Sachverständiger" in data:
+            for e in self.stapel:
+                e["name"] = True
+
+
+def s2():
+    v = []
+    schaden = {bauen.BILDER[p]["datei"] for p in gezeigt() if p not in BETRIEB_ODER_ORT}
+    for n, s in SEITEN.items():
+        b = Bildblock(schaden)
+        b.feed(s.roh)
+        b.close()
+        v += [f"{n}: {f}" for f in b.funde]
     return v
 
 
@@ -557,7 +606,8 @@ FAELLE = [
     ("B1", "figure = img = gezeigte Bildplätze = Nachweiszeilen im Impressum", b1),
     ("B2", "jedes Bild gehört zu einem Platz, steht auf dessen Seite und hat seinen Nachweis", b2),
     ("B3", "Platzhalter der gezeigten Plätze und {{bildnachweise}} stehen je genau einmal in den Quellen", b3),
-    ("S1", "Bildunterschrift beginnt mit „Symbolbild“, außer bei Betrieb oder Ort", s1),
+    ("S1", "Schadenfotos tragen „Beispielfoto“ in Unterschrift oder Marke, außer bei Betrieb oder Ort", s1),
+    ("S2", "Namenskarte nicht im selben Bildblock wie ein Schadenfoto", s2),
     ("P1", "noindex genau einmal je Seite, solange NOINDEX = True", p1),
     ("P2", "genau eine h1 je Seite", p2),
     ("P3", "Canonical genau einmal, aus SEITEN, zeigt auf die Seite selbst", p3),
