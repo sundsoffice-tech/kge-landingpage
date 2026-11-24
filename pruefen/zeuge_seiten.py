@@ -26,10 +26,18 @@ Fälle:
   B1  Zahl der figure = Zahl der img = Zahl der gezeigten Bildplätze = Zahl der Nachweiszeilen im Impressum
   B2  jedes img gehört zu einem gezeigten Platz, steht auf dessen Seite genau einmal, sein Nachweis steht im Impressum
   B3  Quellen: je Platz aus BILDER (auch leer) {{bild_<platz>}} genau einmal in inhalte/, {{bildnachweise}} im Impressum
-  S1  kein „Symbolbild“-Etikett; „KI-erzeugtes Bild“ und das Wort „KI“ stehen auf keiner gebauten Seite außer dem
+  S1  kein „Symbolbild“-Etikett; „KI-erzeugtes Bild“ und das Wort „KI“ (auch klein, auch „künstliche Intelligenz“)
+      stehen auf keiner gebauten Seite außer dem
       Impressum (Fabrice 24.11.2026: „ki erzeugtes bild nicht schreiben mein wort“, kein Schild am Bild); jedes
       gezeigte KI-Bild (BILDER[...]["ki"]) hat seine Nachweiszeile mit „mit KI erzeugt“ im Impressum; jedes andere
       Schadenfoto trägt „Beispielfoto“, außer bei Plätzen, die Betrieb oder Ort zeigen (BETRIEB_ODER_ORT)
+  E1  kein Eurobetrag und keine „750“ auf der Startseite (Runde 5, Programmierer S3, Codex 5)
+  E2  „225/13“ auf keiner gebauten Seite
+  E3  die Telefonzeiten stehen im Bühnenblock der Startseite
+  E4  keine Klasse bild-marke und kein Element neben Bild und Unterschrift in einer figure, auf keiner Seite
+  E5  Worum-Zeile und Ausweichzeile sind in Bühne und Kontaktfläche wortgleich (Text und Linkziele)
+  E6  genau zwei Fragen auf der Startseite, kein FAQPage auf irgendeiner Seite
+  B4  jede Datei in bilder/ wird von mindestens einer Seite oder einem ausgelieferten Stil geladen
   S2  die Namenskarte („Ihr Sachverständiger“) steht nicht im selben Bildblock (Elternelement der figure) wie ein
       Schadenfoto (Nachtrag 01:55, erster Punkt)
   P1  noindex genau einmal je Seite, solange NOINDEX = True (sonst keins)
@@ -58,9 +66,8 @@ import bauen  # noqa: E402
 ALTE_NUMMER = re.compile(r"622[^0-9]{0,6}57[^0-9]{0,6}68|6225768")
 # Plätze, deren Bild den Betrieb oder den Ort zeigt: Dort ist keine „Symbolbild“-Unterschrift verlangt. Ein neuer
 # Platz steht nicht hier und braucht damit „Symbolbild“, bis jemand ihn bewusst einträgt (Wissenschaftler S1, 5).
-BETRIEB_ODER_ORT = {
-    "ort": "zeigt den Ort: Münster St. Vitus, Mönchengladbach",
-}
+# Der Münster-Platz („ort“) ist seit R1 schlank entfernt (Runde 5, Codex „Was wegfallen kann“).
+BETRIEB_ODER_ORT = {}
 # Ausgelieferte Skripte und Stile (DEPLOY.md, git archive): alle *.js und *.css der Wurzel, nicht eine feste
 # Liste, damit eine neue Datei mitgeprüft wird (Programmierer KANN 8). Dort darf weder die alte Nummer noch
 # „Umland“ stehen: Skripte blenden Text ein (Programmierer SOLL 4).
@@ -441,9 +448,11 @@ def s1():
                 text = norm("".join(f.get("text", [])))
                 ki = platz in bauen.BILDER and bauen.BILDER[platz].get("ki")
                 if ki:
-                    impressum = (WURZEL / "impressum.html").read_text(encoding="utf-8")
-                    zeile = html.escape(bauen.BILDER[platz]["nachweis"].strip())
-                    if bauen.KI_KENNWORT not in zeile or zeile not in impressum:
+                    # Gezielt auf das Kennwort (Programmierer K2): die Impressumszeile mit dem Etikett des Platzes
+                    # (Text vor dem ersten Doppelpunkt) muss „mit KI erzeugt“ tragen.
+                    etikett = bauen.BILDER[platz]["nachweis"].split(":", 1)[0]
+                    zeilen = [z for z in (nachweiszeilen() or []) if z.startswith(etikett)]
+                    if not any(bauen.KI_KENNWORT in z for z in zeilen):
                         v.append(f"{n}: KI-Bild {b['src']} (Platz {platz}) ohne Nachweiszeile „{bauen.KI_KENNWORT}“ im Impressum")
                 elif "Beispielfoto" not in text:
                     v.append(f"{n}: Bild {b['src']} (Platz {platz}) ohne „Beispielfoto“ in der Unterschrift: {text!r}")
@@ -453,9 +462,9 @@ def s1():
         roh = (WURZEL / n).read_text(encoding="utf-8")
         if "KI-erzeugtes Bild" in roh:
             v.append(f"{n}: „KI-erzeugtes Bild“ steht auf der Seite")
-        treffer = re.findall(r"(?<![\w-])KI(?!\w)", roh)
+        treffer = re.findall(r"(?<![\w-])ki(?!\w)|künstlich\w*\s+intelligenz", roh, re.I)
         if treffer:
-            v.append(f"{n}: das Wort „KI“ steht {len(treffer)}-mal auf der Seite")
+            v.append(f"{n}: „KI“ oder „künstliche Intelligenz“ steht {len(treffer)}-mal auf der Seite: {treffer[:3]}")
     return v
 
 
@@ -628,6 +637,99 @@ def p6():
     return v
 
 
+def klartext(roh):
+    return norm(html.unescape(re.sub(r"<[^>]+>", "", roh)))
+
+
+def einmal(muster, roh):
+    m = re.findall(muster, roh, re.S)
+    return m[0] if len(m) == 1 else None
+
+
+def e1():
+    roh = SEITEN["index.html"].roh
+    treffer = re.findall(r"(?<!\d)750(?!\d)|€|(?<![\w-])euro(?!\w)", roh, re.I)
+    return [f"index.html: Eurobetrag oder „750“ steht auf der Startseite: {treffer}"] if treffer else []
+
+
+def e2():
+    return [f"{n}: „225/13“ steht auf der Seite" for n, s in SEITEN.items() if "225/13" in s.roh]
+
+
+def e3():
+    roh = SEITEN["index.html"].roh
+    buehne = einmal(r'<section class="hero buehne">(.*?)</section>', roh)
+    if buehne is None:
+        return ["index.html: Bühnenblock nicht genau einmal"]
+    zeiten = einmal(r'<p class="buehne-zeiten">(.*?)</p>', buehne)
+    fett = einmal(r"<b>(.*?)</b>", zeiten or "")
+    if not fett or "Mo bis Fr" not in fett or "Uhr" not in fett:
+        return [f"index.html: keine Telefonzeiten im Bühnenblock: {zeiten!r}"]
+    return []
+
+
+def e4():
+    v = []
+    for n, s in SEITEN.items():
+        if "bild-marke" in s.roh:
+            v.append(f"{n}: Klasse bild-marke steht auf der Seite")
+        for inneres in re.findall(r"<figure\b[^>]*>(.*?)</figure>", s.roh, re.S):
+            rest = re.sub(r"<picture\b.*?</picture>|<img\b[^>]*>|<figcaption\b.*?</figcaption>", "", inneres, flags=re.S)
+            if rest.strip():
+                v.append(f"{n}: in einer figure steht neben Bild und Unterschrift noch: {rest.strip()[:80]!r}")
+    for name in SKRIPTE:
+        if "bild-marke" in (WURZEL / name).read_text(encoding="utf-8"):
+            v.append(f"{name}: Klasse bild-marke steht im Skript oder Stil")
+    return v
+
+
+def e5():
+    roh = SEITEN["index.html"].roh
+    v = []
+    gross = einmal(r'<p class="worum nur-gross">(.*?)</p>', roh)
+    klein = einmal(r'<p class="worum-karte nur-klein">(.*?)</p>', roh)
+    if gross is None or klein is None:
+        v.append("index.html: Worum-Zeile nicht je genau einmal in Bühne und Kontaktfläche")
+    elif klartext(gross) != klartext(klein):
+        v.append(f"index.html: Worum-Zeile weicht ab: {klartext(gross)!r} gegen {klartext(klein)!r}")
+    zeiten = einmal(r'<p class="buehne-zeiten">(.*?)</p>', roh)
+    aus = einmal(r'<p class="ausweich nur-klein">(.*?)</p>', roh)
+    if zeiten is None or aus is None:
+        v.append("index.html: Ausweichzeile nicht je genau einmal in Bühne und Kontaktfläche")
+    else:
+        rest = re.sub(r"<b>.*?</b>", "", zeiten, flags=re.S)
+        ziele = [re.findall(r'href="([^"]+)"', x) for x in (rest, aus)]
+        if klartext(rest) != klartext(aus) or ziele[0] != ziele[1]:
+            v.append(f"index.html: Ausweichzeile weicht ab: {klartext(rest)!r} gegen {klartext(aus)!r}")
+    return v
+
+
+def e6():
+    v = []
+    fragen = einmal(r'<section class="abschnitt fragen" id="fragen">(.*?)</section>', SEITEN["index.html"].roh)
+    anzahl = len(re.findall(r"<details>", fragen or ""))
+    if anzahl != 2:
+        v.append(f"index.html: {anzahl} Fragen statt zwei")
+    v += [f"{n}: FAQPage steht auf der Seite" for n, s in SEITEN.items() if "FAQPage" in s.roh]
+    return v
+
+
+def b4():
+    """Jede Datei in bilder/ wird von mindestens einer Seite oder einem ausgelieferten Stil geladen (Runde 5, Punkt 10:
+    nicht geladene Dateien liegen in bilder-archiv/, das per export-ignore nicht ausgeliefert wird)."""
+    genutzt = set()
+    for s in SEITEN.values():
+        for wert in re.findall(r'(?:src|srcset|href)="([^"]+)"', s.roh):
+            for teil in wert.split(","):
+                pfad = teil.strip().split(" ")[0]
+                if pfad.startswith("bilder/"):
+                    genutzt.add(pfad)
+    for name in SKRIPTE:
+        genutzt |= set(re.findall(r"(bilder/[^\"')\s]+)", (WURZEL / name).read_text(encoding="utf-8")))
+    da = {"bilder/" + d.relative_to(WURZEL / "bilder").as_posix() for d in (WURZEL / "bilder").rglob("*") if d.is_file()}
+    return [f"{d} liegt in bilder/, keine Seite lädt sie" for d in sorted(da - genutzt)]
+
+
 FAELLE = [
     ("P0", "die acht Seiten aus SEITEN liegen gebaut im Repo", p0),
     ("M1", "je Seite genau ein Handy-Menü und genau eine Kopfnavigation", m1),
@@ -644,6 +746,13 @@ FAELLE = [
     ("B3", "Platzhalter der gezeigten Plätze und {{bildnachweise}} stehen je genau einmal in den Quellen", b3),
     ("S1", "kein „Symbolbild“-Etikett; „KI“ nur im Impressum; jedes KI-Bild mit Nachweiszeile im Impressum", s1),
     ("S2", "Namenskarte nicht im selben Bildblock wie ein Schadenfoto", s2),
+    ("E1", "kein Eurobetrag und keine „750“ auf der Startseite", e1),
+    ("E2", "„225/13“ auf keiner gebauten Seite", e2),
+    ("E3", "Telefonzeiten im Bühnenblock der Startseite", e3),
+    ("E4", "keine bild-marke und kein Element an ihrer Stelle in einer figure", e4),
+    ("E5", "Worum- und Ausweichzeile an beiden Stellen wortgleich", e5),
+    ("E6", "genau zwei Fragen, kein FAQPage", e6),
+    ("B4", "jede Datei in bilder/ wird geladen", b4),
     ("P1", "noindex genau einmal je Seite, solange NOINDEX = True", p1),
     ("P2", "genau eine h1 je Seite", p2),
     ("P3", "Canonical genau einmal, aus SEITEN, zeigt auf die Seite selbst", p3),

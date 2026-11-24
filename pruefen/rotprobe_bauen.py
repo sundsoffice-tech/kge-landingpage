@@ -108,6 +108,12 @@ MUTATIONEN = [
     ("R36 KI-Bild ohne „mit KI erzeugt“ im Nachweis wird nicht bemerkt (Runde 4)",
      '    if b.get("ki") and KI_KENNWORT not in b["nachweis"]:\n',
      '    if False:\n'),
+    ("R37 Nachweis im gebauten Impressum wird nicht mehr geprüft (Runde 5)",
+     '    impressum_sperre(gebaut)\n',
+     '    pass\n'),
+    ("R38 Feld ki darf fehlen (Runde 5)",
+     '    if not isinstance(b.get("ki"), bool):\n',
+     '    if False:\n'),
     ("R30 Bildplatz: fehlende Maße werden nicht bemerkt",
      'b["breite"] > 0 and b["hoehe"] > 0',
      'True'),
@@ -128,9 +134,11 @@ MUTATIONEN = [
      '    meldung = bewertung_meldung()\n'
      '    if meldung:  # laut, in Bau und Prüfung; der Exit bleibt davon unberührt\n'
      '        print(meldung)\n'
+     '    gebaut = {name: bauen(name, meta) for name, meta in SEITEN.items()}\n'
+     '    impressum_sperre(gebaut)\n'
      '    abweichungen = 0\n'
-     '    for name, meta in SEITEN.items():\n'
-     '        neu = bauen(name, meta)\n'
+     '    for name in SEITEN:\n'
+     '        neu = gebaut[name]\n'
      '        ziel = HIER / name\n'
      '        if pruefen:\n'
      '            alt = ziel.read_text(encoding="utf-8") if ziel.exists() else ""\n'
@@ -144,9 +152,11 @@ MUTATIONEN = [
      '    meldung = bewertung_meldung()\n'
      '    if meldung:  # laut, in Bau und Prüfung; der Exit bleibt davon unberührt\n'
      '        print(meldung)\n'
+     '    gebaut = {name: bauen(name, meta) for name, meta in SEITEN.items()}\n'
+     '    impressum_sperre(gebaut)\n'
      '    abweichungen = 0\n'
-     '    for name, meta in SEITEN.items():\n'
-     '        neu = bauen(name, meta)\n'
+     '    for name in SEITEN:\n'
+     '        neu = gebaut[name]\n'
      '        ziel = HIER / name\n'
      '        if pruefen:\n'
      '            alt = ziel.read_text(encoding="utf-8") if ziel.exists() else ""\n'

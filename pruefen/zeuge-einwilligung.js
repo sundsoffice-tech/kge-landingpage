@@ -359,8 +359,8 @@ fall("S Textmerkmale des mobilen Umbaus", () => {
   /* S2: Der Banner hält auch Bewertungskasten und Namenszeile frei (Hinweis § 5b Abs. 3 UWG ohne Klick lesbar).
      Textsuche im Wert von FREI_HALTEN; ob er wirklich ausweicht, misst der Browserlauf (Bau kge-cta 20.11.2026). */
   const frei = (QUELLE.match(/var FREI_HALTEN = "([^"]*)"/) || [])[1] || "";
-  const soll = [".hero .knoepfe .knopf", ".hero .stern", ".hero .bewertung", ".hero .name-zeile"];
-  pruefe("S2 FREI_HALTEN nennt Anrufknopf, Sternchen, Bewertungskasten und Namenszeile", soll.filter(s => frei.split(/\s*,\s*/).indexOf(s) === -1), []);
+  const soll = [".hero .knoepfe .knopf", ".hero .buehne-zeiten", ".karte-person .bewertung"];
+  pruefe("S2 FREI_HALTEN nennt Anrufknopf, Telefonzeiten und Bewertungskasten (Runde 5)", soll.filter(s => frei.split(/\s*,\s*/).indexOf(s) === -1), []);
 });
 
 console.log((rot ? "ROT: " + rot + " von " : "GRÜN: ") + gezaehlt + " Prüfungen" + (rot ? " weichen ab" : " stimmen") + " · " + DATEI);

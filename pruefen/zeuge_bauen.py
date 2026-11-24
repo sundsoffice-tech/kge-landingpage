@@ -205,8 +205,8 @@ def sperre_ohne_entfernen():
 
 NACHWEIS = "Startseite: Foto Beispiel, Quelle Beispiel"
 EIN = {"datei": "bilder/x.jpg", "alt": "Text", "breite": 1600, "hoehe": 900, "unterschrift": "Symbolbild",
-       "nachweis": NACHWEIS}
-LEER = {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": ""}
+       "nachweis": NACHWEIS, "ki": False}
+LEER = {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": "", "ki": False}
 FIGUR = ('<figure class="bild"><img src="bilder/x.jpg" alt="Text" width="1600" height="900" loading="lazy">'
          '<figcaption>Symbolbild</figcaption></figure>')
 
@@ -325,6 +325,25 @@ def sperre_aus_mit_schalter():
     return abbruch is None and seiten == sorted(bauen.SEITEN) and "<figure" not in text
 
 
+def impressum_ohne_nachweis():
+    """G17 (Runde 5, Programmierer M2): Impressumsquelle ohne {{bildnachweise}}, echte Bildtabelle: main bricht ab,
+    bevor eine Seite geschrieben ist."""
+    ordner = schreibordner()
+    q = ordner / "inhalte" / "impressum.html"
+    q.write_text(q.read_text(encoding="utf-8").replace("{{bildnachweise}}", ""), encoding="utf-8", newline="\n")
+    with schalter(HIER=ordner, NOINDEX=True, FOTOS_ZEIGEN=True, BILDWURZEL=HIER.parent), \
+            contextlib.redirect_stdout(io.StringIO()):
+        argv, sys.argv = sys.argv, ["bauen.py"]
+        abbruch = None
+        try:
+            bauen.main()
+        except SystemExit as e:
+            abbruch = str(e.code)
+        finally:
+            sys.argv = argv
+    return bool(abbruch) and "Nachweiszeile" in abbruch and not list(ordner.glob("*.html"))
+
+
 OK = None  # erwartet: keine Meldung
 FEHLER = "Meldung"  # erwartet: eine Meldung
 
@@ -400,6 +419,14 @@ WEITERE = [
     ("G6a KI-Bild, Nachweis ohne „mit KI erzeugt“: Meldung", lambda: platz_fehler(ki=True), FEHLER),
     ("G6b KI-Bild, Nachweis mit „mit KI erzeugt“: keine Meldung",
      lambda: platz_fehler(ki=True, nachweis="Beispiel: mit KI erzeugt"), OK),
+    # Runde 5: Feld ki ist Pflicht an jedem Platz, auch am leeren; Nachweis im gebauten Impressum.
+    ("G6c Feld ki fehlt (None): Meldung", lambda: platz_fehler(ki=None), FEHLER),
+    ("G6d leerer Platz ohne Feld ki: Meldung", lambda: platz_fehler(datei="", ki=None), FEHLER),
+    ("G15 gebautes Impressum ohne Nachweiszeile des KI-Bilds: Meldung",
+     lambda: bauen.impressum_fehler({"impressum.html": "<h2>Bildnachweise</h2>"}), FEHLER),
+    ("G16 frisch gebautes Impressum: keine Meldung",
+     lambda: bauen.impressum_fehler({"impressum.html": bauen.bauen("impressum.html", bauen.SEITEN["impressum.html"])}), OK),
+    ("G17 Impressumsquelle ohne {{bildnachweise}}: main bricht ab, keine Seite geschrieben", impressum_ohne_nachweis, True),
     ("G7 Datei fehlt: der Platz erscheint nicht, der Bau läuft", lambda: enthaelt("<main>", fehlt=("<figure",), vorhanden=False), True),
     ("G8 vorrang: fetchpriority statt lazy", lambda: enthaelt('fetchpriority="high"', fehlt=('loading="lazy"',), vorrang=True), True),
     ("G9 Unterschrift leer: keine figcaption", lambda: enthaelt("<figure", fehlt=("<figcaption",), unterschrift=""), True),

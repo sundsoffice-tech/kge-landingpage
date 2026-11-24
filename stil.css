@@ -173,7 +173,7 @@ b, strong { font-weight: 650; }
 .buehne-bild picture, .buehne-bild img { width: 100%; height: 100%; }
 .buehne-bild img { object-fit: cover; object-position: 70% 30%; }
 /* Handy: hochkant angeschnitten, die Delle links muss im Bild bleiben */
-@media (max-width: 699px) { .hero .buehne-bild img { object-position: 8% 0%; } }
+@media (max-width: 699.98px) { .hero .buehne-bild img { object-position: 8% 0%; } }
 /* Lesbarkeit unten links: Verlauf zur Nacht, nur dort, wo Text steht */
 .buehne-bild::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(14, 13, 12, 0.92) 0%, rgba(14, 13, 12, 0.55) 34%, rgba(14, 13, 12, 0) 62%); }
 @media (min-width: 900px) { .buehne-bild::after { background: linear-gradient(to top, rgba(14, 13, 12, 0.86) 0%, rgba(14, 13, 12, 0.4) 38%, rgba(14, 13, 12, 0) 64%), linear-gradient(to right, rgba(14, 13, 12, 0.92) 0%, rgba(14, 13, 12, 0.84) 40%, rgba(14, 13, 12, 0) 64%); } }
@@ -196,10 +196,10 @@ b, strong { font-weight: 650; }
 .buehne-zeiten .am-stueck { white-space: nowrap; } /* kein allein stehender Schlusspunkt */
 @media (min-width: 900px) { .buehne-zeiten { font-size: 18px; margin-top: 20px; max-width: 42rem; } }
 .hero.buehne h1 { font-size: clamp(46px, 6.4vw, 84px); margin-bottom: 26px; max-width: 15ch; text-wrap: balance; }
-@media (max-width: 699px) { .hero.buehne h1 { font-size: 42px; letter-spacing: -0.04em; max-width: none; } }
+@media (max-width: 699.98px) { .hero.buehne h1 { font-size: 42px; letter-spacing: -0.04em; max-width: none; } }
 /* Handy: Bühne nur unterhalb von Hand und Messkopf. Die Dachzeile entfällt dort (der Name steht in der Kontaktfläche),
    die Ausweichwege stehen als erste Zeile unter der Nummer (Runde 2, Bericht 11 Punkt 1 und 2). */
-@media (max-width: 699px) { .hero.buehne .frage { display: none; } .nur-gross { display: none; } }
+@media (max-width: 699.98px) { .hero.buehne .frage { display: none; } .nur-gross { display: none; } }
 @media (min-width: 700px) { .nur-klein { display: none; } }
 .buehne .unterzeile { font-size: 18px; line-height: 1.5; color: var(--licht); max-width: 30rem; margin-bottom: 24px; }
 @media (min-width: 900px) { .buehne .unterzeile { font-size: 21px; max-width: 34rem; margin-bottom: 30px; } }
@@ -216,8 +216,7 @@ b, strong { font-weight: 650; }
 }
 
 /* Kopf der Kostenseite ohne Bild: Frage als h1, Antwort groß darunter (R1 schlank) */
-.kosten-kopf h1 { font-size: clamp(42px, 6.4vw, 84px); letter-spacing: -0.035em; max-width: 14ch; margin-bottom: 14px; }
-.buehne .antwort, .kosten-kopf .antwort { font-family: var(--titel); font-weight: var(--schnitt); font-size: clamp(21px, 2.2vw, 28px); line-height: 1.25; letter-spacing: -0.01em; color: var(--licht); max-width: 30rem; margin: 0 0 20px; }
+.kosten-kopf .antwort { font-family: var(--titel); font-weight: var(--schnitt); font-size: clamp(21px, 2.2vw, 28px); line-height: 1.25; letter-spacing: -0.01em; color: var(--licht); max-width: 30rem; margin: 0 0 20px; }
 
 /* ---------- Kontaktfläche: Papier-2, ruhig; die Nummer am Rechner groß, am Handy kleiner ---------- */
 .karte { background: var(--papier-2); padding: var(--luft-s) 0; }
@@ -226,7 +225,7 @@ b, strong { font-weight: 650; }
 .ruf-gross { margin: 0 0 6px; font-family: var(--titel); font-weight: var(--schnitt); font-size: clamp(36px, 6.2vw, 76px); line-height: 1; letter-spacing: -0.03em; max-width: none; font-variant-numeric: tabular-nums lining-nums; }
 .ruf-gross a { color: var(--tinte); text-decoration: none; display: inline-block; padding: 6px 0; white-space: nowrap; }
 .ruf-gross a:hover { color: var(--glut-tinte); }
-@media (max-width: 699px) { .ruf-gross { font-size: 36px; } }
+@media (max-width: 699.98px) { .ruf-gross { font-size: 36px; } }
 .ausweich { margin: 0; font-size: 17px; line-height: 1.55; color: var(--tinte); }
 .ausweich a { font-weight: 650; display: inline-block; padding-block: 10px; } /* ohne negativen Rand: die zwei Trefferflächen überlappen sich nicht */
 .ausweich .am-stueck { white-space: nowrap; }
@@ -265,18 +264,14 @@ b, strong { font-weight: 650; }
 .strecke-bild img { aspect-ratio: 3 / 2; object-fit: cover; }
 .strecke-bild figcaption { color: var(--licht-2); padding: 0 var(--rand); }
 @media (min-width: 900px) {
-  .strecke-schritt.bild-rechts, .strecke-schritt.bild-links { display: grid; align-items: center; }
+  .strecke-schritt.bild-rechts { display: grid; align-items: center; }
   .strecke-schritt.bild-rechts { grid-template-columns: minmax(0, 1fr) 62vw; }
-  .strecke-schritt.bild-links { grid-template-columns: 62vw minmax(0, 1fr); }
   .strecke-schritt .strecke-bild { margin: 0; grid-row: 1; }
   .bild-rechts .strecke-bild { grid-column: 2; }
-  .bild-links .strecke-bild { grid-column: 1; }
-  .strecke-schritt.bild-rechts > .wrap, .strecke-schritt.bild-links > .wrap { grid-row: 1; max-width: none; margin: 0; }
+  .strecke-schritt.bild-rechts > .wrap { grid-row: 1; max-width: none; margin: 0; }
   .bild-rechts > .wrap { grid-column: 1; padding-left: max(var(--rand), calc((100vw - 1180px) / 2 + var(--rand))); padding-right: 48px; }
-  .bild-links > .wrap { grid-column: 2; padding-right: max(var(--rand), calc((100vw - 1180px) / 2 + var(--rand))); padding-left: 48px; }
   .strecke-bild figcaption { padding: 0; margin-top: 12px; }
   .bild-rechts .strecke-bild figcaption { padding-right: var(--rand); }
-  .bild-links .strecke-bild figcaption { padding-left: max(var(--rand), calc((100vw - 1180px) / 2 + var(--rand))); }
 }
 .strecke a { color: var(--licht); }
 .strecke a:hover { color: var(--glut-hell); }
@@ -326,7 +321,6 @@ b, strong { font-weight: 650; }
   .ziffern h3 { margin-bottom: 8px; }
 }
 .ablauf-fuss { margin-top: var(--luft-s); padding-top: 24px; border-top: 1px solid var(--linie-dunkel); }
-.ablauf-fuss p { color: var(--licht-2); }
 .ablauf-kurz a { color: var(--licht); }
 .ablauf-kurz a:hover { color: var(--glut-hell); }
 
@@ -342,7 +336,6 @@ b, strong { font-weight: 650; }
 .faq summary:hover { color: var(--glut-tinte); }
 .faq .antwort { padding: 0 0 20px; color: var(--tinte-2); }
 .faq .antwort p:last-child { margin-bottom: 0; }
-.faq .antwort a { display: inline-block; padding-block: 12px; margin-block: -12px; }
 
 /* ---------- Rückruf und Formular ---------- */
 .rueckruf { padding: var(--luft-m) 0 var(--luft-l); }
@@ -384,10 +377,6 @@ b, strong { font-weight: 650; }
 .kontaktliste b { display: block; font-family: var(--titel); font-weight: var(--schnitt); }
 .kontaktliste a { font-weight: 650; display: inline-block; position: relative; padding: 10px 0; margin: -10px 0; }
 .kontaktliste span { color: var(--tinte-2); font-size: 16px; display: block; }
-.dunkel .kontaktliste { border-top-color: var(--licht-2); }
-.dunkel .kontaktliste li { border-bottom-color: var(--linie-dunkel); }
-.dunkel .kontaktliste span { color: var(--licht-2); }
-.dunkel .kontaktliste svg { color: var(--glut); }
 
 /* ---------- Unterseiten ---------- */
 .seitenkopf { background: var(--nacht); color: var(--licht); padding: 48px 0 56px; position: relative; }
@@ -409,8 +398,6 @@ b, strong { font-weight: 650; }
 .h2-unterzeile { font-family: var(--titel); font-weight: var(--schnitt); font-size: 16px; color: var(--tinte-2); margin: 0 0 16px; }
 .h2-unterzeile span { white-space: nowrap; }
 .stand { color: var(--tinte-2); font-size: 16px; margin-bottom: 24px; }
-.kasten { border: 1px solid var(--linie); border-radius: var(--radius); padding: 18px 20px; margin: 0 0 18px; background: var(--weiss); }
-.kasten p:last-child, .kasten ul:last-child { margin-bottom: 0; }
 .inhalt .weiter { margin-top: 12px; }
 .inhalt .kontaktliste { margin-bottom: 8px; max-width: var(--mass); }
 
@@ -444,10 +431,6 @@ b, strong { font-weight: 650; }
 }
 .schritte h3 { margin: 0; align-self: center; }
 .schritte p { margin: 0; color: var(--tinte-2); }
-.schritte.kurz li { grid-template-columns: 40px minmax(0, 1fr); gap: 4px 14px; padding: 16px 0; align-items: center; }
-.schritte.kurz li::before { grid-row: 1; font-size: 20px; }
-.schritte.kurz p { grid-column: 2; }
-.schritte.kurz b { color: var(--tinte); }
 
 /* Kontakt und Anfahrt */
 .ort-block { border-top: 1px solid var(--tinte); padding-top: 18px; }
@@ -485,8 +468,6 @@ main ol:not([class]) li::marker { font-family: var(--titel); font-weight: var(--
 .quelle { font-size: 15px; color: var(--tinte-2); }
 
 /* Bild neben den Ortslisten (Einsatzgebiet) */
-.zweispaltig > .bild { margin: 0 0 20px; }
-.zweispaltig > .bild figcaption { margin-top: 8px; }
 
 /* Bewertung (Schalter BEWERTUNG_ZEIGEN, Vorgabe aus) */
 .bewertung { margin: 0 0 14px; max-width: 34rem; padding: 12px 14px; border: 1px solid var(--linie); border-radius: var(--radius); font-size: 16px; line-height: 1.5; }

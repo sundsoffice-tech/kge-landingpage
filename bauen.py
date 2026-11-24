@@ -12,11 +12,9 @@ NOINDEX: True bis zum Go-Live auf unfall-mg.de (DEPLOY.md), danach False setzen 
 solange NOINDEX aus ist und konfig.js noch Platzhalter trägt (sonst ginge die Seite ohne Messung in den Index).
 
 Werte, die auf mehreren Seiten stehen, stehen genau einmal hier (WhatsApp, Rückrufzusage, Fotoschalter).
-Die FAQPage-Daten (JSON-LD) erzeugt der Bau aus den sichtbaren <details>-Fragen, damit sie wortgleich bleiben.
 """
 import datetime
 import html
-import json
 import pathlib
 import re
 import sys
@@ -54,7 +52,9 @@ FOTOS_ZEIGEN = True
 #   breiten  Liste der Breiten in Pixeln; neben datei (…-<breite>.webp) liegen die schmaleren Dateien, daraus srcset
 #   sizes    sizes-Angabe zum srcset (Vorgabe 100vw)
 #   schmal   eigener Anschnitt für schmale Fenster: datei, breiten, breite, hoehe, medien (picture/source)
-#   ki       True: mit KI erzeugt; der Nachweis muss „mit KI erzeugt“ nennen (sonst bricht der Bau ab)
+#   ki       Pflicht an jedem Platz, True oder False (ein fehlendes Feld bricht den Bau ab, Runde 5); True: mit KI
+#            erzeugt, der Nachweis muss „mit KI erzeugt“ nennen, und die Zeile muss in der gebauten impressum.html
+#            stehen (impressum_sperre in main, vor dem Schreiben)
 #   klasse   zusätzliche Klasse der figure (buehne-bild, strecke-bild)
 KI_KENNWORT = "mit KI erzeugt"
 KI_NACHWEIS = ("mit KI erzeugt (ChatGPT, OpenAI) am 24.11.2026 für diese Seite, im Bildlook der Seite "
@@ -63,14 +63,14 @@ BILDER = {
     # Startseite, Bühne über die ganze erste Ansicht: Messung an einer Delle im Abendlicht.
     "start": {"datei": "bilder/r2-messung-1536.webp", "breiten": [768, 1280, 1536],
               "schmal": {"datei": "bilder/r2-messung-hoch-864.webp", "breiten": [432, 864], "breite": 864,
-                         "hoehe": 1536, "medien": "(max-width: 699px)"},
+                         "hoehe": 1536, "medien": "(max-width: 699.98px)"},
               "alt": "Eine Hand setzt ein Lackschichtdickenmessgerät an der hinteren Seitenwand auf, die Spiegelung "
                      "knickt an der Delle ab",
               "breite": 1536, "hoehe": 864, "unterschrift": "", "ki": True,
               "klasse": "buehne-bild", "nachweis": "Startseite, Messung an einer Delle: " + KI_NACHWEIS,
               "vorrang": True},
     # Nach dem Unfall, vor „An der Unfallstelle“: leer, 16:9.
-    "unfall": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": ""},
+    "unfall": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": "", "ki": False},
     # Wer zahlt?, Zeile „Kleiner Schaden“: verdeckter Schaden hinter der abgenommenen Stoßstange.
     "streifschaden": {"datei": "bilder/r1-verdeckt-1536.webp", "breiten": [768, 1280, 1536],
                       "sizes": "(min-width: 900px) 60vw, 100vw",
@@ -81,21 +81,22 @@ BILDER = {
                       "nachweis": "Seite „Wer zahlt?“, verdeckter Schaden hinter der Stoßstange: " + KI_NACHWEIS},
     # R1 schlank (24.11.2026): Lackriss, die vier Ablaufbilder (Anruf, Werkstatt, Gutachten, Versand), das
     # Unterboden-Vollbild der Kostenseite und das Münster-Foto (Einsatzgebiet) sind aus der Erzeugung genommen. Die
-    # Dateien liegen weiter unter bilder/ (r3-lackriss, r2-anruf, r2-werkstatt, r3-gutachten, r2-versand, r1-unterboden,
-    # r1-muenster), werden aber nicht mehr geladen und stehen nicht mehr im Bildnachweis.
+    # Dateien (r3-lackriss, r2-anruf, r2-werkstatt, r3-gutachten, r2-versand, r1-unterboden,
+    # r1-muenster), werden nicht mehr geladen und stehen nicht im Bildnachweis. Seit Runde 5 liegen sie mit allen anderen
+    # ungeladenen Dateien in bilder-archiv/ (export-ignore, nicht ausgeliefert; zeuge_seiten B4).
     # Einsatzgebiet, Abschnitt Hebebühne: leer, 16:9.
-    "hebebuehne": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": ""},
+    "hebebuehne": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": "", "ki": False},
     # Wer zahlt?: Kopf ohne Bild seit R1 schlank; r1-umschlag wird nicht mehr geladen.
 }
 # Satz vor den Nachweiszeilen im Impressum (Rechtsnachtrag 01:55; seit 24.11.2026 ohne Bezug auf ein Schild am Bild).
-NACHWEIS_SATZ = ("Die Fotos auf dieser Seite sind mit KI erzeugte Beispielbilder. "
+NACHWEIS_SATZ = ("Die Bilder auf unfall-mg.de sind mit KI erzeugte Beispielbilder. "
                  "Sie zeigen keine Fälle, Personen oder Räume des Büros.")
 # Ordner, in dem bilder/ liegt; der Zeuge setzt ihn auf einen eigenen Ordner.
 BILDWURZEL = HIER
 
 # Bewertung im Hero (Conversion-Prüfung 19.11.2026, O1; Wortlaut nach Wettbewerbsrecht vorab 20.11.2026, Nr. 1):
-# ein Kasten im Hero der Startseite. Im HTML steht er vor der Namenszeile zwischen h1 und Anrufknopf (Platzhalter
-# vertrauen), stil.css ordnet ihn per order hinter den Knopf. Die Sternchenerklärung, auf die sich die Vorgabe vom
+# ein Kasten in der Kontaktfläche der Startseite (.karte-person, Platzhalter vertrauen in inhalte/index.html), vor der
+# Namenszeile; seit R1 schlank (24.11.2026) nicht mehr im Hero. Die Sternchenerklärung, auf die sich die Vorgabe vom
 # 20.11.2026 bezog, gibt es seit dem 23.11.2026 nicht mehr: Lage vor dem Einschalten ansehen und neu abstimmen.
 # Die Zeile ist ganz ein Link aufs Google-Profil, der Hinweis nach § 5b Abs. 3 UWG steht direkt darunter, ohne Klick
 # und in 16 px. Keine Sternegrafik.
@@ -123,7 +124,7 @@ BELEGE = HIER / "belege"
 PNG_KOPF = b"\x89PNG\r\n\x1a\n"
 BEWERTUNG_PROFIL_FORM = r"https://(?:g\.page/|maps\.app\.goo\.gl/|www\.google\.com/maps/place/)[^\s\"'<>]+"
 
-# Name im Hero, eigener Schalter, an derselben Stelle, außerhalb des Bewertungskastens. Vorgabe AN seit 20.11.2026:
+# Name in der Kontaktfläche der Startseite (.karte-person), eigener Schalter, an derselben Stelle wie der Bewertungskasten. Vorgabe AN seit 20.11.2026:
 # „Ihr Sachverständiger: Cihan Es“ ist ohne Bestätigung zulässig (Wettbewerbsrecht vorab Nr. 2), die Marketingrolle
 # verlangt den Namen im ersten Bildschirm. „Sie sprechen direkt mit Cihan Es“ erst nach Bestätigung des Kunden.
 NAME_ZEIGEN = True
@@ -272,7 +273,7 @@ def bewertung_zeile():
 
 
 def vertrauen():
-    """O1: Bewertungskasten und Namenszeile im Hero der Startseite (zwischen h1 und Knopf), je mit eigenem Schalter. Leer, wenn beide
+    """O1: Bewertungskasten und Namenszeile in der Kontaktfläche der Startseite (.karte-person), je mit eigenem Schalter. Leer, wenn beide
     aus sind; bauen() nimmt dann die ganze Zeile mit dem Platzhalter heraus."""
     e = html.escape
     teile = []
@@ -292,6 +293,8 @@ def bild_fehler(platz):
     """Prüft einen Bildplatz aus BILDER; gibt die Fehlermeldung zurück oder None. Ein leerer Platz (keine Datei
     eingetragen) ist kein Fehler, er erscheint einfach nicht. Zeuge: pruefen/zeuge_bauen.py, G1 bis G6."""
     b = BILDER[platz]
+    if not isinstance(b.get("ki"), bool):
+        return f"Bildplatz {platz}: Feld ki fehlt oder ist nicht True oder False"
     datei = b["datei"]
     if not datei:
         return None
@@ -363,6 +366,27 @@ def sperre_bilder():
             sys.exit(meldung)
 
 
+def impressum_fehler(seiten):
+    """Jedes gezeigte KI-Bild hat seine Nachweiszeile in der gebauten impressum.html; gibt die Meldung zurück oder
+    None. Runde 5 (Programmierer M2 und S5, Codex 4): vorher prüfte die Sperre nur das Feld, nicht das Ergebnis, und
+    ein Impressum ohne {{bildnachweise}} baute mit Exit 0. Zeuge: pruefen/zeuge_bauen.py, G15 bis G17."""
+    impressum = seiten.get("impressum.html", "")
+    for platz, b in BILDER.items():
+        if b.get("ki") and bild_html(platz) and html.escape(b["nachweis"].strip()) not in impressum:
+            return f"Bildplatz {platz}: KI-Bild ohne Nachweiszeile in der gebauten impressum.html"
+    return None
+
+
+def impressum_sperre(seiten):
+    """Bricht ab, wenn impressum_fehler etwas meldet. Steht in main zwischen Bauen und Schreiben, damit keine Seite
+    geschrieben ist, wenn der Nachweis fehlt."""
+    if not FOTOS_ZEIGEN:
+        return
+    meldung = impressum_fehler(seiten)
+    if meldung:
+        sys.exit(meldung)
+
+
 def bildnachweise():
     """Abschnitt fürs Impressum: je gezeigtem Bild eine Zeile. Leer, wenn kein Bild gezeigt wird; bauen() nimmt dann
     die Zeile mit dem Platzhalter heraus."""
@@ -383,23 +407,6 @@ def ohne_kommentare(text):
     text = re.sub(r"^[ \t]*<!--(?:(?!-->).)*-->[ \t]*\n", "", text, flags=re.S | re.M)
     return re.sub(r"[ \t]*<!--(?:(?!-->).)*-->", "", text, flags=re.S)
 
-
-def nur_text(roh):
-    return " ".join(html.unescape(re.sub(r"<[^>]+>", "", roh)).split())
-
-
-def faq_jsonld(seite):
-    """P3: FAQPage aus den sichtbaren Fragen, Antworttext wortgleich mit der Anzeige."""
-    paare = re.findall(r'<details>\s*<summary>(.*?)</summary>\s*<div class="antwort">(.*?)</div>\s*</details>', seite, re.S)
-    if not paare:
-        sys.exit("{{faq_jsonld}} ohne <details>-Fragen")
-    zeilen = []
-    for frage, antwort in paare:
-        eintrag = {"@type": "Question", "name": nur_text(frage),
-                   "acceptedAnswer": {"@type": "Answer", "text": nur_text(antwort)}}
-        zeilen.append("    " + json.dumps(eintrag, ensure_ascii=False))
-    kopf = '<script type="application/ld+json">\n{\n  "@context": "https://schema.org",\n  "@type": "FAQPage",\n  "mainEntity": [\n'
-    return kopf + ",\n".join(zeilen) + "\n  ]\n}\n</script>"
 
 SEITEN = {
     "index.html": {
@@ -480,8 +487,6 @@ def bauen(name, meta):
     seite = schale
     for schluessel, wert in werte.items():
         seite = seite.replace("{{" + schluessel + "}}", wert)
-    if "{{faq_jsonld}}" in seite:
-        seite = seite.replace("{{faq_jsonld}}", faq_jsonld(seite))
     if "{{" in seite:
         sys.exit(f"{name}: Platzhalter offen: {seite[seite.index('{{'):seite.index('{{') + 30]}")
     if "<!--" in seite:
@@ -499,9 +504,11 @@ def main():
     meldung = bewertung_meldung()
     if meldung:  # laut, in Bau und Prüfung; der Exit bleibt davon unberührt
         print(meldung)
+    gebaut = {name: bauen(name, meta) for name, meta in SEITEN.items()}
+    impressum_sperre(gebaut)
     abweichungen = 0
-    for name, meta in SEITEN.items():
-        neu = bauen(name, meta)
+    for name in SEITEN:
+        neu = gebaut[name]
         ziel = HIER / name
         if pruefen:
             alt = ziel.read_text(encoding="utf-8") if ziel.exists() else ""
