@@ -183,6 +183,8 @@ b, strong { font-weight: 650; }
 .buehne-bild::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(14, 13, 12, 0.92) 0%, rgba(14, 13, 12, 0.55) 34%, rgba(14, 13, 12, 0) 62%); }
 @media (min-width: 900px) { .buehne-bild::after { background: linear-gradient(to top, rgba(14, 13, 12, 0.86) 0%, rgba(14, 13, 12, 0.4) 38%, rgba(14, 13, 12, 0) 64%), linear-gradient(to right, rgba(14, 13, 12, 0.92) 0%, rgba(14, 13, 12, 0.84) 40%, rgba(14, 13, 12, 0) 64%); } }
 .buehne-bild .bild-marke { top: 14px; right: 14px; }
+/* Rechner: Schild unten rechts, frei auf der Rückleuchte statt am Handrücken (Bericht 11, Stilfrage 1) */
+@media (min-width: 900px) { .hero .buehne-bild .bild-marke { top: auto; bottom: 14px; } }
 .buehne-text { position: relative; z-index: 3; padding: 120px 0 28px; }
 @media (min-width: 900px) { .buehne-text { padding: 120px 0 72px; } } /* 120 statt 160: Zeiten bleiben bei 1280x800 in der ersten Ansicht, auch mit dreizeiliger h1 (Fassung B) */
 .buehne h1 { font-size: clamp(46px, 7.6vw, 96px); line-height: 0.96; letter-spacing: -0.035em; color: var(--licht); margin-bottom: 18px; max-width: 12ch; text-wrap: initial; }
@@ -199,6 +201,10 @@ b, strong { font-weight: 650; }
 @media (min-width: 900px) { .buehne-zeiten { font-size: 18px; margin-top: 20px; } }
 .hero.buehne h1 { font-size: clamp(46px, 6.4vw, 84px); margin-bottom: 26px; max-width: 15ch; text-wrap: balance; }
 @media (max-width: 699px) { .hero.buehne h1 { font-size: 42px; letter-spacing: -0.04em; max-width: none; } }
+/* Handy: Bühne nur unterhalb von Hand und Messkopf. Die Dachzeile entfällt dort (der Name steht in der Kontaktfläche),
+   die Ausweichwege stehen als erste Zeile unter der Nummer (Runde 2, Bericht 11 Punkt 1 und 2). */
+@media (max-width: 699px) { .hero.buehne .frage { display: none; } .nur-gross { display: none; } }
+@media (min-width: 700px) { .nur-klein { display: none; } }
 .buehne .unterzeile { font-size: 18px; line-height: 1.5; color: var(--licht); max-width: 30rem; margin-bottom: 24px; }
 @media (min-width: 900px) { .buehne .unterzeile { font-size: 21px; max-width: 34rem; margin-bottom: 30px; } }
 .buehne .knoepfe { display: flex; }
@@ -222,7 +228,10 @@ b, strong { font-weight: 650; }
 .ruf-gross { margin: 0 0 6px; font-family: var(--titel); font-weight: var(--schnitt); font-size: clamp(36px, 6.2vw, 76px); line-height: 1; letter-spacing: -0.03em; max-width: none; font-variant-numeric: tabular-nums lining-nums; }
 .ruf-gross a { color: var(--tinte); text-decoration: none; display: inline-block; padding: 6px 0; white-space: nowrap; }
 .ruf-gross a:hover { color: var(--glut-tinte); }
-@media (max-width: 699px) { .ruf-gross { font-size: 24px; } }
+@media (max-width: 699px) { .ruf-gross { font-size: 36px; } }
+.ausweich { margin: 0; font-size: 17px; line-height: 1.55; color: var(--tinte); }
+.ausweich a { font-weight: 650; display: inline-block; padding-block: 10px; margin-block: -10px; }
+.ausweich .am-stueck { white-space: nowrap; }
 .karte-person { padding-top: 6px; }
 .name-zeile { margin: 0 0 12px; font-family: var(--titel); font-weight: var(--schnitt); font-size: 21px; line-height: 1.25; color: var(--tinte); }
 .adressen { list-style: none; padding: 0; margin: 0; }
@@ -230,6 +239,7 @@ b, strong { font-weight: 650; }
 .adressen small { display: block; color: var(--tinte-2); font-size: 15px; }
 .karte .weiter { margin-top: 0; }
 .gebietzeile { grid-column: 1 / -1; margin: 6px 0 0; padding-top: 18px; border-top: 1px solid var(--linie); font-size: 17px; line-height: 1.55; color: var(--tinte); max-width: 46rem; }
+@media (min-width: 900px) { .gebietzeile { max-width: none; padding-right: calc(100% - 46rem); } } /* Linie über die ganze Fläche, Text bleibt schmal */
 .gebietzeile a { font-weight: 650; display: inline-block; padding-block: 12px; margin-block: -12px; }
 
 /* ---------- Abschnitte allgemein ---------- */
@@ -276,6 +286,11 @@ b, strong { font-weight: 650; }
 /* Einzelnes Streckenbild auf einer hellen Seite (Wer zahlt?) */
 .strecke-einzeln { padding: var(--luft-m) 0; }
 .strecke-einzeln .schritt-text h3 { font-size: clamp(28px, 3.4vw, 44px); }
+/* Kosten: verdeckter Schaden auf Papier-2, damit Nacht nicht auf Nacht (Aussage) folgt (Runde 2, Bericht 11 Punkt 4) */
+#verdeckt { background: var(--papier-2); color: var(--tinte); }
+#verdeckt h2, #verdeckt h3, #verdeckt a { color: var(--tinte); }
+#verdeckt p, #verdeckt figcaption { color: var(--tinte-2); }
+#verdeckt a:hover { color: var(--glut-tinte); }
 
 /* ---------- Zeilenliste: wer zahlt ---------- */
 .zahler { background: var(--papier); }
@@ -313,7 +328,7 @@ b, strong { font-weight: 650; }
   .ziffer { display: block; margin-bottom: 14px; }
   .ziffern h3 { margin-bottom: 8px; }
 }
-.ablauf-fuss { margin-top: var(--luft-m); padding-top: 24px; border-top: 1px solid var(--linie-dunkel); }
+.ablauf-fuss { margin-top: var(--luft-s); padding-top: 24px; border-top: 1px solid var(--linie-dunkel); }
 .ablauf-fuss p { color: var(--licht-2); }
 .ablauf-kurz a { color: var(--licht); }
 .ablauf-kurz a:hover { color: var(--glut-hell); }
@@ -334,6 +349,14 @@ b, strong { font-weight: 650; }
 
 /* ---------- Rückruf und Formular ---------- */
 .rueckruf { padding: var(--luft-m) 0 var(--luft-l); }
+/* Rechner: links unten die Nummer, bündig mit der Unterkante des Formulars (Runde 2, Bericht 11 Punkt 3) */
+.ruf-rueckruf { display: none; }
+@media (min-width: 900px) {
+  #rueckruf .zweispaltig > div:first-child { display: flex; flex-direction: column; align-self: stretch; }
+  .ruf-rueckruf { display: block; margin: auto 0 0; font-size: 36px; }
+  .ruf-rueckruf a { color: var(--licht); }
+  .ruf-rueckruf a:hover { color: var(--glut-hell); }
+}
 .formular { background: var(--weiss); color: var(--tinte); border-radius: var(--radius); padding: 24px 18px 20px; color-scheme: light; }
 @media (min-width: 700px) { .formular { padding: 32px 32px 28px; } }
 .abschnitt.dunkel .formular, .abschnitt.dunkel .formular p { color: var(--tinte-2); }
