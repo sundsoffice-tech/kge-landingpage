@@ -177,6 +177,8 @@ b, strong { font-weight: 650; }
 .buehne-bild { position: absolute; inset: 0; }
 .buehne-bild picture, .buehne-bild img { width: 100%; height: 100%; }
 .buehne-bild img { object-fit: cover; object-position: 70% 30%; }
+/* Handy: hochkant angeschnitten, die Delle links muss im Bild bleiben */
+@media (max-width: 699px) { .hero .buehne-bild img { object-position: 8% 0%; } }
 /* Lesbarkeit unten links: Verlauf zur Nacht, nur dort, wo Text steht */
 .buehne-bild::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(14, 13, 12, 0.92) 0%, rgba(14, 13, 12, 0.55) 34%, rgba(14, 13, 12, 0) 62%); }
 @media (min-width: 900px) { .buehne-bild::after { background: linear-gradient(to top, rgba(14, 13, 12, 0.86) 0%, rgba(14, 13, 12, 0.4) 38%, rgba(14, 13, 12, 0) 64%), linear-gradient(to right, rgba(14, 13, 12, 0.6) 0%, rgba(14, 13, 12, 0) 52%); } }
