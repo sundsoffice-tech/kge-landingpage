@@ -722,3 +722,14 @@ body.auszeichnung-strich .geteilt .aussage mark { color: inherit; padding: 0; ma
 .themenzeile, .dach, .seitenkopf .dach, .fall-name, #rueckruf h2, .adressen dt {
   font-size: 17px; font-weight: 700; letter-spacing: 0; text-transform: none; line-height: 1.4;
 }
+/* Nachmessung 24.11.2026 03:0x: Aussage auf 84 px (62:38, Bild 487 x 832 aus 600 x 810, Faktor 1,03), Kostenkarte mit der
+   linken Kante an der rechten Kante der Auszeichnung; Zahler-Satz größer als die Schwelle; Leerfläche vor „selbst“ zu;
+   Kopf von Wer zahlt? so niedrig, dass das Bild in Quellhöhe 310 px steht; Münster ohne Rundung wie die anderen Bilder */
+@media (min-width: 900px) {
+  .buehne-b { grid-template-columns: minmax(0, 62fr) minmax(0, 38fr); }
+  .buehne-b .kostenkarte { margin-left: -29px; }
+  .kopf-b .flaeche { padding-block: 14px; }
+}
+.bedingung .merksatz.zahler { font-size: clamp(27px, 4vw, 52px); font-weight: 900; line-height: 1.08; letter-spacing: -0.03em; max-width: 21em; }
+.inhalt + .selbst-block { padding-top: 0; }
+.gebiet-b .bild img { border-radius: 0; }
