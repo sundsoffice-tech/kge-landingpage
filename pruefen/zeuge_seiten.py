@@ -26,7 +26,11 @@ Fälle:
   B1  Zahl der figure = Zahl der img = Zahl der gezeigten Bildplätze = Zahl der Nachweiszeilen im Impressum
   B2  jedes img gehört zu einem gezeigten Platz, steht auf dessen Seite genau einmal, sein Nachweis steht im Impressum
   B3  Quellen: je Platz aus BILDER (auch leer) {{bild_<platz>}} genau einmal in inhalte/, {{bildnachweise}} im Impressum
-  S1  Bildunterschrift beginnt mit „Symbolbild“, außer bei Plätzen, die Betrieb oder Ort zeigen (BETRIEB_ODER_ORT)
+  S1  kein „Symbolbild“-Etikett; jedes KI-Bild (BILDER[...]["ki"]) trägt „KI-erzeugtes Bild“ in seiner figure, jedes
+      andere Schadenfoto „Beispielfoto“, außer bei Plätzen, die Betrieb oder Ort zeigen (BETRIEB_ODER_ORT);
+      Richtungsvertrag Regel 5 und Nachtrag 01:55 (Rechtsauflagen), Richtung R1 24.11.2026
+  S2  die Namenskarte („Ihr Sachverständiger“) steht nicht im selben Bildblock (Elternelement der figure) wie ein
+      Schadenfoto (Nachtrag 01:55, erster Punkt)
   P1  noindex genau einmal je Seite, solange NOINDEX = True (sonst keins)
   P2  genau eine h1 je Seite
   P3  Canonical genau einmal, gleich SEITEN[...]["kanonisch"], und er zeigt auf die Seite selbst
@@ -54,7 +58,6 @@ ALTE_NUMMER = re.compile(r"622[^0-9]{0,6}57[^0-9]{0,6}68|6225768")
 # Plätze, deren Bild den Betrieb oder den Ort zeigt: Dort ist keine „Symbolbild“-Unterschrift verlangt. Ein neuer
 # Platz steht nicht hier und braucht damit „Symbolbild“, bis jemand ihn bewusst einträgt (Wissenschaftler S1, 5).
 BETRIEB_ODER_ORT = {
-    "start": "echtes Foto des Betriebs (Begutachtung am Fahrzeug), Unterschrift leer (bauen.py, Kommentar zu BILDER)",
     "ort": "zeigt den Ort: Münster St. Vitus, Mönchengladbach",
 }
 # Ausgelieferte Skripte und Stile (DEPLOY.md, git archive): alle *.js und *.css der Wurzel, nicht eine feste
@@ -169,6 +172,8 @@ class Seite(HTMLParser):
             self._link["text"].append(data)
         if self._unterschrift and self._figur is not None:
             self._figur["unterschrift"].append(data)
+        if self._figur is not None:
+            self._figur.setdefault("text", []).append(data)
 
     @property
     def sichtbar(self):
@@ -423,13 +428,77 @@ def s1():
     nach_datei = {bauen.BILDER[p]["datei"]: p for p in bauen.BILDER if bauen.BILDER[p]["datei"]}
     for n, s in SEITEN.items():
         for f in s.figuren:
+            unter = norm("".join(f["unterschrift"]))
+            if unter.startswith("Symbolbild"):
+                v.append(f"{n}: Unterschrift mit Etikett „Symbolbild“ vorn: {unter!r}")
             for b in f["imgs"]:
                 platz = nach_datei.get(b["src"], "?")
                 if platz in BETRIEB_ODER_ORT:
                     continue
-                unter = norm("".join(f["unterschrift"]))
-                if not unter.startswith("Symbolbild"):
-                    v.append(f"{n}: Bild {b['src']} (Platz {platz}) mit Unterschrift {unter!r}, ohne „Symbolbild“")
+                text = norm("".join(f.get("text", [])))
+                ki = platz in bauen.BILDER and bauen.BILDER[platz].get("ki")
+                soll = "KI-erzeugtes Bild" if ki else "Beispielfoto"
+                if soll not in text:
+                    v.append(f"{n}: Bild {b['src']} (Platz {platz}) ohne „{soll}“ in Marke oder Unterschrift: {text!r}")
+    return v
+
+
+class Bildblock(HTMLParser):
+    """Merkt sich je offenem Element, ob darin die Namenskarte steht und ob ein Kind eine figure mit Schadenfoto ist
+    (img oder source in einem picture; Treffer über jeden Dateinamen in src oder srcset)."""
+    LEER = {"img", "br", "input", "meta", "link", "source", "hr", "wbr", "area", "base", "col", "embed", "track"}
+
+    def __init__(self, schaden):
+        super().__init__(convert_charrefs=True)
+        self.schaden, self.stapel, self.funde = schaden, [], []
+
+    def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
+        if tag in ("img", "source"):
+            namen = {a.get("src") or ""} | {t.split()[0] for t in (a.get("srcset") or "").split(",") if t.strip()}
+            treffer = sorted(namen & self.schaden)
+            if treffer:
+                i = len(self.stapel) - 1
+                if i >= 0 and self.stapel[i]["tag"] == "picture":
+                    i -= 1
+                if i >= 1 and self.stapel[i]["tag"] == "figure":
+                    self.stapel[i - 1]["foto"] = treffer[0]
+        if tag not in self.LEER:
+            self.stapel.append({"tag": tag, "name": False, "foto": None})
+
+    def handle_endtag(self, tag):
+        while self.stapel:
+            e = self.stapel.pop()
+            if e["name"] and e["foto"]:
+                self.funde.append(f"<{e['tag']}> mit Namenskarte und Schadenfoto {e['foto']}")
+            if e["tag"] == tag:
+                break
+
+    def handle_data(self, data):
+        if "Ihr Sachverständiger" in data:
+            for e in self.stapel:
+                e["name"] = True
+
+
+def schadendateien():
+    """Alle Dateien der gezeigten Schadenfotos (alle Breiten und der schmale Anschnitt)."""
+    dateien = set()
+    for p in gezeigt():
+        if p in BETRIEB_ODER_ORT:
+            continue
+        b = bauen.BILDER[p]
+        dateien |= {b["datei"], *bauen.varianten(b)} if hasattr(bauen, "varianten") else {b["datei"]}
+    return dateien
+
+
+def s2():
+    v = []
+    schaden = schadendateien()
+    for n, s in SEITEN.items():
+        b = Bildblock(schaden)
+        b.feed(s.roh)
+        b.close()
+        v += [f"{n}: {f}" for f in b.funde]
     return v
 
 
@@ -557,7 +626,8 @@ FAELLE = [
     ("B1", "figure = img = gezeigte Bildplätze = Nachweiszeilen im Impressum", b1),
     ("B2", "jedes Bild gehört zu einem Platz, steht auf dessen Seite und hat seinen Nachweis", b2),
     ("B3", "Platzhalter der gezeigten Plätze und {{bildnachweise}} stehen je genau einmal in den Quellen", b3),
-    ("S1", "Bildunterschrift beginnt mit „Symbolbild“, außer bei Betrieb oder Ort", s1),
+    ("S1", "kein „Symbolbild“-Etikett; KI-Bilder mit „KI-erzeugtes Bild“, andere Schadenfotos mit „Beispielfoto“", s1),
+    ("S2", "Namenskarte nicht im selben Bildblock wie ein Schadenfoto", s2),
     ("P1", "noindex genau einmal je Seite, solange NOINDEX = True", p1),
     ("P2", "genau eine h1 je Seite", p2),
     ("P3", "Canonical genau einmal, aus SEITEN, zeigt auf die Seite selbst", p3),

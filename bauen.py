@@ -46,34 +46,83 @@ RUECKRUF_SONST = "sobald das Telefon wieder besetzt ist"
 # Foto des Betriebs bleibt die Unterschrift leer. vorrang=True (nur das Bild oben auf der Startseite) lädt das Bild
 # bevorzugt, alle anderen laden erst beim Heranscrollen.
 FOTOS_ZEIGEN = True
+# Richtung R1 „Nah dran“ (24.11.2026): die Schadenfotos sind KI-erzeugte Bilder (ChatGPT über Codex), alle im selben
+# Bildlook (Werkzeug _bildroh/bildlook.py im Arbeitsbaum, nicht ausgeliefert). Rechtsauflage (Richtungsvertrag,
+# Nachtrag 01:55): jedes KI-Bild trägt die Marke „KI-erzeugtes Bild“ sichtbar am Bild und steht im Bildnachweis.
+# Zusätzliche, freiwillige Felder je Platz:
+#   breiten  Liste der Breiten in Pixeln; neben datei (…-<breite>.webp) liegen die schmaleren Dateien, daraus srcset
+#   sizes    sizes-Angabe zum srcset (Vorgabe 100vw)
+#   schmal   eigener Anschnitt für schmale Fenster: datei, breiten, breite, hoehe, medien (picture/source)
+#   marke    kleine Marke auf dem Bild, bei ki=True genau „KI-erzeugtes Bild“ (sonst bricht der Bau ab)
+#   ki       True: KI-erzeugt; der Nachweis muss „KI-erzeugt“ nennen
+#   klasse   zusätzliche Klasse der figure (buehne-bild, vollbild, strecke-bild)
+KI_MARKE = "KI-erzeugtes Bild"
+KI_NACHWEIS = ("KI-erzeugtes Bild (ChatGPT, OpenAI), am 24.11.2026 für diese Seite erzeugt und im Bildlook der Seite "
+               "nachbearbeitet")
 BILDER = {
-    # Startseite oben, über den Adressen: wartet auf das echte Foto des Kunden (Begutachtung am Fahrzeug), 4:3.
-    "start": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": "", "vorrang": True},
-    # Nach dem Unfall, vor „An der Unfallstelle“: leer seit der Nachbesserung vom 23.11.2026, 16:9.
+    # Startseite, Bühne über die ganze erste Ansicht: Messung an einer Delle im Abendlicht.
+    "start": {"datei": "bilder/r1-messung-1536.webp", "breiten": [768, 1280, 1536],
+              "schmal": {"datei": "bilder/r1-messung-hoch-864.webp", "breiten": [432, 864], "breite": 864,
+                         "hoehe": 1536, "medien": "(max-width: 699px)"},
+              "alt": "Eine Hand hält ein Lackschichtdickenmessgerät an eine Delle in der hinteren Seitenwand, Abendlicht",
+              "breite": 1536, "hoehe": 864, "unterschrift": "", "marke": KI_MARKE, "ki": True,
+              "klasse": "buehne-bild", "nachweis": "Startseite, Messung an einer Delle: " + KI_NACHWEIS,
+              "vorrang": True},
+    # Nach dem Unfall, vor „An der Unfallstelle“: leer, 16:9.
     "unfall": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": ""},
-    # Wer zahlt?, in der Zeile „Kleiner Schaden“ (verdeckte Schäden hinter dem Stoßfänger), 4:3. Der Ausschnitt lässt
-    # das Markenzeichen auf der Felge weg.
-    "streifschaden": {"datei": "bilder/streifschaden-kotfluegel.jpg",
-                      "alt": "Weißes Auto auf einem Parkplatz mit Streifschaden an Kotflügel und Stoßfänger",
-                      "breite": 560, "hoehe": 420,
-                      "unterschrift": "Symbolbild: Streifschaden an Kotflügel und Stoßfänger",
-                      "nachweis": "Seite „Wer zahlt?“, Auto mit Streifschaden: Foto von Volodymyr Dobrovolskyy, "
-                                  "Unsplash (Unsplash-Lizenz), Ausschnitt"},
-    # Startseite, Abschnitt „So läuft es ab“, unter der Überschrift, 4:3.
-    "schadendetail": {"datei": "bilder/schadendetail-lack.jpg",
-                      "alt": "Eingedrückte hintere Seitenwand mit gerissenem Lack",
-                      "breite": 800, "hoehe": 600, "unterschrift": "Symbolbild: eingedrückte Seitenwand mit gerissenem Lack",
-                      "nachweis": "Startseite, Lackschaden: Foto von Kenny, Unsplash (Unsplash-Lizenz), Ausschnitt"},
-    # Einsatzgebiet, neben den Ortslisten, 3:2.
-    "ort": {"datei": "bilder/moenchengladbach-muenster.jpg",
+    # Wer zahlt?, Zeile „Kleiner Schaden“: verdeckter Schaden hinter der abgenommenen Stoßstange.
+    "streifschaden": {"datei": "bilder/r1-verdeckt-1536.webp", "breiten": [768, 1280, 1536],
+                      "sizes": "(min-width: 900px) 60vw, 100vw",
+                      "alt": "Abgenommene Stoßstange, dahinter ein zerdrückter Pralldämpfer und ein gebrochener Halter",
+                      "breite": 1536, "hoehe": 1024,
+                      "unterschrift": "Von außen kaum ein Kratzer, dahinter ein zerdrückter Pralldämpfer.",
+                      "marke": KI_MARKE, "ki": True, "klasse": "strecke-bild",
+                      "nachweis": "Seite „Wer zahlt?“, verdeckter Schaden hinter der Stoßstange: " + KI_NACHWEIS},
+    # Startseite, Vollbild-Moment nach der Kontaktfläche: gerissener Lack.
+    "schadendetail": {"datei": "bilder/r1-lackriss-1536.webp", "breiten": [768, 1280, 1536],
+                      "alt": "Nahaufnahme einer eingedrückten Seitenwand mit gerissenem Klarlack und abgeplatztem Lack",
+                      "breite": 1536, "hoehe": 658,
+                      "unterschrift": "So sieht ein Seitenwandschaden oft aus: Unter gerissenem Lack sitzt oft mehr "
+                                      "Schaden, als man von außen erkennt.",
+                      "marke": KI_MARKE, "ki": True, "klasse": "vollbild",
+                      "nachweis": "Startseite, gerissener Lack: " + KI_NACHWEIS},
+    # Startseite, Ablauf „Besichtigung“: Taschenlampe auf einer verbogenen Achsstrebe.
+    "besichtigung": {"datei": "bilder/r1-unterboden-1536.webp", "breiten": [768, 1280, 1536],
+                     "sizes": "(min-width: 900px) 62vw, 100vw",
+                     "alt": "Unter einem angehobenen Auto leuchtet eine Hand mit der Taschenlampe auf eine verbogene "
+                            "Achsstrebe",
+                     "breite": 1536, "hoehe": 1024,
+                     "unterschrift": "Auf der Hebebühne zeigt sich, was man von außen nicht sieht.",
+                     "marke": KI_MARKE, "ki": True, "klasse": "strecke-bild",
+                     "nachweis": "Startseite, Besichtigung am Unterboden: " + KI_NACHWEIS},
+    # Startseite, Ablauf „Gutachten“: aufgeschlagenes Gutachten mit Schadenfotos, nichts lesbar.
+    "gutachten": {"datei": "bilder/r1-unterlagen-1536.webp", "breiten": [768, 1280, 1536],
+                  "sizes": "(min-width: 900px) 62vw, 100vw",
+                  "alt": "Ein aufgeschlagenes Gutachten mit Schadenfotos auf einem Tisch im Abendlicht, daneben eine "
+                         "Kamera",
+                  "breite": 1536, "hoehe": 1024,
+                  "unterschrift": "Jeder Schaden mit Foto, schriftlich festgehalten.",
+                  "marke": KI_MARKE, "ki": True, "klasse": "strecke-bild",
+                  "nachweis": "Startseite, Gutachten auf dem Tisch: " + KI_NACHWEIS},
+    # Einsatzgebiet, neben den Ortslisten, 3:2; im Bildlook der Seite nachbearbeitet.
+    "ort": {"datei": "bilder/r1-muenster-960.webp",
             "alt": "Das Münster St. Vitus in Mönchengladbach, vom Park aus gesehen",
             "breite": 960, "hoehe": 640, "unterschrift": "Mönchengladbach, Münster St. Vitus",
-            "nachweis": "Seite „Einsatzgebiet“, Münster St. Vitus: Foto von BjøRe, Wikimedia Commons (CC0), Ausschnitt"},
-    # Einsatzgebiet, Abschnitt Hebebühne: kein freies Bild gefunden, 16:9.
+            "nachweis": "Seite „Einsatzgebiet“, Münster St. Vitus: Foto von BjøRe, Wikimedia Commons (CC0), "
+                        "Ausschnitt, Farbe angepasst"},
+    # Einsatzgebiet, Abschnitt Hebebühne: leer, 16:9.
     "hebebuehne": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": ""},
-    # Wer zahlt?, vor „In der Regel zahlen Sie nichts“: kein freigegebenes Bild, 16:9.
-    "unterlagen": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": ""},
+    # Wer zahlt?, Bühne im Seitenkopf: das Gutachten geht in den Umschlag.
+    "unterlagen": {"datei": "bilder/r1-umschlag-1536.webp", "breiten": [768, 1280, 1536],
+                   "alt": "Eine Hand schiebt ein dickes geheftetes Gutachten in einen Umschlag auf einem Autodach, "
+                          "Dämmerung",
+                   "breite": 1536, "hoehe": 800, "unterschrift": "", "marke": KI_MARKE, "ki": True,
+                   "klasse": "buehne-bild", "vorrang": True,
+                   "nachweis": "Seite „Wer zahlt?“, Gutachten im Umschlag: " + KI_NACHWEIS},
 }
+# Satz nach den Nachweiszeilen im Impressum (Rechtsnachtrag 01:55, Wortlaut angepasst an KI-Bilder).
+NACHWEIS_SATZ = ("Die Schadenfotos auf dieser Seite sind KI-erzeugte Beispielbilder und zeigen keine Fälle des Büros. "
+                 "Sie tragen am Bild die Marke „KI-erzeugtes Bild“.")
 # Ordner, in dem bilder/ liegt; der Zeuge setzt ihn auf einen eigenen Ordner.
 BILDWURZEL = HIER
 
@@ -287,7 +336,32 @@ def bild_fehler(platz):
         return f"Bildplatz {platz}: Bildnachweis fehlt"
     if not (BILDWURZEL / datei).is_file():
         return f"Bildplatz {platz}: Datei {datei} fehlt"
+    for weitere in varianten(b):
+        if not (BILDWURZEL / weitere).is_file():
+            return f"Bildplatz {platz}: Datei {weitere} fehlt"
+    if b.get("ki") and b.get("marke") != KI_MARKE:
+        return f"Bildplatz {platz}: KI-Bild ohne Marke „{KI_MARKE}“"
+    if b.get("ki") and "KI-erzeugt" not in b["nachweis"]:
+        return f"Bildplatz {platz}: KI-Bild, der Nachweis nennt „KI-erzeugt“ nicht"
     return None
+
+
+def stufen(datei, breiten):
+    """Die Dateien eines Bildes je Breite: aus bilder/x-1536.webp und [768, 1536] wird [(bilder/x-768.webp, 768), …].
+    Ohne Breitenangabe im Namen bleibt die Datei allein."""
+    m = re.match(r"^(.*)-\d+(\.\w+)$", datei)
+    if not m:
+        return [(datei, 0)]
+    return [(f"{m.group(1)}-{w}{m.group(2)}", w) for w in breiten]
+
+
+def varianten(b):
+    """Alle Dateien eines Platzes außer datei selbst (Breitenstufen und schmaler Anschnitt)."""
+    dateien = [d for d, _ in stufen(b["datei"], b.get("breiten") or [])]
+    s = b.get("schmal")
+    if s:
+        dateien += [s["datei"]] + [d for d, _ in stufen(s["datei"], s.get("breiten") or [])]
+    return [d for d in dict.fromkeys(dateien) if d != b["datei"]]
 
 
 def bild_html(platz):
@@ -298,8 +372,20 @@ def bild_html(platz):
     e = html.escape
     laden = 'fetchpriority="high"' if b.get("vorrang") else 'loading="lazy"'
     unter = f'<figcaption>{e(b["unterschrift"])}</figcaption>' if b["unterschrift"] else ""
-    return (f'<figure class="bild"><img src="{e(b["datei"])}" alt="{e(b["alt"])}" width="{b["breite"]}" '
-            f'height="{b["hoehe"]}" {laden}>{unter}</figure>')
+    marke = f'<span class="bild-marke">{e(b["marke"])}</span>' if b.get("marke") else ""
+    klasse = f'bild {e(b["klasse"])}' if b.get("klasse") else "bild"
+    satz = ""
+    if b.get("breiten"):
+        satz = (f' srcset="{e(", ".join(f"{d} {w}w" for d, w in stufen(b["datei"], b["breiten"])))}"'
+                f' sizes="{e(b.get("sizes", "100vw"))}"')
+    bild = (f'<img src="{e(b["datei"])}" alt="{e(b["alt"])}" width="{b["breite"]}" '
+            f'height="{b["hoehe"]}"{satz} {laden}>')
+    s = b.get("schmal")
+    if s:
+        quellen = ", ".join(f"{d} {w}w" for d, w in stufen(s["datei"], s.get("breiten") or [s["breite"]]))
+        bild = (f'<picture><source media="{e(s["medien"])}" srcset="{e(quellen)}" sizes="100vw" '
+                f'width="{s["breite"]}" height="{s["hoehe"]}">{bild}</picture>')
+    return f'<figure class="{klasse}">{bild}{marke}{unter}</figure>'
 
 
 def sperre_bilder():
@@ -319,7 +405,9 @@ def bildnachweise():
     zeilen = [html.escape(BILDER[platz]["nachweis"].strip()) for platz in BILDER if bild_html(platz)]
     if not zeilen:
         return ""
-    return "<h2>Bildnachweise</h2>\n    <p>" + "<br>".join(zeilen) + "</p>"
+    ki = any(BILDER[p].get("ki") for p in BILDER if bild_html(p))
+    satz = f"\n    <p>{html.escape(NACHWEIS_SATZ)}</p>" if ki else ""
+    return "<h2>Bildnachweise</h2>\n    <p>" + "<br>".join(zeilen) + "</p>" + satz
 
 
 def ohne_kommentare(text):
