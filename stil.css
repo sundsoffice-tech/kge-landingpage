@@ -749,3 +749,16 @@ body.auszeichnung-strich .geteilt .aussage mark { color: inherit; padding: 0; ma
 /* 4 Am Handy ein eigener, weiter gefasster Ausschnitt (picture in bauen.py); das picture-Element bleibt aus dem Raster */
 .geteilt picture { display: contents; }
 @media (max-width: 899px) { .buehne-b .bild img { height: auto; aspect-ratio: 8 / 5; min-height: 200px; object-position: 50% 50%; } }
+/* 5 Wer zahlt?: Sprungliste dicht unter dem Kopf; der Satz, wer zahlt, groß unter der Bedingungsliste, die Absätze
+   darunter am Satzrand; die Schwelle als Auszeichnung statt als Zahl; Kopfbild in Quellhöhe 310 px */
+.kopf-b + .inhalt { padding-top: 28px; }
+.bedingung .merksatz.zahler { font-size: clamp(23px, 2.5vw, 32px); font-weight: 800; line-height: 1.25; letter-spacing: -0.015em; color: var(--navy); max-width: 30em; margin: 36px 0 0; }
+.bedingung .absaetze { max-width: 40em; margin-top: 24px; }
+.selbst .schwelle-zahl { font-size: clamp(30px, 4.4vw, 56px); line-height: 1.05; }
+.kopf-b .bild figcaption { order: 1; }
+@media (min-width: 900px) {
+  .kopf-b h1 { font-size: clamp(38px, 4.4vw, 56px); }
+  .kopf-b .flaeche { padding: 20px 56px 20px var(--rand); }
+  .kopf-b .bild img { height: 100%; min-height: 310px; object-position: 30% 50%; }
+  .kopf-b .ruf { margin-top: 4px; }
+}
