@@ -57,7 +57,7 @@ FOTOS_ZEIGEN = True
 #   ki       True: mit KI erzeugt; der Nachweis muss „mit KI erzeugt“ nennen (sonst bricht der Bau ab)
 #   klasse   zusätzliche Klasse der figure (buehne-bild, strecke-bild)
 KI_KENNWORT = "mit KI erzeugt"
-KI_NACHWEIS = ("mit KI erzeugt (ChatGPT, OpenAI), am 24.11.2026 für diese Seite und im Bildlook der Seite "
+KI_NACHWEIS = ("mit KI erzeugt (ChatGPT, OpenAI) am 24.11.2026 für diese Seite, im Bildlook der Seite "
                "nachbearbeitet")
 BILDER = {
     # Startseite, Bühne über die ganze erste Ansicht: Messung an einer Delle im Abendlicht.
