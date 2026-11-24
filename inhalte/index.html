@@ -1,26 +1,30 @@
 <main>
-<!-- R1 „Nah dran“: die erste Ansicht ist das Foto. Text unten links auf dem Bild; die Klasse hero bleibt, weil
-     leiste.js und einwilligung.js den Anrufknopf über .hero .knoepfe .knopf finden. -->
+<!-- R1 schlank (24.11.2026): die erste Ansicht setzt die Anzeige fort. Die Klasse hero bleibt, weil leiste.js und
+     einwilligung.js den Anrufknopf über .hero .knoepfe .knopf finden.
+     BÜHNENTEXTE: Dachzeile, Überschrift, Vorspann und Zeitenzeile stehen nur in diesem Block (Fassung A). Nach der
+     Rechtsprüfung wird nur dieser Block getauscht; Titel und Beschreibung in bauen.py SEITEN sind davon getrennt. -->
 <section class="hero buehne">
   {{bild_start}}
   <div class="buehne-text">
     <div class="wrap">
-      <p class="frage">Die Versicherung des Unfallgegners will ihren Gutachter schicken?</p>
-      <h1>Sie müssen nicht zustimmen <span class="h1-folge">und dürfen jeden qualifizierten Gutachter beauftragen.</span></h1>
+      <p class="frage">Cihan Es, Kfz-Sachverständiger für Unfallschäden</p>
+      <h1><span class="h1-vor">Kfz-Gutachter in Mönchengladbach:</span> Wir kommen zu Ihnen.</h1>
+      <p class="unterzeile">Unverschuldeter Unfall, Schaden über etwa 750 Euro: Das Gutachten zahlt in der Regel die gegnerische Versicherung. Termin direkt am Telefon.</p>
       <div class="knoepfe">
         <a class="knopf" href="tel:+4921616888691" data-messung="phone_click"><svg><use href="#i-tel"/></svg><span>Anrufen: 02161 688 86 91</span></a>
       </div>
+      <p class="buehne-zeiten"><b>Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr.</b> Außerhalb dieser Zeiten: <a href="{{wa_link}}" rel="noopener" data-messung="whatsapp_click">Fotos per WhatsApp</a> <span class="am-stueck">oder <a href="#rueckruf">Rückruf anfordern</a>.</span></p>
     </div>
   </div>
 </section>
+<!-- ENDE BÜHNENTEXTE -->
 
-<!-- Kontaktfläche: hell und ruhig, die Nummer ist das große Element. Die Namenszeile steht hier, auf eigener Fläche
-     mit Abstand zum Schadenfoto (Richtungsvertrag, Nachtrag 01:55). -->
+<!-- Kontaktfläche auf Papier-2: Name, zwei Adressen, Einsatzgebiet. Die Namenszeile steht mit Abstand zum
+     Schadenfoto auf eigener Fläche (Richtungsvertrag, Nachtrag 01:55). -->
 <section class="karte" id="erreichbar">
   <div class="wrap karte-raster">
     <div class="karte-ruf">
       <p class="ruf-gross"><a href="tel:+4921616888691" data-messung="phone_click">02161 688 86 91</a></p>
-      <p class="zeiten"><b>Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr.</b> Außerhalb dieser Zeiten: <a href="{{wa_link}}" rel="noopener" data-messung="whatsapp_click">Fotos per WhatsApp</a> oder <a href="#rueckruf">Rückruf anfordern</a>.</p>
     </div>
     <div class="karte-person">
       {{vertrauen}}
@@ -30,78 +34,17 @@
       </ul>
       <a class="weiter" href="kontakt.html#anfahrt">Anfahrt zu beiden Adressen<svg><use href="#i-pfeil"/></svg></a>
     </div>
-    <p class="kostenzeile">Unverschuldeter Unfall, Schaden über etwa 750 Euro: Das Gutachten zahlt in der Regel die gegnerische Versicherung. <a href="kosten.html">Wer zahlt in welchem Fall?</a></p>
-  </div>
-</section>
-
-<!-- Vollbild-Moment: das Foto über die ganze Breite, die Unterschrift steht darauf. -->
-<section class="moment" aria-label="Gerissener Lack">
-  {{bild_schadendetail}}
-</section>
-
-<section class="abschnitt versatz" id="versicherung">
-  <div class="wrap">
-    <h2>Die Versicherung vom Gegner hat angerufen</h2>
-    <div class="versatz-raster">
-      <p class="merksatz">Viele Versicherer melden sich schon am Tag nach dem Unfall und bieten an, alles zu regeln: Gutachter, Werkstatt, Mietwagen. Das ist erlaubt, Sie müssen aber nicht zustimmen.</p>
-      <div class="versatz-text">
-      <p>Der Gutachter der Versicherung arbeitet in deren Auftrag. Sie dürfen einen qualifizierten Gutachter Ihrer Wahl beauftragen (BGH, VI ZR 225/13); bei unverschuldetem Unfall zahlt ihn in der Regel die gegnerische Versicherung, bei kleinen Schäden oft nicht. Sagen Sie am Telefon nichts zu, bevor Sie wissen, wie groß Ihr Schaden ist.</p>
-      <a class="weiter" href="kosten.html#gutachterwahl">Ihr Recht auf einen eigenen Gutachter<svg><use href="#i-pfeil"/></svg></a>
-      <p class="verweis"><b>Direkt nach dem Unfall:</b> <a class="weiter" href="ablauf.html">Die fünf Schritte an der Unfallstelle<svg><use href="#i-pfeil"/></svg></a></p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Fotostrecke: der Ablauf in vier Vollbild-Momenten; der Text steht auf einer Papierfläche, die über die untere
-     Bildkante greift, abwechselnd links und rechts. -->
-<section class="strecke" id="ablauf">
-  <div class="wrap strecke-kopf">
-    <h2>So läuft es ab</h2>
-  </div>
-  <ol class="strecke-liste">
-    <li class="strecke-schritt text-links">
-      {{bild_anruf}}
-      <div class="wrap"><div class="schritt-text">
-        <span class="schritt-nr" aria-hidden="true">01</span>
-        <h3>Anruf</h3>
-        <p>Sie schildern, was passiert ist, und vereinbaren den Termin für die Besichtigung. Fotos per WhatsApp helfen bei der ersten Einschätzung.</p>
-      </div></div>
-    </li>
-    <li class="strecke-schritt text-rechts">
-      {{bild_besichtigung}}
-      <div class="wrap"><div class="schritt-text">
-        <span class="schritt-nr" aria-hidden="true">02</span>
-        <h3>Besichtigung</h3>
-        <p>Cihan Es besichtigt Ihr Fahrzeug dort, wo es steht, oder auf der Hebebühne an der Karstraße 25. Auf der Hebebühne zeigen sich auch Schäden an Unterboden, Achsen und Fahrwerk.</p>
-      </div></div>
-    </li>
-    <li class="strecke-schritt text-links">
-      {{bild_gutachten}}
-      <div class="wrap"><div class="schritt-text">
-        <span class="schritt-nr" aria-hidden="true">03</span>
-        <h3>Gutachten</h3>
-        <p>Sie erhalten das Gutachten schriftlich. Darin stehen die Reparaturkosten, die Wertminderung, falls sie anfällt, die Ausfalldauer, bei Totalschaden Wiederbeschaffungswert und Restwert, dazu Fotos aller Schäden. Bei Totalschaden dauert es länger, weil Restwertangebote eingeholt werden.</p>
-      </div></div>
-    </li>
-    <li class="strecke-schritt text-rechts">
-      {{bild_versand}}
-      <div class="wrap"><div class="schritt-text">
-        <span class="schritt-nr" aria-hidden="true">04</span>
-        <h3>Versand</h3>
-        <p>Auf Wunsch geht das Gutachten direkt an die gegnerische Versicherung.</p>
-      </div></div>
-    </li>
-  </ol>
-  <div class="wrap strecke-fuss">
-    <p>Wie lange es dauert, erfahren Sie beim ersten Gespräch. Ein Kostenvoranschlag enthält weder Wertminderung noch Ausfalldauer; ein Gutachten prüft beides.</p>
-    <a class="weiter" href="ablauf.html#mitbringen">Besichtigung und Gutachten im Einzelnen<svg><use href="#i-pfeil"/></svg></a>
+    <p class="gebietzeile">Besichtigung in Mönchengladbach mit allen Stadtteilen und in Viersen, Willich, Korschenbroich, Neuss, Kaarst und Grevenbroich. <a href="umland.html">Einsatzgebiet im Einzelnen</a></p>
   </div>
 </section>
 
 <section class="abschnitt zahler" id="wer-zahlt">
   <div class="wrap">
     <h2>Wer zahlt das Gutachten?</h2>
+    <div class="haftpflicht">
+      <p class="frage-kopf">Die Versicherung des Unfallgegners will ihren Gutachter schicken?</p>
+      <h3 class="merksatz">Sie müssen nicht zustimmen und dürfen jeden qualifizierten Gutachter beauftragen.</h3>
+    </div>
     <dl class="zeilen">
       <div><dt>Der Gegner ist allein schuld</dt><dd>In der Regel zahlt seine Haftpflichtversicherung das Gutachten als Teil des Schadens.</dd></div>
       <div><dt>Teilschuld</dt><dd>Die gegnerische Versicherung zahlt anteilig, den Rest tragen Sie.</dd></div>
@@ -113,23 +56,20 @@
   </div>
 </section>
 
-<!-- Große Aussage über die volle Breite: ein Satz aus „Über Cihan Es“ als Überschrift, der Rest in einer schmalen Spalte. -->
-<section class="aussage" id="betrieb">
+<!-- Ablauf ohne Bilder: vier Zeilen mit Glut-Ziffern auf Nacht (Flächenplan Art-Direktor, Wortlaut Werbetexter). -->
+<section class="abschnitt ablauf-kurz" id="ablauf">
   <div class="wrap">
-    <h2 class="aussage-satz">Reparieren lassen Sie, wo Sie wollen.</h2>
-    <div class="aussage-text">
-      <p>Cihan Es ist Kfz-Sachverständiger für Unfallschäden in Mönchengladbach. Er besichtigt Ihr Fahrzeug und erstellt das Gutachten. Reparaturen führt er nicht aus.</p>
-      <p>Das Büro liegt an der Dahlener Straße 286 in Rheydt. Besichtigt wird bei Ihnen vor Ort oder auf der Hebebühne an der Karstraße 25. Die Hebebühne steht in einer eigenständigen Werkstatt.</p>
-      <a class="weiter" href="kontakt.html">Kontakt und Anfahrt<svg><use href="#i-pfeil"/></svg></a>
+    <h2>So läuft es ab</h2>
+    <ol class="ziffern">
+      <li><span class="ziffer" aria-hidden="true">01</span><h3>Anruf</h3><p>Sie schildern den Unfall und vereinbaren den Termin. Fotos per WhatsApp helfen.</p></li>
+      <li><span class="ziffer" aria-hidden="true">02</span><h3>Besichtigung</h3><p>Dort, wo Ihr Auto steht, oder auf der Hebebühne an der Karstraße 25. Dort zeigen sich auch Schäden an Unterboden, Achsen und Fahrwerk. Die Hebebühne steht in einer eigenständigen Werkstatt.</p></li>
+      <li><span class="ziffer" aria-hidden="true">03</span><h3>Gutachten</h3><p>Schriftlich, mit Fotos aller Schäden: Reparaturkosten, Wertminderung (falls sie anfällt) und Ausfalldauer.</p></li>
+      <li><span class="ziffer" aria-hidden="true">04</span><h3>Versand</h3><p>Auf Wunsch direkt an die gegnerische Versicherung.</p></li>
+    </ol>
+    <div class="ablauf-fuss">
+      <p>Wie lange es dauert, erfahren Sie beim ersten Gespräch.</p>
+      <a class="weiter" href="ablauf.html#weg">Besichtigung und Gutachten im Einzelnen<svg><use href="#i-pfeil"/></svg></a>
     </div>
-  </div>
-</section>
-
-<section class="abschnitt gebiet" id="gebiet">
-  <div class="wrap">
-    <h2>Einsatzgebiet</h2>
-    <p class="gebiet-satz">Cihan Es besichtigt in Mönchengladbach mit allen Stadtteilen, dort, wo Ihr Fahrzeug steht. Ebenso in Viersen, Willich, Korschenbroich, Neuss, Kaarst und Grevenbroich.</p>
-    <a class="weiter" href="umland.html">Einsatzgebiet im Einzelnen<svg><use href="#i-pfeil"/></svg></a>
   </div>
 </section>
 
@@ -137,10 +77,6 @@
   <div class="wrap spalten">
     <h2>Häufige Fragen nach einem Unfall</h2>
     <div class="faq">
-      <details>
-        <summary>Muss ich den Gutachter der Versicherung nehmen?</summary>
-        <div class="antwort"><p>Nein. Sie dürfen einen qualifizierten Gutachter Ihrer Wahl beauftragen (BGH, VI ZR 225/13). Der Gutachter der Versicherung arbeitet in deren Auftrag. Ein Gutachten hält den Schaden vollständig und nachprüfbar fest: Reparatur, Wertminderung, Ausfalldauer.</p></div>
-      </details>
       <details>
         <summary>Gutachten oder Kostenvoranschlag?</summary>
         <div class="antwort"><p>Bei kleinen Schäden erstattet die Versicherung die Gutachterkosten meist nicht; dann reicht oft ein Kostenvoranschlag. Entscheidend ist, wie groß der Schaden aussah, als Sie den Gutachter beauftragt haben, nicht die spätere Endsumme. Verdeckte Schäden hinter der Stoßstange sieht man von außen nicht. <a href="kosten.html#kleiner-schaden">Wo die Grenze liegt</a>.</p></div>
@@ -157,10 +93,6 @@
         <summary>Mein Auto fährt nicht mehr. Was nun?</summary>
         <div class="antwort"><p>Besichtigt wird dort, wo das Fahrzeug steht: zu Hause, beim Arbeitgeber oder in der Werkstatt Ihrer Wahl. Steht es beim Abschleppdienst, kostet jeder Tag Standgeld. Lassen Sie es zügig besichtigen oder umstellen; angemessene Abschlepp- und Standkosten gehören bei unverschuldetem Unfall in der Regel zum Schaden.</p></div>
       </details>
-      <details>
-        <summary>Was ist bei Teilschuld oder Kaskoschaden?</summary>
-        <div class="antwort"><p>Bei Teilschuld zahlt die gegnerische Versicherung die Gutachterkosten anteilig, den Rest tragen Sie. Bei Kaskoschäden (Hagel, Wild, selbst verschuldet) zahlt Ihre Kasko ein Gutachten, das Sie selbst beauftragen, nur mit ihrer vorherigen Zustimmung. Fragen Sie dort zuerst. Zahlt die Kasko nicht, erfahren Sie das Honorar vor der Besichtigung.</p></div>
-      </details>
     </div>
   </div>
 </section>
@@ -170,11 +102,6 @@
     <div>
       <h2>Kontakt und Rückruf</h2>
       <p class="vorspann">Sie können gerade nicht telefonieren? Hinterlassen Sie Ihre Nummer. Der Rückruf kommt Mo bis Fr ab 8&nbsp;Uhr, Sa ab 9&nbsp;Uhr.</p>
-      <ul class="kontaktliste">
-        <li><svg><use href="#i-tel"/></svg><div><b>Telefon</b><a href="tel:+4921616888691" data-messung="phone_click">02161 688 86 91</a><span>Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr</span></div></li>
-        <li><svg><use href="#i-wa"/></svg><div><b>WhatsApp</b><a href="{{wa_link}}" rel="noopener" data-messung="whatsapp_click">{{wa_anzeige}}</a><span>Fotos zur ersten Einschätzung. Die erste Einschätzung kostet nichts. Bitte nur Ihr eigenes Fahrzeug fotografieren.</span></div></li>
-        <li><svg><use href="#i-mail"/></svg><div><b>E-Mail</b><a href="mailto:info@kfz-gutachten-es.de">info@kfz-gutachten-es.de</a></div></li>
-      </ul>
     </div>
     <form class="formular" id="rueckruf-formular" novalidate aria-label="Rückruf anfordern" data-erfolg="Danke. Ihre Nummer ist angekommen. Der Rückruf kommt Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr.">
       <p class="hinweis">Drei Felder, nur die Telefonnummer ist Pflicht.</p>
@@ -211,4 +138,3 @@
   "areaServed": ["Mönchengladbach","Rheydt","Viersen","Willich","Korschenbroich","Neuss","Kaarst","Grevenbroich"]
 }
 </script>
-{{faq_jsonld}}

@@ -55,7 +55,7 @@ FOTOS_ZEIGEN = True
 #   schmal   eigener Anschnitt für schmale Fenster: datei, breiten, breite, hoehe, medien (picture/source)
 #   marke    kleine Marke auf dem Bild, bei ki=True genau „KI-erzeugtes Bild“ (sonst bricht der Bau ab)
 #   ki       True: KI-erzeugt; der Nachweis muss „KI-erzeugt“ nennen
-#   klasse   zusätzliche Klasse der figure (buehne-bild, vollbild, strecke-bild)
+#   klasse   zusätzliche Klasse der figure (buehne-bild, strecke-bild)
 KI_MARKE = "KI-erzeugtes Bild"
 KI_NACHWEIS = ("KI-erzeugtes Bild (ChatGPT, OpenAI), am 24.11.2026 für diese Seite erzeugt und im Bildlook der Seite "
                "nachbearbeitet")
@@ -79,69 +79,13 @@ BILDER = {
                       "unterschrift": "Von außen kaum ein Kratzer, dahinter ein zerdrückter Pralldämpfer.",
                       "marke": KI_MARKE, "ki": True, "klasse": "strecke-bild",
                       "nachweis": "Seite „Wer zahlt?“, verdeckter Schaden hinter der Stoßstange: " + KI_NACHWEIS},
-    # Startseite, Vollbild-Moment nach der Kontaktfläche: gerissener Lack.
-    "schadendetail": {"datei": "bilder/r3-lackriss-1536.webp", "breiten": [768, 1280, 1536],
-        "schmal": {"datei": "bilder/r3-lackriss-hoch-600.webp", "breiten": [432, 600], "breite": 600, "hoehe": 1024, "medien": "(max-width: 699px)"},
-        "alt": "Nahaufnahme einer eingedrückten Seitenwand über dem Radlauf mit gerissenem Klarlack, daneben die Rückleuchte",
-        "breite": 1536, "hoehe": 864,
-        "unterschrift": "Gerissener Lack an der Seitenwand: Darunter sitzt oft mehr Schaden, als man von außen erkennt.",
-        "marke": KI_MARKE, "ki": True, "klasse": "vollbild",
-        "nachweis": "Startseite, gerissener Lack: " + KI_NACHWEIS},
-    # Startseite, Ablauf „Besichtigung“: Taschenlampe auf einer verbogenen Achsstrebe.
-    "besichtigung": {"datei": "bilder/r2-werkstatt-1536.webp", "breiten": [768, 1280, 1536],
-        "schmal": {"datei": "bilder/r2-werkstatt-hoch-683.webp", "breiten": [432, 683], "breite": 683, "hoehe": 1024, "medien": "(max-width: 699px)"},
-        "alt": "Ein Auto mit eingedrücktem Heck steht in einer Werkstatt, eine Taschenlampe leuchtet auf die Schadenstelle",
-        "breite": 1536, "hoehe": 1024,
-        "unterschrift": "",
-        "marke": KI_MARKE, "ki": True, "klasse": "moment-bild",
-        "nachweis": "Startseite, Besichtigung in der Werkstatt: " + KI_NACHWEIS},
-    # Startseite, Ablauf „Gutachten“: aufgeschlagenes Gutachten mit Schadenfotos, nichts lesbar.
-    "gutachten": {"datei": "bilder/r3-gutachten-1536.webp", "breiten": [768, 1280, 1536],
-        "schmal": {"datei": "bilder/r3-gutachten-hoch-683.webp", "breiten": [432, 683], "breite": 683, "hoehe": 1024, "medien": "(max-width: 699px)"},
-        "alt": "Ein geheftetes, aufgeschlagenes Gutachten mit vier Schadenfotos und einer Tabelle auf einem Holztisch",
-        "breite": 1536, "hoehe": 1024,
-        "unterschrift": "",
-        "marke": KI_MARKE, "ki": True, "klasse": "moment-bild",
-        "nachweis": "Startseite, geheftetes Gutachten: " + KI_NACHWEIS},
-    # Startseite, Ablauf „Anruf“: Telefon vor dem eingedrückten Heck, Warnblinker.
-    "anruf": {"datei": "bilder/r2-anruf-1536.webp", "breiten": [768, 1280, 1536],
-        "schmal": {"datei": "bilder/r2-anruf-hoch-683.webp", "breiten": [432, 683], "breite": 683, "hoehe": 1024, "medien": "(max-width: 699px)"},
-        "alt": "Eine Hand fotografiert mit dem Telefon die eingedrückte hintere Ecke eines Autos, der Warnblinker leuchtet",
-        "breite": 1536, "hoehe": 1024,
-        "unterschrift": "",
-        "marke": KI_MARKE, "ki": True, "klasse": "moment-bild",
-        "nachweis": "Startseite, Anruf nach dem Unfall: " + KI_NACHWEIS},
-    # Startseite, Ablauf „Versand“: das Gutachten geht in den Umschlag.
-    "versand": {"datei": "bilder/r2-versand-1536.webp", "breiten": [768, 1280, 1536],
-        "schmal": {"datei": "bilder/r2-versand-hoch-683.webp", "breiten": [432, 683], "breite": 683, "hoehe": 1024, "medien": "(max-width: 699px)"},
-        "alt": "Eine Hand schiebt ein geheftetes Gutachten in einen braunen Umschlag, Abendlicht vom Fenster",
-        "breite": 1536, "hoehe": 1024,
-        "unterschrift": "",
-        "marke": KI_MARKE, "ki": True, "klasse": "moment-bild",
-        "nachweis": "Startseite, Versand des Gutachtens: " + KI_NACHWEIS},
-    # Wer zahlt?, Vollbild-Moment vor dem Honorar: Taschenlampe am Unterboden.
-    "kostenmoment": {"datei": "bilder/r1-unterboden-1536.webp", "breiten": [768, 1280, 1536],
-        "schmal": {"datei": "bilder/r1-unterboden-hoch-683.webp", "breiten": [432, 683], "breite": 683, "hoehe": 1024, "medien": "(max-width: 699px)"},
-        "alt": "Unter einem angehobenen Auto leuchtet eine Hand mit der Taschenlampe auf eine verbogene Achsstrebe",
-        "breite": 1536, "hoehe": 1024,
-        "unterschrift": "",
-        "marke": KI_MARKE, "ki": True, "klasse": "vollbild",
-        "nachweis": "Seite „Wer zahlt?“, Besichtigung am Unterboden: " + KI_NACHWEIS},
-    # Einsatzgebiet, neben den Ortslisten, 3:2; im Bildlook der Seite nachbearbeitet.
-    "ort": {"datei": "bilder/r1-muenster-960.webp",
-            "alt": "Das Münster St. Vitus in Mönchengladbach, vom Park aus gesehen",
-            "breite": 960, "hoehe": 640, "unterschrift": "Mönchengladbach, Münster St. Vitus",
-            "nachweis": "Seite „Einsatzgebiet“, Münster St. Vitus: Foto von BjøRe, Wikimedia Commons (CC0), "
-                        "Ausschnitt, Farbe angepasst"},
+    # R1 schlank (24.11.2026): Lackriss, die vier Ablaufbilder (Anruf, Werkstatt, Gutachten, Versand), das
+    # Unterboden-Vollbild der Kostenseite und das Münster-Foto (Einsatzgebiet) sind aus der Erzeugung genommen. Die
+    # Dateien liegen weiter unter bilder/ (r3-lackriss, r2-anruf, r2-werkstatt, r3-gutachten, r2-versand, r1-unterboden,
+    # r1-muenster), werden aber nicht mehr geladen und stehen nicht mehr im Bildnachweis.
     # Einsatzgebiet, Abschnitt Hebebühne: leer, 16:9.
     "hebebuehne": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": ""},
-    # Wer zahlt?, Bühne im Seitenkopf: das Gutachten geht in den Umschlag.
-    "unterlagen": {"datei": "bilder/r1-umschlag-1536.webp", "breiten": [768, 1280, 1536],
-                   "alt": "Eine Hand schiebt ein dickes geheftetes Gutachten in einen Umschlag auf einem Autodach, "
-                          "Dämmerung",
-                   "breite": 1536, "hoehe": 800, "unterschrift": "", "marke": KI_MARKE, "ki": True,
-                   "klasse": "buehne-bild", "vorrang": True,
-                   "nachweis": "Seite „Wer zahlt?“, Gutachten im Umschlag: " + KI_NACHWEIS},
+    # Wer zahlt?: Kopf ohne Bild seit R1 schlank; r1-umschlag wird nicht mehr geladen.
 }
 # Satz nach den Nachweiszeilen im Impressum (Rechtsnachtrag 01:55, Wortlaut angepasst an KI-Bilder).
 NACHWEIS_SATZ = ("Die Bilder mit der Marke „KI-erzeugtes Bild“ sind mit KI erzeugte Beispielbilder. "

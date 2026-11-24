@@ -184,14 +184,20 @@ b, strong { font-weight: 650; }
 @media (min-width: 900px) { .buehne-bild::after { background: linear-gradient(to top, rgba(14, 13, 12, 0.86) 0%, rgba(14, 13, 12, 0.4) 38%, rgba(14, 13, 12, 0) 64%), linear-gradient(to right, rgba(14, 13, 12, 0.92) 0%, rgba(14, 13, 12, 0.84) 40%, rgba(14, 13, 12, 0) 64%); } }
 .buehne-bild .bild-marke { top: 14px; right: 14px; }
 .buehne-text { position: relative; z-index: 3; padding: 120px 0 28px; }
-@media (min-width: 900px) { .buehne-text { padding: 160px 0 72px; } }
+@media (min-width: 900px) { .buehne-text { padding: 120px 0 72px; } } /* 120 statt 160: Zeiten bleiben bei 1280x800 in der ersten Ansicht, auch mit dreizeiliger h1 (Fassung B) */
 .buehne h1 { font-size: clamp(46px, 7.6vw, 96px); line-height: 0.96; letter-spacing: -0.035em; color: var(--licht); margin-bottom: 18px; max-width: 12ch; text-wrap: initial; }
-/* Die Frage steht vor der Antwort: Serif in Satzgröße, keine Dachzeile. Die h1 trägt den geprüften Satz ganz, der
-   zweite Halbsatz kleiner in eigener Zeile. */
+/* Dachzeile (Name und Fach) in Satzgröße, Serif, ohne Balken. Die h1 trägt Ort und Versprechen: der Ortsteil in der
+   Größe der Antwortzeile (.antwort), das Versprechen groß in höchstens zwei Zeilen (Hausregel Headline). */
 .buehne .frage { font-size: 18px; line-height: 1.45; color: var(--licht); max-width: 26rem; margin: 0 0 14px; }
 @media (min-width: 900px) { .buehne .frage { font-size: 21px; max-width: 32rem; margin-bottom: 20px; } }
-.buehne h1 .h1-folge { display: block; margin-top: 16px; font-family: var(--text); font-weight: 400; font-size: clamp(19px, 1.9vw, 25px); line-height: 1.4; letter-spacing: 0; color: var(--licht); max-width: 30rem; }
-.hero.buehne h1 { margin-bottom: 26px; max-width: 15ch; text-wrap: balance; }
+.buehne h1 .h1-vor { display: block; margin-bottom: 12px; font-size: clamp(21px, 2.2vw, 28px); line-height: 1.25; letter-spacing: -0.01em; color: var(--licht); }
+.buehne-zeiten { margin: 16px 0 0; font-size: 17px; line-height: 1.55; color: var(--licht); max-width: 32rem; }
+.buehne-zeiten b { color: var(--licht); }
+.buehne-zeiten a { color: var(--licht); display: inline-block; padding-block: 12px; margin-block: -12px; }
+.buehne-zeiten a:hover { color: var(--glut-hell); }
+.buehne-zeiten .am-stueck { white-space: nowrap; } /* kein allein stehender Schlusspunkt */
+@media (min-width: 900px) { .buehne-zeiten { font-size: 18px; margin-top: 20px; } }
+.hero.buehne h1 { font-size: clamp(46px, 6.4vw, 84px); margin-bottom: 26px; max-width: 15ch; text-wrap: balance; }
 @media (max-width: 699px) { .hero.buehne h1 { font-size: 42px; letter-spacing: -0.04em; max-width: none; } }
 .buehne .unterzeile { font-size: 18px; line-height: 1.5; color: var(--licht); max-width: 30rem; margin-bottom: 24px; }
 @media (min-width: 900px) { .buehne .unterzeile { font-size: 21px; max-width: 34rem; margin-bottom: 30px; } }
@@ -205,46 +211,26 @@ b, strong { font-weight: 650; }
   @keyframes setzen { from { transform: scale(1.05); } to { transform: scale(1); } }
 }
 
-/* Unterseite mit Bühne (Wer zahlt?): kleiner, Text unten links */
-.buehne-seite { min-height: clamp(440px, 64svh, 660px); }
-.buehne-seite .buehne-text { padding: 140px 0 32px; }
-@media (min-width: 900px) { .buehne-seite .buehne-text { padding: 180px 0 56px; } }
-.buehne .antwort { font-family: var(--titel); font-weight: var(--schnitt); font-size: clamp(21px, 2.2vw, 28px); line-height: 1.25; letter-spacing: -0.01em; color: var(--licht); max-width: 30rem; margin: 0 0 20px; }
-.seitenkopf.buehne-seite h1 { font-size: clamp(42px, 6.4vw, 84px); letter-spacing: -0.035em; max-width: 14ch; margin-bottom: 14px; }
-.buehne-seite .buehne-bild img { object-position: 78% 50%; }
+/* Kopf der Kostenseite ohne Bild: Frage als h1, Antwort groß darunter (R1 schlank) */
+.kosten-kopf h1 { font-size: clamp(42px, 6.4vw, 84px); letter-spacing: -0.035em; max-width: 14ch; margin-bottom: 14px; }
+.buehne .antwort, .kosten-kopf .antwort { font-family: var(--titel); font-weight: var(--schnitt); font-size: clamp(21px, 2.2vw, 28px); line-height: 1.25; letter-spacing: -0.01em; color: var(--licht); max-width: 30rem; margin: 0 0 20px; }
 
-/* ---------- Kontaktfläche: hell, ruhig, die Nummer groß ---------- */
-.karte { background: var(--papier); padding: var(--luft-s) 0; }
+/* ---------- Kontaktfläche: Papier-2, ruhig; die Nummer am Rechner groß, am Handy kleiner ---------- */
+.karte { background: var(--papier-2); padding: var(--luft-s) 0; }
 .karte-raster { display: grid; gap: 22px 56px; }
 @media (min-width: 900px) { .karte-raster { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); align-items: start; } }
 .ruf-gross { margin: 0 0 6px; font-family: var(--titel); font-weight: var(--schnitt); font-size: clamp(36px, 6.2vw, 76px); line-height: 1; letter-spacing: -0.03em; max-width: none; font-variant-numeric: tabular-nums lining-nums; }
 .ruf-gross a { color: var(--tinte); text-decoration: none; display: inline-block; padding: 6px 0; white-space: nowrap; }
 .ruf-gross a:hover { color: var(--glut-tinte); }
-.zeiten { margin: 10px 0 0; color: var(--tinte-2); font-size: 17px; line-height: 1.55; max-width: 32rem; }
-.zeiten b { color: var(--tinte); }
-.zeiten a { color: var(--glut-tinte); display: inline-block; padding-block: 12px; margin-block: -12px; }
+@media (max-width: 699px) { .ruf-gross { font-size: 24px; } }
 .karte-person { padding-top: 6px; }
 .name-zeile { margin: 0 0 12px; font-family: var(--titel); font-weight: var(--schnitt); font-size: 21px; line-height: 1.25; color: var(--tinte); }
 .adressen { list-style: none; padding: 0; margin: 0; }
 .adressen li { margin: 0 0 10px; font-size: 17px; line-height: 1.4; }
 .adressen small { display: block; color: var(--tinte-2); font-size: 15px; }
 .karte .weiter { margin-top: 0; }
-.kostenzeile { grid-column: 1 / -1; margin: 6px 0 0; padding-top: 18px; border-top: 1px solid var(--linie); font-size: 17px; line-height: 1.55; color: var(--tinte); max-width: 46rem; }
-.kostenzeile a { font-weight: 650; display: inline-block; padding-block: 12px; margin-block: -12px; }
-
-/* ---------- Vollbild-Moment: Foto über die volle Breite, Unterschrift darauf ---------- */
-.moment { background: var(--nacht); }
-.vollbild { position: relative; }
-.vollbild img { height: clamp(600px, 78vh, 900px); object-fit: cover; object-position: 50% 50%; }
-@media (max-width: 699px) { .vollbild img { height: max(500px, 72svh); } }
-.vollbild::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(14, 13, 12, 0.86) 0%, rgba(14, 13, 12, 0) 48%); pointer-events: none; }
-.vollbild figcaption {
-  position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; margin: 0 auto; max-width: 1180px;
-  padding: 0 var(--rand) 28px; color: var(--licht);
-  font-family: var(--text); font-size: clamp(20px, 2.4vw, 30px); line-height: 1.35;
-}
-@media (min-width: 900px) { .vollbild figcaption { padding-bottom: 56px; } }
-.vollbild figcaption::before { content: ""; } /* keine Linie davor */
+.gebietzeile { grid-column: 1 / -1; margin: 6px 0 0; padding-top: 18px; border-top: 1px solid var(--linie); font-size: 17px; line-height: 1.55; color: var(--tinte); max-width: 46rem; }
+.gebietzeile a { font-weight: 650; display: inline-block; padding-block: 12px; margin-block: -12px; }
 
 /* ---------- Abschnitte allgemein ---------- */
 .abschnitt { padding: var(--luft-m) 0; }
@@ -260,25 +246,11 @@ b, strong { font-weight: 650; }
 .fussnote { font-size: 15px; color: var(--tinte-2); line-height: 1.5; }
 .dunkel .fussnote { color: var(--licht-2); }
 
-/* Versetzte schmale Spalte: Überschrift groß links, Text ab einem Drittel der Breite */
-.versatz { padding-top: var(--luft-l); }
-.versatz h2 { max-width: 15ch; margin-bottom: 32px; }
-/* Kein L-Loch unter der Überschrift: der Merksatz steht links groß, die Einzelheiten rechts daneben. */
-@media (min-width: 900px) {
-  .versatz h2 { max-width: none; font-size: clamp(44px, 5.6vw, 76px); margin-bottom: 48px; }
-  .versatz-raster { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 72px; align-items: start; }
-  .versatz-raster .merksatz { font-size: clamp(26px, 2.6vw, 34px); line-height: 1.35; margin: 0; }
-}
-.verweis { margin: 28px 0 0; padding-top: 16px; border-top: 1px solid var(--linie); display: flex; flex-wrap: wrap; align-items: center; gap: 0 12px; font-size: 17px; }
-.verweis .weiter { margin-top: 0; }
-
 /* ---------- Fotostrecke: Bilder laufen abwechselnd an den rechten und linken Rand ---------- */
 .strecke { background: var(--nacht); color: var(--licht); padding: var(--luft-m) 0 var(--luft-m); }
 .strecke h2 { color: var(--licht); font-size: clamp(36px, 6vw, 80px); letter-spacing: -0.03em; margin-bottom: var(--luft-s); }
-.strecke-liste { list-style: none; margin: 0; padding: 0; max-width: none; }
 .strecke-schritt { margin: 0 0 var(--luft-m); }
 .strecke-schritt:last-child { margin-bottom: 0; }
-.schritt-nr { display: block; font-family: var(--titel); font-weight: var(--schnitt); font-size: 17px; color: var(--glut); font-variant-numeric: tabular-nums lining-nums; margin-bottom: 8px; }
 .schritt-text h3 { color: var(--licht); font-size: clamp(26px, 3vw, 38px); margin-bottom: 12px; }
 .schritt-text p { color: var(--licht-2); margin: 0; }
 .strecke-bild { margin: 0 0 22px; }
@@ -299,23 +271,6 @@ b, strong { font-weight: 650; }
   .bild-links .strecke-bild figcaption { padding-left: max(var(--rand), calc((100vw - 1180px) / 2 + var(--rand))); }
   .bild-links .strecke-bild .bild-marke { right: 12px; }
 }
-/* Ablauf: jeder Schritt ein Vollbild-Moment, der Text auf einer Papierfläche, die über die untere Bildkante greift. */
-.strecke-schritt.text-links, .strecke-schritt.text-rechts { position: relative; margin-bottom: var(--luft-m); }
-.moment-bild { margin: 0; position: relative; }
-.moment-bild img { height: max(500px, 70svh); object-fit: cover; object-position: 50% 50%; }
-.text-links > .wrap, .text-rechts > .wrap { position: relative; z-index: 2; margin-top: -120px; }
-.text-links .schritt-text, .text-rechts .schritt-text { background: var(--papier); color: var(--tinte); padding: 26px 24px 28px; max-width: 34rem; }
-.text-links .schritt-text h3, .text-rechts .schritt-text h3 { color: var(--tinte); font-size: clamp(30px, 3.6vw, 48px); }
-.text-links .schritt-text p, .text-rechts .schritt-text p { color: var(--tinte-2); }
-.text-links .schritt-nr, .text-rechts .schritt-nr { color: var(--glut-tinte); font-size: 19px; }
-@media (min-width: 900px) {
-  .moment-bild img { height: max(600px, 82vh); }
-  .text-links > .wrap, .text-rechts > .wrap { margin-top: -220px; }
-  .text-links .schritt-text, .text-rechts .schritt-text { padding: 40px 44px 44px; }
-  .text-rechts .schritt-text { margin-left: auto; }
-}
-.strecke-fuss { margin-top: var(--luft-m); padding-top: 24px; border-top: 1px solid var(--linie-dunkel); }
-.strecke-fuss p { color: var(--licht-2); }
 .strecke a { color: var(--licht); }
 .strecke a:hover { color: var(--glut-hell); }
 /* Einzelnes Streckenbild auf einer hellen Seite (Wer zahlt?) */
@@ -323,7 +278,11 @@ b, strong { font-weight: 650; }
 .strecke-einzeln .schritt-text h3 { font-size: clamp(28px, 3.4vw, 44px); }
 
 /* ---------- Zeilenliste: wer zahlt ---------- */
-.zahler { background: var(--papier-2); }
+.zahler { background: var(--papier); }
+.haftpflicht { margin: 0 0 28px; }
+.frage-kopf { font-size: 18px; line-height: 1.45; color: var(--tinte-2); max-width: 32rem; margin: 0 0 8px; }
+@media (min-width: 900px) { .frage-kopf { font-size: 21px; } }
+.haftpflicht .merksatz { line-height: 1.25; margin: 0; max-width: 24em; }
 .zahler h2 { margin-bottom: 28px; }
 .zeilen { margin: 0 0 20px; padding: 0; border-top: 1px solid var(--tinte); max-width: none; }
 .zeilen > div { display: grid; gap: 4px 32px; padding: 18px 0; border-bottom: 1px solid var(--linie); }
@@ -340,9 +299,24 @@ b, strong { font-weight: 650; }
 .aussage a { color: var(--licht); }
 .aussage a:hover { color: var(--glut-hell); }
 
-/* ---------- Einsatzgebiet: ein großer Satz ---------- */
-.gebiet { padding: var(--luft-m) 0 var(--luft-s); }
-.gebiet-satz { font-size: clamp(22px, 2.8vw, 34px); line-height: 1.35; max-width: 34ch; }
+/* ---------- Ablauf auf der Startseite: vier Zeilen mit Glut-Ziffern auf Nacht ---------- */
+.ablauf-kurz { background: var(--nacht); color: var(--licht); }
+.ablauf-kurz h2, .ablauf-kurz h3 { color: var(--licht); }
+.ziffern { list-style: none; margin: 0; padding: 0; max-width: none; display: grid; gap: var(--luft-s); }
+.ziffern li { margin: 0; padding-top: 18px; border-top: 1px solid var(--linie-dunkel); display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 4px 14px; }
+.ziffer { grid-row: 1 / span 2; font-family: var(--titel); font-weight: var(--schnitt); font-size: clamp(30px, 3.6vw, 48px); line-height: 1; color: var(--glut); font-variant-numeric: tabular-nums lining-nums; }
+.ziffern h3 { margin: 0; }
+.ziffern p { margin: 0; color: var(--licht-2); }
+@media (min-width: 900px) {
+  .ziffern { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .ziffern li { display: block; }
+  .ziffer { display: block; margin-bottom: 14px; }
+  .ziffern h3 { margin-bottom: 8px; }
+}
+.ablauf-fuss { margin-top: var(--luft-m); padding-top: 24px; border-top: 1px solid var(--linie-dunkel); }
+.ablauf-fuss p { color: var(--licht-2); }
+.ablauf-kurz a { color: var(--licht); }
+.ablauf-kurz a:hover { color: var(--glut-hell); }
 
 /* ---------- Fragen ---------- */
 .fragen { padding: var(--luft-m) 0; border-top: 1px solid var(--linie); }
@@ -398,7 +372,6 @@ b, strong { font-weight: 650; }
 /* ---------- Unterseiten ---------- */
 .seitenkopf { background: var(--nacht); color: var(--licht); padding: 48px 0 56px; position: relative; }
 @media (min-width: 900px) { .seitenkopf { padding: 80px 0 88px; } }
-.seitenkopf.buehne-seite { padding: 0; }
 .seitenkopf h1 { font-size: clamp(36px, 6vw, 76px); line-height: 1; letter-spacing: -0.03em; color: var(--licht); margin-bottom: 16px; max-width: 16ch; }
 .seitenkopf p { color: var(--licht-2); font-size: 19px; margin: 0; max-width: 36rem; }
 .seitenkopf .notruf { margin-top: 20px; padding: 12px 14px; border: 1.5px solid var(--glut); border-radius: var(--radius); color: var(--licht); font-size: 17px; }
@@ -431,7 +404,7 @@ b, strong { font-weight: 650; }
 .aussage-kopf-gross { font-size: clamp(32px, 5vw, 64px) !important; line-height: 1.02; max-width: 16ch; margin-bottom: 24px; }
 .kosten-start { padding-bottom: var(--luft-s); }
 .kosten-rest { padding-top: var(--luft-l); }
-.kosten-honorar { padding-top: var(--luft-m); }
+.kosten-honorar { padding-top: 0; }
 /* „In der Regel zahlen Sie nichts“: Bedingungen links, Erklärung rechts, keine leere Hälfte */
 @media (min-width: 900px) {
   .nichts-raster { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 72px; align-items: start; margin-bottom: var(--luft-m); }
