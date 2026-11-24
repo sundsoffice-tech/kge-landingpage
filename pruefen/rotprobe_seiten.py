@@ -109,7 +109,7 @@ MUTATIONEN = [
     m("S-b Lackriss nicht mehr als KI-Bild geführt, ohne Marke, neu gebaut", "S1", "bau", "bauen.py",
       '"marke": KI_MARKE, "ki": True, "klasse": "vollbild"', '"marke": "", "ki": False, "klasse": "vollbild"'),
     m("S-c Unterschrift mit „Symbolbild“ vorn (index.html)", "S1", "seite", "index.html",
-      "<figcaption>So sieht ein Seitenwandschaden", "<figcaption>Symbolbild: So sieht ein Seitenwandschaden"),
+      "<figcaption>Gerissener Lack an der Seitenwand", "<figcaption>Symbolbild: Gerissener Lack an der Seitenwand"),
     m("S-d Namenskarte in den Bildblock des Lackrisses gesetzt (index.html)", "S2", "seite", "index.html",
       '<figure class="bild vollbild">', '<p class="name-zeile">Ihr Sachverständiger: Cihan Es</p><figure class="bild vollbild">'),
     m("S-e KI-Marke an der Bühne der Startseite entfernt (index.html)", "S1", "seite", "index.html",
