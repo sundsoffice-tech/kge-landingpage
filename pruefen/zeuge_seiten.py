@@ -452,8 +452,14 @@ class Bildblock(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         a = dict(attrs)
-        if tag == "img" and a.get("src") in self.schaden and len(self.stapel) >= 2 and self.stapel[-1]["tag"] == "figure":
-            self.stapel[-2]["foto"] = a.get("src")
+        # Schadenfoto als img direkt in der figure oder in einem picture darin (Bildwechsel nach Breite, auch source)
+        quelle = a.get("src") if tag == "img" else a.get("srcset") if tag == "source" else None
+        if quelle in self.schaden:
+            i = len(self.stapel) - 1
+            if i >= 0 and self.stapel[i]["tag"] == "picture":
+                i -= 1
+            if i >= 1 and self.stapel[i]["tag"] == "figure":
+                self.stapel[i - 1]["foto"] = quelle
         if tag not in self.LEER:
             self.stapel.append({"tag": tag, "name": False, "foto": None})
 
@@ -474,6 +480,8 @@ class Bildblock(HTMLParser):
 def s2():
     v = []
     schaden = {bauen.BILDER[p]["datei"] for p in gezeigt() if p not in BETRIEB_ODER_ORT}
+    schaden |= {bauen.BILDER[p]["schmal"]["datei"] for p in gezeigt()
+                if p not in BETRIEB_ODER_ORT and bauen.BILDER[p].get("schmal")}
     for n, s in SEITEN.items():
         b = Bildblock(schaden)
         b.feed(s.roh)
