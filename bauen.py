@@ -52,7 +52,7 @@ BILDER = {
     "start": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": "", "vorrang": True},
     # Nach dem Unfall, vor „An der Unfallstelle“: leer seit der Nachbesserung vom 23.11.2026, 16:9.
     "unfall": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": ""},
-    # Wer zahlt?, Bild am rechten Rand neben „Wann Sie selbst etwas zahlen“, rund 2:1. Der Ausschnitt lässt das
+    # Wer zahlt?, rechte Hälfte des Seitenkopfs (Richtung B), mit Marke, rund 2:1. Der Ausschnitt lässt das
     # Markenzeichen auf der Felge weg (Spalten 190 bis 800, Zeilen 215 bis 525 der Vorschau, Ringe bei Zeile 555).
     # Unterschrift: Aussage zuerst, Kennzeichnung am Ende (Rechtsbericht 24.11.2026, Nr. 3, sinngemäß gleich gebaut).
     "streifschaden": {"datei": "bilder/streifschaden-kotfluegel.jpg",
@@ -60,14 +60,14 @@ BILDER = {
                       "breite": 610, "hoehe": 310,
                       "unterschrift": "Ein Streifschaden am Stoßfänger sieht oft harmlos aus: Dahinter sitzt oft mehr "
                                       "Schaden, als man von außen erkennt. Beispielfoto, nicht aus einem Gutachten.",
-                      "art": "schaden",
+                      "art": "schaden", "marke": True,
                       "nachweis": "Streifschaden an einem weißen Auto: Volodymyr Dobrovolskyy, Unsplash, Unsplash-Lizenz."},
-    # Startseite, Bildband in der ersten Ansicht, rund 9:5. marke=True setzt „Beispielfoto“ sichtbar auf das Bild,
-    # weil daneben Text mit Bezug zu Cihan Es steht (Rechtsbericht 24.11.2026, Nr. 2). Die Unterschrift steht unter
-    # dem Band, außerhalb der ersten Ansicht; Wortlaut geprüft (Rechtsbericht Nr. 3), steht nur hier.
+    # Startseite, rechte Hälfte der Bühne (Richtung B), Hochformat 600 x 810, Duplex vorab gerechnet.
+    # marke=True setzt „Beispielfoto“ sichtbar auf das Bild, weil daneben Text mit Bezug zu Cihan Es steht
+    # (Rechtsbericht 24.11.2026, Nr. 2). Die Unterschrift steht unter der Falz; Wortlaut geprüft (Rechtsbericht Nr. 3).
     "schadendetail": {"datei": "bilder/schadendetail-lack.jpg",
                       "alt": "Hintere Seitenwand einer Limousine mit gerissenem Lack und eingedrücktem Blech",
-                      "breite": 800, "hoehe": 588,
+                      "breite": 600, "hoehe": 810,
                       "unterschrift": "So sieht ein Seitenwandschaden oft aus: Unter gerissenem Lack sitzt oft mehr "
                                       "Schaden, als man von außen erkennt. Beispielfoto, nicht aus einem Gutachten.",
                       "art": "schaden", "marke": True, "vorrang": True,

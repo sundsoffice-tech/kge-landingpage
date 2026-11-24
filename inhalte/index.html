@@ -1,30 +1,47 @@
 <main>
-<!-- Richtung A „Schrift als Bühne“ (Gestaltungsvertrag 24.11.2026): die stärkste Aussage der Seite sehr groß, daneben
+<!-- Richtung B „Geteilte Bühne“ (Gestaltungsvertrag 24.11.2026): links Nachtblau mit dem Text an der Unterkante, rechts
+     randabfallend der Lackriss im Hochformat; an der Bildkante die Kostenzeile. Vorher: Richtung A „Schrift als Bühne“ (Gestaltungsvertrag 24.11.2026): die stärkste Aussage der Seite sehr groß, daneben
      eine schmale leise Spalte, darunter ein Bildband, das die erste Ansicht anschneidet. Die h1 bleibt das Suchwort. -->
-<section class="hero buehne">
-  <div class="wrap buehne-raster">
-    <div class="buehne-kopf">
+<section class="hero buehne-b geteilt">
+  <div class="flaeche">
+    <div class="flaeche-text">
       <h1 class="dach">Kfz-Gutachter in Mönchengladbach</h1>
       <p class="frage">Die Versicherung des Unfallgegners will ihren eigenen Gutachter schicken?</p>
-    </div>
-    <p class="aussage"><span class="aussage-gross">Sie müssen <mark>nicht zustimmen</mark></span> <span class="aussage-rest">und dürfen jeden qualifizierten Gutachter beauftragen.</span></p>
-    <div class="buehne-spalte">
+      <p class="aussage"><span class="aussage-gross">Sie müssen <mark>nicht zustimmen</mark></span> <span class="aussage-rest">und dürfen jeden qualifizierten Gutachter beauftragen.</span></p>
       <p class="unterzeile">Cihan Es begutachtet Ihr Fahrzeug in Ihrem Auftrag, dort, wo es steht, oder auf der Hebebühne an der Karstraße 25.</p>
       <div class="knoepfe">
         <a class="knopf" href="tel:+4921616888691" data-messung="phone_click"><svg><use href="#i-tel"/></svg><span>Anrufen: 02161 688 86 91</span></a>
       </div>
-      <p class="kostenzeile">Unverschuldeter Unfall, Schaden über etwa 750 Euro: Das Gutachten zahlt in der Regel die gegnerische Versicherung. <a href="kosten.html">Wer zahlt in welchem Fall?</a></p>
-    </div>
-  </div>
-  <div class="band">
-    <div class="band-leiste">
       <p class="zeiten"><b>Mo bis Fr 8 bis 18 Uhr, Sa 9 bis 14 Uhr.</b> Außerhalb dieser Zeiten: <a href="{{wa_link}}" rel="noopener" data-messung="whatsapp_click">Fotos per WhatsApp</a> oder <a href="#rueckruf">Rückruf anfordern</a>.</p>
     </div>
+  </div>
+  <div class="buehne-bild">
     {{bild_schadendetail}}
+    <!-- Neutrales Element an der Bildkante (Rechtsbericht 24.11.2026 Nr. 1): die Kostenzeile, nicht der Name -->
+    <p class="kostenzeile kostenkarte">Unverschuldeter Unfall, Schaden über etwa 750 Euro: Das Gutachten zahlt in der Regel die gegnerische Versicherung. <a href="kosten.html">Wer zahlt in welchem Fall?</a></p>
   </div>
 </section>
 
-<section class="abschnitt weit" id="versicherung">
+<section class="abschnitt weit namensflaeche" id="betrieb">
+  <div class="wrap person">
+    <div class="person-kopf">
+      <h2 class="themenzeile">Über Cihan Es</h2>
+      {{vertrauen}}
+      <p class="person-satz">Cihan Es ist Kfz-Sachverständiger für Unfallschäden in Mönchengladbach. Er besichtigt Ihr Fahrzeug und erstellt das Gutachten. Reparaturen führt er nicht aus.</p>
+      {{bild_start}}
+    </div>
+    <div class="person-orte">
+      <p>Das Büro liegt an der Dahlener Straße 286 in Rheydt. Besichtigt wird bei Ihnen vor Ort oder auf der Hebebühne an der Karstraße 25. Die Hebebühne steht in einer eigenständigen Werkstatt. Reparieren lassen Sie, wo Sie wollen.</p>
+      <dl class="adressen">
+        <div><dt>Büro und Post, Rheydt</dt><dd>Dahlener Straße 286<br>41239 Mönchengladbach</dd></div>
+        <div><dt>Besichtigung mit Hebebühne</dt><dd>Karstraße 25<br>41068 Mönchengladbach</dd></div>
+      </dl>
+      <a class="weiter" href="kontakt.html">Kontakt und Anfahrt<svg><use href="#i-pfeil"/></svg></a>
+    </div>
+  </div>
+</section>
+
+<section class="abschnitt weit dunkel" id="versicherung">
   <div class="wrap">
     <h2 class="themenzeile">Die Versicherung vom Gegner hat angerufen</h2>
     <p class="merksatz gross">Der Gutachter der Versicherung arbeitet in deren Auftrag.</p>
@@ -61,7 +78,7 @@
   </div>
 </section>
 
-<section class="abschnitt grau" id="ablauf">
+<section class="abschnitt dunkel" id="ablauf">
   <div class="wrap">
     <h2 class="titel-gross">So läuft es ab</h2>
     <ol class="lauf">
@@ -77,26 +94,7 @@
   </div>
 </section>
 
-<section class="abschnitt weit dunkel" id="betrieb">
-  <div class="wrap person">
-    <div class="person-kopf">
-      <h2 class="themenzeile">Über Cihan Es</h2>
-      {{vertrauen}}
-      <p class="person-satz">Cihan Es ist Kfz-Sachverständiger für Unfallschäden in Mönchengladbach. Er besichtigt Ihr Fahrzeug und erstellt das Gutachten. Reparaturen führt er nicht aus.</p>
-      {{bild_start}}
-    </div>
-    <div class="person-orte">
-      <p>Das Büro liegt an der Dahlener Straße 286 in Rheydt. Besichtigt wird bei Ihnen vor Ort oder auf der Hebebühne an der Karstraße 25. Die Hebebühne steht in einer eigenständigen Werkstatt. Reparieren lassen Sie, wo Sie wollen.</p>
-      <dl class="adressen">
-        <div><dt>Büro und Post, Rheydt</dt><dd>Dahlener Straße 286<br>41239 Mönchengladbach</dd></div>
-        <div><dt>Besichtigung mit Hebebühne</dt><dd>Karstraße 25<br>41068 Mönchengladbach</dd></div>
-      </dl>
-      <a class="weiter" href="kontakt.html">Kontakt und Anfahrt<svg><use href="#i-pfeil"/></svg></a>
-    </div>
-  </div>
-</section>
-
-<section class="abschnitt" id="gebiet">
+<section class="abschnitt gebiet-b" id="gebiet">
   <div class="gebiet">
     {{bild_ort}}
     <div class="gebiet-text">
