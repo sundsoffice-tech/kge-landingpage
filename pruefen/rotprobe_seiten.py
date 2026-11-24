@@ -255,6 +255,15 @@ MUTATIONEN = [
     m("E-l Kostenabsatz in inhalte/umland.html als eigenes Literal, neu gebaut", "E7", "bau", "inhalte/umland.html",
       '<p class="kostensatz">{{kosten_satz}}</p>',
       '<p class="kostensatz">Der andere war schuld? Dann zahlt das Gutachten seine Versicherung.</p>'),
+    # Runde 6, Punkt 4: ein Umschaltpunkt.
+    m("C-a zwei Queries für die Textfassungen wie bis Runde 5 (Lücke 699,98 bis 700 px)", "C1", "seite", "stil.css",
+      ".nur-gross { display: none; }\n@media (min-width: 700px) { .nur-gross { display: revert; } .nur-klein { display: none; } }",
+      "@media (max-width: 699.98px) { .nur-gross { display: none; } }\n@media (min-width: 700px) { .nur-klein { display: none; } }"),
+    # Runde 6, Punkt 7: IDs aus formular.js im Markup.
+    m("P-v Telefonfeld auf kontakt.html mit anderer id", "P7", "seite", "kontakt.html",
+      '<input id="f-tel"', '<input id="f-telefon"'),
+    m("P-w formular.js liest ein Feld, das es im Markup nicht gibt", "P7", "seite", "formular.js",
+      'form.querySelector("#f-name")', 'form.querySelector("#f-vorname")'),
 ]
 
 

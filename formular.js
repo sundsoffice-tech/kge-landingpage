@@ -6,7 +6,10 @@
  *  - Erfolg wird erst gemeldet, wenn der Endpunkt mit ok:true antwortet; sonst Fehlertext mit tippbarer
  *    Telefonnummer (tel:-Link). Der Erfolgstext steht im Attribut data-erfolg am Formular, gesetzt von
  *    bauen.py aus der einen Rückrufzusage (RUECKRUF_WERKTAGS, RUECKRUF_SONST).
- *  - Conversion form_submit erst nach ok:true über window.kgeMessung (einwilligung.js).
+ *  - Conversion form_submit erst nach ok:true über window.kgeMessung (einwilligung.js). Wirft die Messung, bleibt
+ *    die Erfolgsmeldung stehen (eigener try, Runde 6, Punkt 7).
+ *  - Zeitgrenze: Antwortet der Endpunkt nicht binnen ZEITGRENZE_MS, bricht der Versand ab und der Fehlertext mit
+ *    Telefonnummer erscheint (Runde 6, Punkt 7).
  */
 (function () {
   "use strict";
@@ -26,6 +29,7 @@
   knopf.disabled = false;
   var telFeld = form.querySelector("#f-tel");
   var ERFOLG = form.getAttribute("data-erfolg") || "Danke. Wir rufen Sie zurück.";
+  var ZEITGRENZE_MS = 15000;
 
   function melde(text, art) {
     status.textContent = text;
@@ -58,8 +62,11 @@
     melde("Einen Moment …");
 
     var honig = form.querySelector("#f-website");
+    var abbruch = typeof AbortController === "function" ? new AbortController() : null;
+    var uhr = setTimeout(function () { if (abbruch) abbruch.abort(); }, ZEITGRENZE_MS);
     fetch(ENDPUNKT, {
       method: "POST",
+      signal: abbruch ? abbruch.signal : undefined,
       headers: { "Content-Type": "application/json", "Accept": "application/json" },
       body: JSON.stringify({
         kunde: KUNDE,
@@ -72,14 +79,20 @@
     }).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (d) { return { ok: r.ok, daten: d }; });
     }).then(function (a) {
+      clearTimeout(uhr);
       if (!(a.ok && a.daten && a.daten.ok === true)) {
         throw new Error((a.daten && a.daten.fehler) || "Antwort ohne ok:true");
       }
       form.querySelectorAll("input:not([type=checkbox]), textarea").forEach(function (f) { f.value = ""; });
       knopf.textContent = "Anfrage eingegangen";
       melde(ERFOLG, "ok");
-      if (typeof window.kgeMessung === "function") window.kgeMessung("form_submit");
+      try {
+        if (typeof window.kgeMessung === "function") window.kgeMessung("form_submit");
+      } catch (fehler) {
+        console.error("[Rueckruf] Messung fehlgeschlagen, Anfrage ist angekommen:", fehler);
+      }
     }).catch(function (err) {
+      clearTimeout(uhr);
       knopf.disabled = false;
       knopf.textContent = knopfText;
       melde("Das hat leider nicht geklappt. Bitte rufen Sie direkt an: ", "fehler");

@@ -762,6 +762,39 @@ def f1():
     return v
 
 
+def c1():
+    """Runde 6, Punkt 4: ein Umschaltpunkt. In stil.css nennt genau eine Media Query .nur-klein oder .nur-gross, und
+    zwar (min-width: 700px) mit beiden; die Grunddarstellung blendet .nur-gross ohne Query aus."""
+    css = re.sub(r"/\*.*?\*/", "", (WURZEL / "stil.css").read_text(encoding="utf-8"), flags=re.S)
+    v = []
+    queries = [(kopf.strip(), rumpf) for kopf, rumpf in re.findall(r"@media([^{]*)\{((?:[^{}]*\{[^{}]*\})*[^{}]*)\}", css)
+               if re.search(r"\.nur-(?:klein|gross)\b", rumpf)]
+    if len(queries) != 1 or queries[0][0] != "(min-width: 700px)" \
+            or not all(re.search(rf"\.nur-{k}\b", queries[0][1]) for k in ("klein", "gross")):
+        v.append(f"stil.css: .nur-klein/.nur-gross in {len(queries)} Media Queries {[q[0] for q in queries]}, "
+                 "verlangt genau eine (min-width: 700px) mit beiden")
+    aussen = re.sub(r"@media[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}", "", css)
+    if not re.search(r"(?:^|\})\s*\.nur-gross\s*\{\s*display:\s*none;?\s*\}", aussen):
+        v.append("stil.css: Grunddarstellung ohne .nur-gross { display: none; } außerhalb einer Media Query")
+    return v
+
+
+def p7():
+    """Runde 6, Punkt 7: Formular-ID und Feld-IDs, die formular.js anspricht, stehen in jedem Formular genau einmal."""
+    js = (WURZEL / "formular.js").read_text(encoding="utf-8")
+    ids = set(re.findall(r'getElementById\("([^"]+)"\)', js)) | set(re.findall(r'querySelector\("#([\w-]+)"\)', js))
+    v = [] if {"rueckruf-formular", "f-tel", "f-status"} <= ids else [f"formular.js: Wähler unvollständig gelesen: {sorted(ids)}"]
+    for n, s in SEITEN.items():
+        if not s.formulare:
+            continue
+        for i in sorted(ids):
+            if s.ids.count(i) != 1:
+                v.append(f"{n}: id {i} aus formular.js steht {s.ids.count(i)}-mal")
+        if not re.search(r'<form\b[^>]*\bid="rueckruf-formular"', s.roh):
+            v.append(f"{n}: das Formular trägt nicht die id rueckruf-formular")
+    return v
+
+
 def e7():
     """Runde 6, Punkt 15: der Kostenabsatz steht wortgleich (Text und Absatz) auf index.html und umland.html."""
     v = []
@@ -815,6 +848,8 @@ FAELLE = [
     ("Q1", "stil.css und alle gebauten Seiten laden über url() nur Dateien aus schriften/", q1),
     ("Q2", "Bildnachweis im Impressum sichtbar, kein verborgener Vorfahre", q2),
     ("Q3", "kein Bildelement außerhalb der Bildplätze", q3),
+    ("C1", "ein Umschaltpunkt: .nur-klein/.nur-gross in genau einer Query (min-width: 700px)", c1),
+    ("P7", "Formular-ID und Feld-IDs aus formular.js stehen in jedem Formular genau einmal", p7),
     ("F1", "Formular: method=post, Absendeknopf gesperrt, noscript mit Rufnummer, formular.js schaltet frei", f1),
     ("P1", "noindex genau einmal je Seite, solange NOINDEX = True", p1),
     ("P2", "genau eine h1 je Seite", p2),

@@ -199,8 +199,13 @@ b, strong { font-weight: 650; }
 @media (max-width: 699.98px) { .hero.buehne h1 { font-size: 42px; letter-spacing: -0.04em; max-width: none; } }
 /* Handy: Bühne nur unterhalb von Hand und Messkopf. Die Dachzeile entfällt dort (der Name steht in der Kontaktfläche),
    die Ausweichwege stehen als erste Zeile unter der Nummer (Runde 2, Bericht 11 Punkt 1 und 2). */
-@media (max-width: 699.98px) { .hero.buehne .frage { display: none; } .nur-gross { display: none; } }
-@media (min-width: 700px) { .nur-klein { display: none; } }
+@media (max-width: 699.98px) { .hero.buehne .frage { display: none; } }
+/* Ein Umschaltpunkt für die zwei Textfassungen (Runde 6, Punkt 4): klein ist die Grunddarstellung, ab 700 px
+   schaltet genau diese eine Query um; vorher standen zwischen 699,98 und 700 px beide Fassungen. revert gibt
+   .nur-gross die Darstellung des Browsers zurück (p als Block, span im Fluss); eine eigene display-Regel an
+   diesen Elementen gibt es nicht. Zeuge: C1 in pruefen/zeuge_seiten.py. */
+.nur-gross { display: none; }
+@media (min-width: 700px) { .nur-gross { display: revert; } .nur-klein { display: none; } }
 .buehne .unterzeile { font-size: 18px; line-height: 1.5; color: var(--licht); max-width: 30rem; margin-bottom: 24px; }
 @media (min-width: 900px) { .buehne .unterzeile { font-size: 21px; max-width: 34rem; margin-bottom: 30px; } }
 .buehne .knoepfe { display: flex; }
