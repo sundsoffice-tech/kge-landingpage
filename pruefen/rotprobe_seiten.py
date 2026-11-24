@@ -245,10 +245,15 @@ MUTATIONEN = [
       ' method="post" novalidate', " novalidate"),
     m("F-b Absendeknopf auf index.html ohne disabled", "F1", "seite", "index.html",
       '<button class="knopf" type="submit" disabled>', '<button class="knopf" type="submit">'),
-    m("F-c noscript-Satz auf kontakt.html entfernt", "F1", "seite", "kontakt.html",
-      r"\s*<noscript>.*?</noscript>", "", regex=True),
-    m("F-d formular.js schaltet den Knopf nicht mehr frei", "F1", "seite", "formular.js",
-      "  knopf.disabled = false;\n  var telFeld", "  var telFeld"),
+    m("F-c Anrufsatz auf kontakt.html entfernt", "F1", "seite", "kontakt.html",
+      r"\s*<p class=\"status fehler\" data-ohne-skript>.*?</p>", "", regex=True),
+    m("F-e Anrufsatz auf index.html wieder in noscript", "F1", "seite", "index.html",
+      r"(<p class=\"status fehler\" data-ohne-skript>.*?</p>)", r"<noscript>\1</noscript>", regex=True),
+    m("F-d formular.js schaltet den Knopf vor dem Handler frei", "F1", "seite", "formular.js",
+      r"(  var telFeld = [^\n]*\n)(?P<rest>.*?)\n  knopf\.disabled = false;\n",
+      r"\1  knopf.disabled = false;\n\g<rest>\n", regex=True),
+    m("F-f formular.js blendet den Anrufsatz nicht aus", "F1", "seite", "formular.js",
+      "  if (ohneSkript) ohneSkript.hidden = true;\n", ""),
     # Runde 6, Punkt 15: Kostenabsatz wortgleich.
     m("E-k Kostenabsatz auf umland.html um ein Wort anders", "E7", "seite", "umland.html",
       "Das klären wir vorab am Telefon.</p>", "Das klären wir gern vorab am Telefon.</p>"),
@@ -272,6 +277,15 @@ MUTATIONEN = [
     # Runde 6, Punkt 7: IDs aus formular.js im Markup.
     m("P-v Telefonfeld auf kontakt.html mit anderer id", "P7", "seite", "kontakt.html",
       '<input id="f-tel"', '<input id="f-telefon"'),
+    m("P-x Telefonfeld auf index.html außerhalb des Formulars", "P7", "seite", "index.html",
+      r"(\s*<label for=\"f-tel\">.*?<input id=\"f-tel\"[^>]*>)(?P<mitte>.*?</form>)", r"\g<mitte>\1",
+      regex=True),
+    m("P-y zweiter Absendeknopf im Formular auf kontakt.html", "P7", "seite", "kontakt.html",
+      '<button class="knopf" type="submit" disabled>', '<button class="knopf" type="submit" disabled>Noch einmal</button>'
+      '<button class="knopf" type="submit" disabled>'),
+    m("E-o Öffnungszeit im JSON-LD als Literal in inhalte/index.html", "E8", "quelle", "inhalte/index.html",
+      "    {{oeffnungszeiten_ld}}", '    { "@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", '
+      '"opens": "09:00", "closes": "14:00" }'),
     m("P-w formular.js liest ein Feld, das es im Markup nicht gibt", "P7", "seite", "formular.js",
       'form.querySelector("#f-name")', 'form.querySelector("#f-vorname")'),
 ]

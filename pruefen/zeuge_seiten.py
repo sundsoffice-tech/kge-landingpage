@@ -675,7 +675,9 @@ def e8():
     v = []
     for pfad in sorted((WURZEL / "inhalte").glob("*.html")) + [WURZEL / "vorlagen" / "schale.html"]:
         roh = pfad.read_text(encoding="utf-8")
-        treffer = re.findall(r"\d{1,2}(?:&nbsp;|&#160;|\s)*Uhr", roh)
+        # Runde 7, Punkt 4: auch „08:00“ (JSON-LD). HTML-Kommentare zählen nicht, sie erscheinen nirgends.
+        roh = re.sub(r"<!--.*?-->", "", roh, flags=re.S)
+        treffer = re.findall(r"\d{1,2}(?:&nbsp;|&#160;|\s)*Uhr|\b\d{2}:\d{2}\b", roh)
         if treffer:
             v.append(f"{pfad.relative_to(WURZEL).as_posix()}: Uhrzeit als Literal: {treffer[:3]}")
     return v
@@ -798,9 +800,11 @@ def q3():
 
 
 def f1():
-    """Runde 6, A2: ohne JavaScript geht nichts per GET in die Adresse. Jedes Formular hat method="post", jeder
-    Absendeknopf steht im Markup gesperrt, unter dem Knopf steht der noscript-Satz mit der Rufnummer, und formular.js
-    schaltet den Knopf beim Laden frei."""
+    """Runde 6, A2, und Runde 7, Punkt 2: ohne JavaScript geht nichts per GET in die Adresse, und wer ohne Skript
+    kommt, sieht den Anrufsatz. Jedes Formular hat method="post", jeder Absendeknopf steht im Markup gesperrt, im
+    Formular steht genau einmal der sichtbare Anrufsatz (OHNE_SKRIPT, data-ohne-skript, nicht in noscript). formular.js
+    schaltet den Knopf erst nach der Registrierung des Absende-Handlers frei und blendet im selben Schritt den Satz aus
+    (beides als Anweisung der obersten Ebene, hinter form.addEventListener("submit"))."""
     v = []
     for n, s in SEITEN.items():
         for form in re.findall(r"<form\b[^>]*>.*?</form>", s.roh, re.S):
@@ -810,14 +814,23 @@ def f1():
             for knopf in re.findall(r"<button\b[^>]*>", form):
                 if 'type="submit"' in knopf and not re.search(r"\sdisabled[\s>]", knopf):
                     v.append(f"{n}: Absendeknopf ohne disabled im Markup: {knopf}")
-            if bauen.OHNE_SKRIPT not in form:
-                v.append(f"{n}: Formular ohne noscript-Satz mit Rufnummer")
+            if form.count(bauen.OHNE_SKRIPT) != 1:
+                v.append(f"{n}: Anrufsatz OHNE_SKRIPT steht {form.count(bauen.OHNE_SKRIPT)}-mal im Formular statt einmal")
+            if "<noscript" in form:
+                v.append(f"{n}: noscript im Formular; der Anrufsatz soll auch sichtbar sein, wenn formular.js nicht lädt")
+    if not re.fullmatch(r'<p class="status fehler" data-ohne-skript>Bitte rufen Sie an: '
+                        r'<a class="ziel" href="tel:\+4921616888691">02161 688 86 91</a></p>', bauen.OHNE_SKRIPT):
+        v.append(f"bauen.OHNE_SKRIPT: nicht der sichtbare Anrufsatz mit tel-Link: {bauen.OHNE_SKRIPT!r}")
     js = (WURZEL / "formular.js").read_text(encoding="utf-8")
-    vor_dem_absenden = js.split('form.addEventListener("submit"', 1)[0]
-    if not re.search(r"^\s*knopf\.disabled = false;", vor_dem_absenden, re.M):
-        v.append("formular.js: schaltet den Absendeknopf vor dem Absenden nicht frei")
-    if not re.search(r"Bitte rufen Sie an: <a [^>]*href=\"tel:\+4921616888691\"", bauen.OHNE_SKRIPT):
-        v.append("bauen.OHNE_SKRIPT: kein tel-Link auf die Nummer")
+    handler = js.find('\n  form.addEventListener("submit"')
+    for muster, was in ((r"^  knopf\.disabled = false;$", "Freischaltung des Knopfs"),
+                        (r"^  if \(ohneSkript\) ohneSkript\.hidden = true;$", "Ausblenden des Anrufsatzes")):
+        stellen = [m.start() for m in re.finditer(muster, js, re.M)]
+        if len(stellen) != 1 or handler < 0 or stellen[0] < handler:
+            v.append(f"formular.js: {was} nicht genau einmal auf oberster Ebene nach dem Absende-Handler "
+                     f"(Stellen {stellen}, Handler {handler})")
+    if not re.search(r'form\.querySelector\("\[data-ohne-skript\]"\)', js):
+        v.append("formular.js: sucht den Anrufsatz nicht über [data-ohne-skript] im Formular")
     return v
 
 
@@ -839,18 +852,27 @@ def c1():
 
 
 def p7():
-    """Runde 6, Punkt 7: Formular-ID und Feld-IDs, die formular.js anspricht, stehen in jedem Formular genau einmal."""
+    """Runde 6, Punkt 7, und Runde 7, Punkt 2: Formular-ID und jede ID, die formular.js anspricht, stehen je Seite
+    genau einmal, und zwar IM Formular; das Formular trägt genau einen Absendeknopf (button type=submit)."""
     js = (WURZEL / "formular.js").read_text(encoding="utf-8")
     ids = set(re.findall(r'getElementById\("([^"]+)"\)', js)) | set(re.findall(r'querySelector\("#([\w-]+)"\)', js))
     v = [] if {"rueckruf-formular", "f-tel", "f-status"} <= ids else [f"formular.js: Wähler unvollständig gelesen: {sorted(ids)}"]
+    if 'form.querySelector("button[type=submit]")' not in js:
+        v.append("formular.js: sucht den Absendeknopf nicht als button[type=submit] im Formular")
     for n, s in SEITEN.items():
         if not s.formulare:
             continue
-        for i in sorted(ids):
-            if s.ids.count(i) != 1:
-                v.append(f"{n}: id {i} aus formular.js steht {s.ids.count(i)}-mal")
-        if not re.search(r'<form\b[^>]*\bid="rueckruf-formular"', s.roh):
-            v.append(f"{n}: das Formular trägt nicht die id rueckruf-formular")
+        formen = re.findall(r'<form\b[^>]*\bid="rueckruf-formular"[^>]*>.*?</form>', s.roh, re.S)
+        if len(formen) != 1:
+            v.append(f"{n}: {len(formen)} Formulare mit id rueckruf-formular statt einem")
+            continue
+        innen = re.findall(r'\bid="([^"]+)"', formen[0])
+        for i in sorted(ids - {"rueckruf-formular"}):
+            if s.ids.count(i) != 1 or innen.count(i) != 1:
+                v.append(f"{n}: id {i} aus formular.js steht {s.ids.count(i)}-mal auf der Seite, {innen.count(i)}-mal im Formular")
+        knoepfe = re.findall(r'<button\b[^>]*\btype="submit"[^>]*>', formen[0])
+        if len(knoepfe) != 1:
+            v.append(f"{n}: {len(knoepfe)} Absendeknöpfe im Formular statt einem")
     return v
 
 
@@ -910,9 +932,10 @@ FAELLE = [
     ("E8", "Telefonzeiten nur in bauen.py, keine Uhrzeit als Literal in inhalte/ und vorlagen/", e8),
     ("K2", "jeder Wähler in FREI_HALTEN trifft im gebauten index.html ein Element", k2),
     ("C1", "ein Umschaltpunkt: .nur-klein/.nur-gross in genau einer Query (min-width: 700px)", c1),
-    ("P7", "Formular-ID und Feld-IDs aus formular.js stehen in jedem Formular genau einmal", p7),
-    ("F1", "Formular: method=post, Absendeknopf gesperrt, noscript mit Rufnummer, formular.js schaltet frei", f1),
-    ("P1", "noindex genau einmal je Seite, solange NOINDEX = True", p1),
+    ("P7", "IDs aus formular.js je genau einmal im Formular, genau ein Absendeknopf", p7),
+    ("F1", "Formular: method=post, Knopf gesperrt, Anrufsatz sichtbar, Freischaltung erst nach dem Handler", f1),
+    ("P1", "noindex genau einmal je Seite (NOINDEX = True)" if bauen.NOINDEX
+     else "kein noindex auf einer Seite (NOINDEX = False)", p1),
     ("P2", "genau eine h1 je Seite", p2),
     ("P3", "Canonical genau einmal, aus SEITEN, zeigt auf die Seite selbst", p3),
     ("P4", "interne Links, Quellen und Anker lösen auf", p4),

@@ -17,9 +17,9 @@ Stand 09.11.2026 (Neuaufbau auf Zweig `neu-2026-11-09`). Zielseite der Google-Ad
 | `stil.css` | gemeinsames Stylesheet, Signaletik-Look (Skill `dossier`) |
 | `konfig.js` | AW-ID, Conversion-Labels, Telefonanzeige, Lead-Endpunkt; Platzhalter bis zur Kontoanlage |
 | `einwilligung.js` | Consent-Banner, Consent Mode v2 (default denied, update beim Klick), Google-Tag, Conversion-Aktionen |
-| `formular.js` | Rückruf-Formular an `https://leads.sundsconnect.de/lead`, Erfolg erst nach `ok:true`; schaltet den im Markup gesperrten Absendeknopf frei, bricht den Versand nach 15 s ab |
+| `formular.js` | Rückruf-Formular an `https://leads.sundsconnect.de/lead`, Erfolg erst nach `ok:true`; schaltet nach der Registrierung des Absende-Handlers den im Markup gesperrten Knopf frei und blendet den Anrufsatz aus; drei Ausgänge: Erfolg, sicher gescheitert (Knopf wieder frei), unklar (Zeitgrenze 15 s, Netzfehler, 2xx ohne lesbares JSON: Hinweis mit Nummer, Knopf bleibt gesperrt, kein zweiter Versand) |
 | `leiste.js` | blendet die Anrufleiste aus, solange der Anrufknopf im Hero zu sehen ist |
-| `pruefen/` | Zeugen ohne Browser: `zeuge-einwilligung.js`, `rotprobe-einwilligung.js`, `zeuge_bauen.py`, `rotprobe_bauen.py`, `zeuge_seiten.py` (Regeln der acht gebauten Seiten), `rotprobe_seiten.py`; werden nicht ausgeliefert |
+| `pruefen/` | Zeugen ohne Browser: `zeuge-einwilligung.js`, `rotprobe-einwilligung.js`, `zeuge-formular.js`, `rotprobe-formular.js`, `zeuge_bauen.py`, `rotprobe_bauen.py`, `zeuge_seiten.py` (Regeln der acht gebauten Seiten), `rotprobe_seiten.py`; werden nicht ausgeliefert |
 | `.gitattributes` | nimmt Bauquellen und Zeugen aus `git archive` aus (`export-ignore`) |
 | `schriften/` | Archivo (variable, woff2, latin und latin-ext) und Source Serif 4 (latin), selbst gehostet; `url()` in `stil.css` darf nur hierher zeigen (Bausperre) |
 | `bilder/` | Favicon und nur die Bilder, die eine Seite lädt (9 Dateien; Zeuge B4). In den Inhalten steht je Platz `{{bild_<name>}}`, die Tabelle `BILDER` in `bauen.py` schaltet jeden Platz einzeln |
@@ -50,10 +50,19 @@ Rotproben sind langsam (zusammen rund 3 Minuten) und laufen nacheinander, nicht 
    `srcset`, `video`, `object`, `embed`, `iframe`, `input type=image`) oder `url()` in `stil.css` oder einer Seite auf
    etwas anderes als `schriften/` zeigt (`@import` und `image-set` ebenso). Grenze: Die Sperren sitzen in `main()`;
    wer `bauen()` direkt aufruft, bekommt die Seite ohne sie.
+   **Was Bau und Zeugen NICHT fangen** (Programmierer und Codex an d255384, je mit Bau-Exit 0 und grünen Zeugen
+   gemessen oder aus dem Code abgeleitet): ein CSS-Escape im Funktionsnamen (`u\72l(`); Verbergen des
+   Bildnachweises über einen ID- oder Elementwähler (`#bn { display: none; }`, `.bn-huelle div { display: none; }`);
+   das Attribut `background=` an einem Element; `url("schriften/../bilder/…")`; eine zweite Zuweisung des
+   Einwilligungsmodus nach dem Objekt in `konfig.js`; einen zweiten Knopf ohne `type` im Formular; das Feld `ki`
+   falsch gesetzt (siehe „Grenze des Felds `ki`“ unten). Die Sperren fangen Versehen, keine Absicht.
 2. Wörtersperre: `python <lm>/kunden/kfz-gutachter-es/kampagnen-vorbereitung/pruefen/woertersperre.py --ausnahme "Ismet Es Kfz Meisterbetrieb e.K." *.html` muss 0 Funde liefern. Die Ausnahme ist der Firmenname im Transparenzsatz des Impressums (Wettbewerbsrechtler 09.11.2026). Mit `BEWERTUNG_ZEIGEN = True` kommt genau eine zweite Ausnahme dazu, nach Abschnitt „Bewertung und Name“, Schritt 6.
-3. `impeccable detect .` (am Stand 24.11.2026: 9 Stilfunde, cream-palette und tight-leading, von Fabrice zu entscheiden; neue Funde sind ein Befund).
+3. `impeccable detect .` (am Stand 24.11.2026: 10 Stilfunde, cream-palette 8 und tight-leading 2 auf kosten.html und index.html; der zweite kommt aus `.nur-gross { display: revert }`, die Seite ist pixelgleich; cream-palette und tight-leading, von Fabrice zu entscheiden; neue Funde sind ein Befund).
 4. Screenshots 390 und 1280 ansehen (Skill `hinsehen`, `schirmfoto.mjs` mit Geräteemulation; ein reines `--window-size=390` schneidet rechts ab).
 5. Zeugen, jeder mit Exit 0, in einem Lauf:
+   `node pruefen/zeuge-formular.js` (Pflichtlauf seit Runde 7: `formular.js` in nachgebautem DOM, je Fall Status,
+   Knopf und ob ein zweiter Versand möglich ist: Erfolg, Serverfehler, 200 ohne `ok:true`, 2xx mit unlesbarem JSON,
+   Netzfehler, Zeitgrenze, ohne `AbortController` samt später Antwort, Messfunktion wirft, Ladefehler vor dem Handler);
    `node pruefen/zeuge-einwilligung.js` (Einwilligung, Nummerntausch, Widerruf, Freihalteliste);
    `python pruefen/zeuge_bauen.py` (Sperren in `bauen.py`: Konfiguration samt Form des `googleTag`, Einwilligungsmodus,
    Bewertungskasten mit fester Uhr, Kommentare, Fotoschalter, Bildsperre und Impressumssperre vor dem Schreiben,
@@ -64,9 +73,11 @@ Rotproben sind langsam (zusammen rund 3 Minuten) und laufen nacheinander, nicht 
    Telefonzeiten in der Bühne, kein Schild an einem Bild, Worum- und Ausweichzeile wortgleich, zwei Fragen ohne
    FAQPage, Kostensatz wortgleich auf Start und Umland, jede Datei in `bilder/` geladen, `url()` nur auf `schriften/`,
    Nachweis sichtbar, keine Bildelemente außerhalb der Plätze, ein Umschaltpunkt für die Textfassungen, Formular mit
-   `method="post"`, gesperrtem Knopf und noscript-Satz, IDs aus `formular.js` im Markup, noindex, eine h1, Canonical,
+   `method="post"`, gesperrtem Knopf und sichtbarem Anrufsatz, Freischaltung erst nach dem Handler, Formular-ID,
+   Felder und Absendeknopf aus `formular.js` im Formular, noindex, eine h1, Canonical,
    Links und Anker, Formular nur mit `formular.js`).
-6. Rotproben, nacheinander, jede mit Exit 0: `node pruefen/rotprobe-einwilligung.js`, `python pruefen/rotprobe_bauen.py`
+6. Rotproben, nacheinander, jede mit Exit 0: `node pruefen/rotprobe-einwilligung.js`, `node pruefen/rotprobe-formular.js`
+   (jede Mutation im benannten Fall rot), `python pruefen/rotprobe_bauen.py`
    (jede Mutation muss im benannten Fall rot werden, Tabelle `ERWARTET`), `python pruefen/rotprobe_seiten.py` (jede
    Mutation an einer Kopie der Seiten oder Quellen im genannten Fall, auch nach einem Neubau). `rotprobe_seiten.py`
    liest `NOINDEX` aus `bauen.py` und läuft in beiden Betriebsarten: mit `NOINDEX = True` entfernen oder verschreiben
@@ -148,8 +159,8 @@ Die Seite ist seit dem 23.11.2026 eine Website mit Seitenmenü, keine Landingpag
 - **Anrufstellen:** Kopf (am Handy als Symbol, ab 600 px mit Nummer), ein Knopf im Hero der Startseite, auf den Unterseiten die Zeile `{{ruf}}` im Seitenkopf (Nummer als Text und Link, `RUF_ZEILE` in `bauen.py`), die Anrufleiste am Handy und der Kontaktabschnitt (Startseite unten, `kontakt.html`). Große Anrufknöpfe am Ende der Abschnitte gibt es nicht mehr; dort steht ein Textlink zum nächsten Schritt. Auf jeder Seite steht 02161 688 86 91 als Text und als `tel:+4921616888691`.
 - **Sprache:** dritte Person und direkte Anrede, keine Ich-Form (nicht bestätigt). „wir“ steht seit R1 schlank (Runde 3, Werbetexter 13 und Recht 14) in der Überschrift der Startseite („Ums Gutachten kümmern wir uns.“) und im Kostensatz („Das klären wir vorab am Telefon.“); weitere Stellen mit „wir“ nur nach Rechtsprüfung. Zeitzusagen (Termin am selben Tag, 24 Stunden, Dauer der Besichtigung) und „Sie strecken nichts vor“ stehen nicht auf der Seite, bis der Kunde sie bestätigt.
 - **Bagatellgrenze:** steht nur auf `kosten.html`. Die Startseite trägt keinen Eurobetrag und keine „750“ (Zeuge E1); der Kostensatz sagt nur „Bei kleinen Schäden oft nicht“. Sternchen und Fußnoten gibt es nicht mehr.
-- **Formular ohne JavaScript:** Beide Rückrufformulare haben `method="post"` und einen im Markup gesperrten Absendeknopf, den `formular.js` beim Laden freischaltet; ohne Skript steht darunter „Bitte rufen Sie an:“ mit der Nummer als `tel:`-Link (`OHNE_SKRIPT` in `bauen.py`). So gehen Telefon, Name und Unfallbeschreibung nie per GET in die Adresse der Seite (Zeuge F1).
-- **Telefonzeiten:** stehen nur in `bauen.py` (`TELEFONZEITEN`) und kommen als `{{telefonzeiten}}` in Seiten, Fuß und den Erfolgstext der Formulare.
+- **Formular ohne JavaScript:** Beide Rückrufformulare haben `method="post"` und einen im Markup gesperrten Absendeknopf, den `formular.js` erst nach der Registrierung des Absende-Handlers freischaltet. Darunter steht im Markup sichtbar „Bitte rufen Sie an:“ mit der Nummer als `tel:`-Link (`OHNE_SKRIPT` in `bauen.py`, `data-ohne-skript`); `formular.js` blendet ihn im selben Schritt aus. Lädt das Skript nicht oder scheitert es vorher, bleiben Knopf gesperrt und Satz sichtbar. So gehen Telefon, Name und Unfallbeschreibung nie per GET in die Adresse der Seite (Zeuge F1).
+- **Telefonzeiten:** stehen nur in `bauen.py` (`ZEITEN`, daraus `TELEFONZEITEN`, `ZEITEN_AB`, `ZEITEN_ZEILEN`, `OEFFNUNGSZEITEN_LD`) und kommen als `{{telefonzeiten}}`, `{{zeiten_ab}}`, `{{zeiten_zeilen}}` und `{{oeffnungszeiten_ld}}` in Seiten, Fuß, den Erfolgstext der Formulare und das JSON-LD der Startseite (Zeuge E8).
 
 Bildplätze: jeder Platz ist einzeln schaltbar über die Tabelle `BILDER` in `bauen.py`. Ein Platz erscheint genau dann, wenn dort Datei, alt-Text, Maße und Bildnachweis eingetragen sind und die Datei unter `bilder/` liegt. Sonst fehlt seine Zeile ganz (kein Kasten, kein „Foto folgt“). `FOTOS_ZEIGEN` ist der Hauptschalter (Vorgabe an; aus blendet alle Bilder und die Bildnachweise aus, die Bilddateien bleiben dann aber in `bilder/` und gehen mit aus). Ist ein Platz eingetragen, aber unvollständig, oder fehlt das boolesche Feld `ki`, bricht `python bauen.py` ab (Zeugen G12, G6c, G6d). Die Plätze `schadendetail`, `ort` und `unterlagen` gibt es seit R1 schlank nicht mehr.
 

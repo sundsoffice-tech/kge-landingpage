@@ -151,13 +151,20 @@ def whatsapp_nummer():
 TELEFON_ANZEIGE = "02161 688 86 91"
 TELEFON_LINK = "tel:+4921616888691"
 # Telefonzeiten: stehen nur hier (Runde 6, Punkt 12; vorher an fünf Stellen getrennt gepflegt). In inhalte/ und in
-# der Schale steht {{telefonzeiten}}; der Zeuge E3 verlangt den Wortlaut, E8 verbietet das Literal in den Quellen.
+# der Schale stehen {{telefonzeiten}}, {{zeiten_ab}}, {{zeiten_zeilen}} und im JSON-LD der Startseite
+# {{oeffnungszeiten_ld}} (Runde 7, Punkt 4); der Zeuge E3 verlangt den Wortlaut, E8 verbietet das Literal
+# („8 Uhr“ wie „08:00“) in den Quellen.
 # Je Tag (Anzeige, ab, bis); daraus alle drei Schreibweisen der Seite.
 ZEITEN = (("Mo bis Fr", 8, 18), ("Sa", 9, 14))
 TELEFONZEITEN = ", ".join(f"{tage} {ab} bis {bis} Uhr" for tage, ab, bis in ZEITEN)
 # Rückruf und WhatsApp-Antwort: „Mo bis Fr ab 8 Uhr, Sa ab 9 Uhr“, mit festem Leerzeichen vor „Uhr“.
 ZEITEN_AB = ", ".join(f"{tage} ab {ab}&nbsp;Uhr" for tage, ab, _ in ZEITEN)
 # Fuß: je Tag eine Zeile.
+# JSON-LD (openingHoursSpecification): Wochentage je Anzeige, Zeiten als hh:00.
+SCHEMA_TAGE = {"Mo bis Fr": '["Monday","Tuesday","Wednesday","Thursday","Friday"]', "Sa": '"Saturday"'}
+OEFFNUNGSZEITEN_LD = ",\n    ".join(
+    f'{{ "@type": "OpeningHoursSpecification", "dayOfWeek": {SCHEMA_TAGE[tage]}, '
+    f'"opens": "{ab:02d}:00", "closes": "{bis:02d}:00" }}' for tage, ab, bis in ZEITEN)
 ZEITEN_ZEILEN = "\n      ".join(f"{tage} {ab} bis {bis} Uhr<br>" for tage, ab, bis in ZEITEN)
 # Kostensatz der Startseite, wortgleich unter der Überschrift von umland.html (Runde 6, Punkt 15, Vorschlag der
 # Rechtsrolle zu den Anzeigentexten v10); Zeuge E7.
@@ -166,8 +173,8 @@ KOSTEN_SATZ = ("Der andere war schuld? Dann zahlt das Gutachten in der Regel sei
 RUF_ZEILE = (f'<p class="ruf"><a href="{TELEFON_LINK}" data-messung="phone_click"><svg><use href="#i-tel"/></svg>'
              f'{TELEFON_ANZEIGE}</a><span>{TELEFONZEITEN}</span></p>')
 # Ohne JavaScript bleibt der Absendeknopf gesperrt (Runde 6, A2); dieser Satz steht dann unter dem Formular.
-OHNE_SKRIPT = (f'<noscript><p class="status fehler">Bitte rufen Sie an: <a class="ziel" href="{TELEFON_LINK}">'
-               f'{TELEFON_ANZEIGE}</a></p></noscript>')
+OHNE_SKRIPT = (f'<p class="status fehler" data-ohne-skript>Bitte rufen Sie an: <a class="ziel" href="{TELEFON_LINK}">'
+               f'{TELEFON_ANZEIGE}</a></p>')
 
 # Menü: eine Liste für die Kopfzeile (ab 1024 px) und das Handy-Menü (details, ohne JavaScript). Die Punkte führen
 # auf Seiten, nicht auf Sprungmarken der Startseite. Die Adresse umland.html bleibt, weil Anzeigen darauf zeigen;
@@ -197,6 +204,7 @@ GLOBAL = {
     "telefonzeiten": TELEFONZEITEN,
     "zeiten_ab": ZEITEN_AB,
     "zeiten_zeilen": ZEITEN_ZEILEN,
+    "oeffnungszeiten_ld": OEFFNUNGSZEITEN_LD,
     "kosten_satz": KOSTEN_SATZ,
     "ohne_skript": OHNE_SKRIPT,
 }
@@ -445,7 +453,9 @@ def stile():
 
 def verbergende_klassen(css_texte):
     """Klassen, die eine Regel mit display:none, visibility:hidden oder opacity:0 selbst trifft (letzter Teil des
-    Wählers), auch in Media Queries. Grob, aber in die sichere Richtung: im Zweifel gilt ein Nachweis als verborgen."""
+    Wählers), auch in Media Queries. In die sichere Richtung nur für Klassen: Ein Klassenwähler mit verbergender
+    Regel im letzten Teil gilt als verborgen, auch wenn er nicht trifft. Verbergen über ID- oder Elementwähler im
+    letzten Teil (#bn, .huelle div) sieht diese Prüfung nicht (Grenze in DEPLOY.md)."""
     klassen = set()
     for text in css_texte.values():
         text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
