@@ -112,8 +112,8 @@ MUTATIONEN = [
     m("S-c Marke am Lackschaden entfernt (index.html)", "S1", "seite", "index.html",
       '<span class="bild-marke">Beispielfoto</span>', ""),
     m("S-d Namenskarte neben das Schadenfoto gesetzt (index.html)", "S2", "seite", "index.html",
-      '<figure class="bild"><img src="bilder/schadendetail-lack.jpg"',
-      '<p class="name-zeile">Ihr Sachverständiger: Cihan Es</p><figure class="bild"><img src="bilder/schadendetail-lack.jpg"'),
+      '<figure class="bild"><picture><source media="(max-width: 899px)" srcset="bilder/schadendetail-lack-schmal.jpg"',
+      '<p class="name-zeile">Ihr Sachverständiger: Cihan Es</p><figure class="bild"><picture><source media="(max-width: 899px)" srcset="bilder/schadendetail-lack-schmal.jpg"'),
     # Regel 6, Seitenregeln
     m("P-a noindex auf ablauf.html entfernt", "P1", "seite", "ablauf.html",
       '<meta name="robots" content="noindex">\n', ""),
