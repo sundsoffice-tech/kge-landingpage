@@ -78,8 +78,8 @@ BILDER = {
     # Startseite, Abschnitt Einsatzgebiet, am linken Rand, 3:2. Nicht neben einer Anschrift, nicht unter „Büro“ oder
     # „Anfahrt“ (Rechtsbericht Nr. 4). Seit 24.11.2026 auf der Startseite statt auf der Seite Einsatzgebiet.
     "ort": {"datei": "bilder/moenchengladbach-muenster.jpg",
-            "alt": "Das Münster St. Vitus in Mönchengladbach, vom Park aus gesehen",
-            "breite": 960, "hoehe": 640, "unterschrift": "Mönchengladbach, Münster St. Vitus", "art": "ort",
+            "alt": "Turm und Dach des Münsters St. Vitus in Mönchengladbach",
+            "breite": 470, "hoehe": 370, "unterschrift": "Mönchengladbach, Münster St. Vitus", "art": "ort",
             "nachweis": "Münster St. Vitus, Mönchengladbach: BjøRe, Wikimedia Commons, CC0."},
     # Einsatzgebiet, Abschnitt Hebebühne: kein freies Bild gefunden, 16:9.
     "hebebuehne": {"datei": "", "alt": "", "breite": 0, "hoehe": 0, "unterschrift": "", "nachweis": ""},

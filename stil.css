@@ -713,8 +713,9 @@ main > .abschnitt:last-child { padding-bottom: var(--luft); }
 #ablauf.dunkel .lauf b { color: var(--hell); }
 #ablauf.dunkel .lauf-schluss p { color: var(--hell-2); }
 
-/* Einsatzgebiet in B: das Münster größer, 60 Prozent der Breite */
-@media (min-width: 900px) { .gebiet-b .gebiet { grid-template-columns: minmax(0, 52vw) minmax(0, 1fr); } .gebiet-b .bild img { max-height: 640px; object-fit: cover; } }
+/* Einsatzgebiet in B: das Münster als Detail (Turm und Dachlinie, 470 x 370, kühles Duplex), nie breiter als die Quelle */
+@media (min-width: 900px) { .gebiet-b .gebiet { grid-template-columns: minmax(0, 470px) minmax(0, 1fr); column-gap: 72px; } }
+.gebiet-b .bild img { max-width: 470px; }
 
 /* Wer zahlt?: die Schwelle neben „Wann Sie selbst etwas zahlen“, dort, wo in A das Bild stand */
 .selbst .schwelle { margin: 0 var(--rand); border-top: 2px solid var(--navy); padding-top: 16px; max-width: 26rem; }
