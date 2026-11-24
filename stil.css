@@ -204,7 +204,7 @@ b, strong { font-weight: 650; }
 .buehne-seite { min-height: clamp(440px, 64svh, 660px); }
 .buehne-seite .buehne-text { padding: 140px 0 32px; }
 @media (min-width: 900px) { .buehne-seite .buehne-text { padding: 180px 0 56px; } }
-.buehne-seite h1 { font-size: clamp(38px, 6.4vw, 84px); max-width: 14ch; margin-bottom: 14px; }
+.seitenkopf.buehne-seite h1 { font-size: clamp(42px, 6.4vw, 84px); letter-spacing: -0.035em; max-width: 14ch; margin-bottom: 14px; }
 .buehne-seite .buehne-bild img { object-position: 78% 50%; }
 
 /* ---------- Kontaktfläche: hell, ruhig, die Nummer groß ---------- */
